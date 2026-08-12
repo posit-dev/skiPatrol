@@ -8,3 +8,9 @@
 ^\.github$
 ^\.lintr$
 ^tests/integration$
+^pyproject\.toml$
+^uv\.lock$
+^\.venv$
+^renv$
+^renv\.lock$
+^\.Rprofile$

@@ -23,3 +23,8 @@ inst/notebooks/notebook_config.yaml
 # Python artefacts
 __pycache__/
 *.pyc
+.venv/
+renv/library/
+renv/staging/
+.DS_Store
+.Rprofile.user

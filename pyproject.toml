@@ -1,0 +1,40 @@
+# Python environment for snowdropML development and testing.
+#
+# This package is an R package; it does not ship a Python distribution. This
+# file exists so the Python side that `reticulate` bridges to is reproducible
+# for developers and CI, in the same way `renv.lock` pins the R side.
+#
+#   uv sync              # create .venv from uv.lock
+#   uv sync --group dev  # plus test tooling
+#
+# Excluded from the R build via .Rbuildignore.
+
+[project]
+name = "snowdropml-dev"
+version = "0.0.0"
+description = "Development/test Python environment for the snowdropML R package"
+requires-python = ">=3.9,<3.12"
+
+dependencies = [
+    # Declared in DESCRIPTION as SystemRequirements: snowflake-ml-python >= 1.5.0.
+    # Pulls snowpark and the connector transitively; both are pinned in uv.lock.
+    "snowflake-ml-python>=1.5.0",
+    "snowflake-snowpark-python>=1.20",
+    # Data interchange across the reticulate boundary.
+    "pandas>=2.0",
+    "pyarrow>=14",
+    # Used by the model-registry, monitoring and credit-risk demo paths.
+    "scikit-learn>=1.3",
+    "shap>=0.44",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.uv]
+# 3.11 matches the interpreter the existing .venv was built against and is
+# within snowflake-ml-python's supported range. 3.12+ is excluded because
+# snowflake-ml-python has not consistently supported it.
+python-preference = "managed"
