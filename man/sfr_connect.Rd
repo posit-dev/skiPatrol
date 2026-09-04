@@ -14,6 +14,7 @@ sfr_connect(
   role = NULL,
   authenticator = NULL,
   private_key_file = NULL,
+  session = NULL,
   ...,
   .use_snowflakeauth = TRUE
 )
@@ -41,6 +42,11 @@ uses the \verb{[default]} profile, or the only profile if there is exactly one.}
 key-pair authentication. Also read from \code{connections.toml} field
 \code{private_key_path}.}
 
+\item{session}{An existing Snowpark session to wrap directly, bypassing
+auto-detection and every other strategy below. For sharing one
+session between Python and R explicitly rather than relying on
+whichever Snowpark session happens to be active in the process.}
+
 \item{...}{Additional connection parameters passed to Snowpark session
 builder or \code{snowflakeauth::snowflake_connection()}.}
 
@@ -62,6 +68,8 @@ installed, or directly via RcppTOML / Python toml as fallback).
 \item \strong{Named connection:} Pass \code{name} to select a connection from
 \code{connections.toml}.
 \item \strong{Explicit parameters:} Pass \code{account}, \code{user}, \code{authenticator}, etc.
+\item \strong{Explicit session:} Pass \code{session}, an existing Snowpark session
+(e.g. one built in Python and shared with R in a polyglot notebook).
 }
 }
 \examples{
@@ -85,6 +93,9 @@ conn <- sfr_connect(
   user = "MYUSER",
   authenticator = "externalbrowser"
 )
+
+# Wrap a session built elsewhere (e.g. in a Python cell)
+conn <- sfr_connect(session = py_session)
 }
 
 }

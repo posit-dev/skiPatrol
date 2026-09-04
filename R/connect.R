@@ -141,6 +141,10 @@ sfr_reinstall <- function(path = Sys.getenv("SNOWFLAKER_PATH"),
 #' @param name Character or NULL. Profile name. When `NULL`, looks for
 #'   `[default]`, then falls back to the first profile.
 #' @returns A named list of connection parameters, or `NULL` if not found.
+#'   Carries `toml_file` and `toml_name` attributes recording where it came
+#'   from and which profile was actually selected -- needed by
+#'   `.resolve_oauth_connection_name()` to hand the Python connector the
+#'   right `connection_name` without re-deriving the selection logic.
 #' @noRd
 .read_connections_toml <- function(name = NULL) {
   # Standard search paths
@@ -171,23 +175,51 @@ sfr_reinstall <- function(path = Sys.getenv("SNOWFLAKER_PATH"),
 
   # Select the right profile
   if (!is.null(name) && name %in% names(toml)) {
-    conn <- toml[[name]]
+    selected_name <- name
   } else if ("default" %in% names(toml)) {
-    conn <- toml[["default"]]
+    selected_name <- "default"
   } else if (length(toml) == 1) {
     # Single profile -- use it
-    conn <- toml[[1]]
+    selected_name <- names(toml)[1]
   } else {
     # Multiple profiles, none selected -- use first and warn
-    first_name <- names(toml)[1]
+    selected_name <- names(toml)[1]
     cli::cli_inform(c(
-      "i" = "No connection name specified; using profile {.val {first_name}} from {.file connections.toml}.",
+      "i" = "No connection name specified; using profile {.val {selected_name}} from {.file connections.toml}.",
       "i" = "Pass {.arg name} to {.fn sfr_connect} to choose a specific profile."
     ))
-    conn <- toml[[1]]
   }
 
+  conn <- toml[[selected_name]]
+  attr(conn, "toml_file") <- toml_file
+  attr(conn, "toml_name") <- selected_name
   conn
+}
+
+#' Detect a Posit Workbench / Native-App-shaped OAuth profile
+#'
+#' Checks whether the resolved connections.toml profile is the shape
+#' Workbench and the Native App write -- `authenticator = "oauth"` plus a
+#' `token` -- and if so, returns the profile *name* to hand the Python
+#' connector, not the token itself. The connector re-reads the file by
+#' name and owns the token from there, including its rotation (observed
+#' every ~5 min against a 600s lifetime) -- so it never crosses into R,
+#' an R error message, or a reticulate traceback.
+#'
+#' `snowflakeauth::snowflake_connection()` would also retrieve this token
+#' (as a print-redacted but otherwise ordinary character value); routing
+#' through `connection_name` instead is a deliberate choice to avoid
+#' materialising it in R at all, not a limitation of that path.
+#' @returns The resolved profile name (character), or `NULL` if this
+#'   profile is not the oauth-with-token shape.
+#' @noRd
+.resolve_oauth_connection_name <- function(name) {
+  toml_conn <- .read_connections_toml(name)
+  if (is.null(toml_conn)) return(NULL)
+  if (!identical(tolower(toml_conn$authenticator %||% ""), "oauth")) return(NULL)
+  token <- toml_conn$token
+  if (is.null(token) || !nzchar(as.character(token))) return(NULL)
+  attr(toml_conn, "toml_name")
 }
 
 
@@ -206,6 +238,8 @@ sfr_reinstall <- function(path = Sys.getenv("SNOWFLAKER_PATH"),
 #' - **Named connection:** Pass `name` to select a connection from
 #'   `connections.toml`.
 #' - **Explicit parameters:** Pass `account`, `user`, `authenticator`, etc.
+#' - **Explicit session:** Pass `session`, an existing Snowpark session
+#'   (e.g. one built in Python and shared with R in a polyglot notebook).
 #'
 #' @param name Character. Named connection from `connections.toml`. If `NULL`,
 #'   uses the `[default]` profile, or the only profile if there is exactly one.
@@ -220,6 +254,10 @@ sfr_reinstall <- function(path = Sys.getenv("SNOWFLAKER_PATH"),
 #' @param private_key_file Character. Path to PEM-encoded private key for
 #'   key-pair authentication. Also read from `connections.toml` field
 #'   `private_key_path`.
+#' @param session An existing Snowpark session to wrap directly, bypassing
+#'   auto-detection and every other strategy below. For sharing one
+#'   session between Python and R explicitly rather than relying on
+#'   whichever Snowpark session happens to be active in the process.
 #' @param ... Additional connection parameters passed to Snowpark session
 #'   builder or `snowflakeauth::snowflake_connection()`.
 #' @param .use_snowflakeauth Logical. Whether to use `snowflakeauth` for
@@ -248,6 +286,9 @@ sfr_reinstall <- function(path = Sys.getenv("SNOWFLAKER_PATH"),
 #'   user = "MYUSER",
 #'   authenticator = "externalbrowser"
 #' )
+#'
+#' # Wrap a session built elsewhere (e.g. in a Python cell)
+#' conn <- sfr_connect(session = py_session)
 #' }
 #'
 #' @export
@@ -260,100 +301,146 @@ sfr_connect <- function(name = NULL,
                         role = NULL,
                         authenticator = NULL,
                         private_key_file = NULL,
+                        session = NULL,
                         ...,
                         .use_snowflakeauth = TRUE) {
-  # Attempt Workspace Notebook auto-detect first
-  session <- tryCatch(
-    {
-      bridge <- get_bridge_module("sfr_connect_bridge")
-      bridge$get_active_session()
-    },
-    error = function(e) NULL
-  )
-
   if (!is.null(session)) {
-    # Workspace Notebook environment
-    env_type <- "workspace"
-    auth_method <- "session_token"
-    cli::cli_inform("Connected via active Workspace Notebook session.")
+    # Explicit session -- skip auto-detect and every other strategy below.
+    # Previously the only way to hand sfr_connect() an existing Snowpark
+    # session was to exploit auto-detect's get_active_session() call
+    # finding *any* live session in the process, a defect reported by
+    # Chetan (fix/workspace-detection). This is the supported replacement.
+    env_type <- "external"
+    auth_method <- "external_session"
+    cli::cli_inform("Connected via an externally supplied Snowpark session.")
   } else {
-    # Local environment - build session from parameters
-    env_type <- "local"
+    # Attempt Workspace Notebook auto-detect first
+    session <- tryCatch(
+      {
+        bridge <- get_bridge_module("sfr_connect_bridge")
+        bridge$get_active_session()
+      },
+      error = function(e) NULL
+    )
 
-    # Strategy 1: snowflakeauth (if installed)
-    sf_conn <- NULL
-    if (.use_snowflakeauth &&
-        requireNamespace("snowflakeauth", quietly = TRUE)) {
-      sf_conn <- tryCatch(
-        snowflakeauth::snowflake_connection(
-          name = name,
+    if (!is.null(session)) {
+      # Workspace Notebook environment
+      env_type <- "workspace"
+      auth_method <- "session_token"
+      cli::cli_inform("Connected via active Workspace Notebook session.")
+    } else {
+      # Local environment - build session from parameters
+      env_type <- "local"
+
+      # Strategy 0: profile-driven OAuth (Posit Workbench / the Native
+      # App). Hand the connector a *name*, not extracted fields, so it
+      # owns credential resolution end to end -- connections.toml's token
+      # and its rotation -- and the token never crosses into R. Only
+      # considered when nothing higher-priority was already supplied
+      # explicitly.
+      oauth_name <- if (is.null(account) && is.null(authenticator)) {
+        .resolve_oauth_connection_name(name)
+      } else {
+        NULL
+      }
+
+      if (!is.null(oauth_name)) {
+        bridge <- get_bridge_module("sfr_connect_bridge")
+        session <- bridge$create_session(
+          connection_name = oauth_name,
+          warehouse = warehouse,
+          database = database,
+          schema = schema,
+          role = role
+        )
+        auth_method <- "oauth"
+        account <- tryCatch(
+          gsub('^"|"$', '', as.character(session$get_current_account())),
+          error = function(e) NULL
+        )
+        cli::cli_inform(c(
+          "v" = paste0(
+            "Connected to Snowflake account {.val {account}} via named ",
+            "connection {.val {oauth_name}}."
+          )
+        ))
+      } else {
+        # Strategy 1: snowflakeauth (if installed)
+        sf_conn <- NULL
+        if (.use_snowflakeauth &&
+            requireNamespace("snowflakeauth", quietly = TRUE)) {
+          sf_conn <- tryCatch(
+            snowflakeauth::snowflake_connection(
+              name = name,
+              account = account,
+              user = user,
+              warehouse = warehouse,
+              database = database,
+              schema = schema,
+              role = role,
+              authenticator = authenticator,
+              private_key_file = private_key_file,
+              ...
+            ),
+            error = function(e) NULL
+          )
+        }
+
+        if (!is.null(sf_conn)) {
+          # Extract params from snowflakeauth connection
+          account         <- account %||% sf_conn$account
+          user            <- user %||% sf_conn$user
+          warehouse       <- warehouse %||% sf_conn$warehouse
+          database        <- database %||% sf_conn$database
+          schema          <- schema %||% sf_conn$schema
+          role            <- role %||% sf_conn$role
+          private_key_file <- private_key_file %||%
+            sf_conn$private_key_path %||%
+            sf_conn$private_key_file
+          auth_method     <- sf_conn$authenticator %||% "snowflake"
+        } else if (is.null(account)) {
+          # Strategy 2: read connections.toml directly
+          toml_conn <- .read_connections_toml(name)
+          if (!is.null(toml_conn)) {
+            account         <- account %||% toml_conn$account
+            user            <- user %||% toml_conn$user
+            warehouse       <- warehouse %||% toml_conn$warehouse
+            database        <- database %||% toml_conn$database
+            schema          <- schema %||% toml_conn$schema
+            role            <- role %||% toml_conn$role
+            private_key_file <- private_key_file %||% toml_conn$private_key_path
+            authenticator    <- authenticator %||% toml_conn$authenticator
+          }
+          auth_method <- authenticator %||% "snowflake"
+        } else {
+          auth_method <- authenticator %||% "snowflake"
+        }
+
+        # Validate minimum required params
+        if (is.null(account)) {
+          cli::cli_abort(c(
+            "A Snowflake {.arg account} is required.",
+            "i" = "Provide it directly, via {.file connections.toml}, or set",
+            " " = "{.envvar SNOWFLAKE_ACCOUNT}."
+          ))
+        }
+
+        # Create Snowpark session via Python bridge
+        bridge <- get_bridge_module("sfr_connect_bridge")
+        session <- bridge$create_session(
           account = account,
           user = user,
           warehouse = warehouse,
           database = database,
           schema = schema,
           role = role,
-          authenticator = authenticator,
-          private_key_file = private_key_file,
-          ...
-        ),
-        error = function(e) NULL
-      )
-    }
+          authenticator = auth_method,
+          private_key_file = private_key_file
+        )
 
-    if (!is.null(sf_conn)) {
-      # Extract params from snowflakeauth connection
-      account         <- account %||% sf_conn$account
-      user            <- user %||% sf_conn$user
-      warehouse       <- warehouse %||% sf_conn$warehouse
-      database        <- database %||% sf_conn$database
-      schema          <- schema %||% sf_conn$schema
-      role            <- role %||% sf_conn$role
-      private_key_file <- private_key_file %||%
-        sf_conn$private_key_path %||%
-        sf_conn$private_key_file
-      auth_method     <- sf_conn$authenticator %||% "snowflake"
-    } else if (is.null(account)) {
-      # Strategy 2: read connections.toml directly
-      toml_conn <- .read_connections_toml(name)
-      if (!is.null(toml_conn)) {
-        account         <- account %||% toml_conn$account
-        user            <- user %||% toml_conn$user
-        warehouse       <- warehouse %||% toml_conn$warehouse
-        database        <- database %||% toml_conn$database
-        schema          <- schema %||% toml_conn$schema
-        role            <- role %||% toml_conn$role
-        private_key_file <- private_key_file %||% toml_conn$private_key_path
-        authenticator    <- authenticator %||% toml_conn$authenticator
+        cli::cli_inform("Connected to Snowflake account {.val {account}}.")
       }
-      auth_method <- authenticator %||% "snowflake"
-    } else {
-      auth_method <- authenticator %||% "snowflake"
     }
-
-    # Validate minimum required params
-    if (is.null(account)) {
-      cli::cli_abort(c(
-        "A Snowflake {.arg account} is required.",
-        "i" = "Provide it directly, via {.file connections.toml}, or set",
-        " " = "{.envvar SNOWFLAKE_ACCOUNT}."
-      ))
-    }
-
-    # Create Snowpark session via Python bridge
-    bridge <- get_bridge_module("sfr_connect_bridge")
-    session <- bridge$create_session(
-      account = account,
-      user = user,
-      warehouse = warehouse,
-      database = database,
-      schema = schema,
-      role = role,
-      authenticator = auth_method,
-      private_key_file = private_key_file
-    )
-
-    cli::cli_inform("Connected to Snowflake account {.val {account}}.")
   }
 
   conn <- structure(
@@ -415,11 +502,30 @@ sfr_connect <- function(name = NULL,
       schema    = "get_current_schema",
       role      = "get_current_role"
     )
-    val <- tryCatch(as.character(session[[getter]]()), error = function(e) NULL)
-    if (is.null(val) || val == "" || val == "None") return(NULL)
-    return(gsub('^"|"$', '', val))
+    raw <- tryCatch(session[[getter]](), error = function(e) NULL)
+    return(.clean_session_value(raw))
   }
   .subset2(x, name)
+}
+
+#' Clean a live-session getter's return value
+#'
+#' Snowpark getters like `get_current_warehouse()` return `None` when
+#' nothing is set on the session. Depending on the call path, reticulate
+#' can hand that back as R `NULL`, a bare `NA`, or the literal string
+#' `"None"` -- this normalises all of those to `NULL`. The bare-`NA` case
+#' matters because `NA == ""` is `NA`, not `FALSE`, so a caller comparing
+#' with `==` directly errors with "missing value where TRUE/FALSE needed"
+#' rather than falling through; a session with no warehouse/database/
+#' schema set at all (e.g. one created from a connections.toml OAuth
+#' profile that carries no session context) hits exactly this.
+#' @returns Character scalar with surrounding quotes stripped, or `NULL`.
+#' @noRd
+.clean_session_value <- function(raw) {
+  if (is.null(raw) || length(raw) == 0) return(NULL)
+  val <- tryCatch(as.character(raw), error = function(e) NA_character_)
+  if (length(val) == 0 || is.na(val) || val == "" || val == "None") return(NULL)
+  gsub('^"|"$', '', val)
 }
 
 
@@ -544,17 +650,10 @@ sfr_use <- function(conn, warehouse = NULL, database = NULL, schema = NULL) {
 refresh_conn_from_session <- function(conn) {
   session <- .subset2(conn, "session")
 
-  strip_quotes <- function(x) {
-    if (is.null(x) || length(x) == 0) return(NULL)
-    val <- tryCatch(as.character(x), error = function(e) NULL)
-    if (is.null(val) || val == "" || val == "None") return(NULL)
-    gsub('^"|"$', '', val)
-  }
-
-  conn[["warehouse"]] <- strip_quotes(tryCatch(session$get_current_warehouse(), error = function(e) NULL))
-  conn[["database"]]  <- strip_quotes(tryCatch(session$get_current_database(), error = function(e) NULL))
-  conn[["schema"]]    <- strip_quotes(tryCatch(session$get_current_schema(), error = function(e) NULL))
-  conn[["role"]]      <- strip_quotes(tryCatch(session$get_current_role(), error = function(e) NULL))
+  conn[["warehouse"]] <- .clean_session_value(tryCatch(session$get_current_warehouse(), error = function(e) NULL))
+  conn[["database"]]  <- .clean_session_value(tryCatch(session$get_current_database(), error = function(e) NULL))
+  conn[["schema"]]    <- .clean_session_value(tryCatch(session$get_current_schema(), error = function(e) NULL))
+  conn[["role"]]      <- .clean_session_value(tryCatch(session$get_current_role(), error = function(e) NULL))
 
   conn
 }

@@ -61,7 +61,7 @@ def _load_private_key(key_path: str) -> bytes:
 
 
 def create_session(
-    account: str,
+    account: Optional[str] = None,
     user: Optional[str] = None,
     warehouse: Optional[str] = None,
     database: Optional[str] = None,
@@ -69,31 +69,64 @@ def create_session(
     role: Optional[str] = None,
     authenticator: Optional[str] = None,
     private_key_file: Optional[str] = None,
+    connection_name: Optional[str] = None,
     **kwargs,
 ):
     """
-    Create a new Snowpark session from explicit parameters.
+    Create a new Snowpark session, either from explicit parameters or by
+    name from connections.toml.
 
     Supports multiple auth methods:
     - Key-pair (SNOWFLAKE_JWT): pass private_key_file path
     - External browser: authenticator="externalbrowser"
     - Username/password: authenticator="snowflake" + password in kwargs
+    - Named connection (connection_name): the connector reads account and
+      credentials from connections.toml itself, including an OAuth token
+      written there directly -- the shape Posit Workbench and the Native
+      App use. Only this path can consume that shape: it has no `token`
+      parameter, so a caller with just an account/user/authenticator
+      cannot express "authenticate with this connections.toml token"
+      without connection_name. This also means the token is never passed
+      through this bridge at all, and the connector owns re-reading it on
+      rotation rather than this session holding a copy that goes stale.
 
     Args:
-        account: Snowflake account identifier
+        account: Snowflake account identifier. Not needed (and ignored
+            for auth purposes) when connection_name is given.
         user: Username
-        warehouse: Default warehouse
-        database: Default database
-        schema: Default schema
-        role: Role to use
+        warehouse: Default warehouse -- overrides the named connection's,
+            if both are given
+        database: Default database -- overrides the named connection's
+        schema: Default schema -- overrides the named connection's
+        role: Role to use -- overrides the named connection's
         authenticator: Authentication method
         private_key_file: Path to PEM private key (.p8 file)
+        connection_name: Profile name in connections.toml. When given,
+            takes priority: the connector resolves everything else
+            (account, credentials) from that profile, with any of
+            warehouse/database/schema/role passed here overriding it.
         **kwargs: Additional connection parameters
 
     Returns:
         Snowpark Session object
     """
     from snowflake.snowpark import Session
+
+    if connection_name:
+        conn_params = {"connection_name": connection_name}
+        if warehouse:
+            conn_params["warehouse"] = warehouse
+        if database:
+            conn_params["database"] = database
+        if schema:
+            conn_params["schema"] = schema
+        if role:
+            conn_params["role"] = role
+        conn_params.update(kwargs)
+        return Session.builder.configs(conn_params).create()
+
+    if not account:
+        raise ValueError("create_session() requires either connection_name or account")
 
     conn_params = {"account": account}
 
