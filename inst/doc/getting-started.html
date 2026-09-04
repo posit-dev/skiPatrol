@@ -12,7 +12,7 @@
 
 
 
-<title>Getting Started with snowflakeR</title>
+<title>Getting Started with skiPatrol</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -336,25 +336,25 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Getting Started with snowflakeR</h1>
+<h1 class="title toc-ignore">Getting Started with skiPatrol</h1>
 
 
 
-<p><code>snowflakeR</code> provides a native R interface to the
+<p><code>skiPatrol</code> provides a native R interface to the
 Snowflake ML platform. This vignette covers installation, connecting to
 Snowflake, running queries, and using the DBI integration.</p>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
 <p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># install.packages(&quot;pak&quot;)</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">&quot;Snowflake-Labs/snowflakeR&quot;</span>)</span></code></pre></div>
-<p><code>snowflakeR</code> requires a Python environment with
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">&quot;posit-dev/skiPatrol&quot;</span>)</span></code></pre></div>
+<p><code>skiPatrol</code> requires a Python environment with
 <code>snowflake-ml-python</code>. The package includes a helper to set
 this up:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">sfr_install_python_deps</span>()</span></code></pre></div>
 <p>Or create the environment manually:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-n</span> r-snowflakeR python=3.11 <span class="at">-y</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="ex">conda</span> activate r-snowflakeR</span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-n</span> r-skiPatrol python=3.11 <span class="at">-y</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="ex">conda</span> activate r-skiPatrol</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="ex">pip</span> install snowflake-ml-python snowflake-snowpark-python</span></code></pre></div>
 </div>
 <div id="connecting-to-snowflake" class="section level2">
@@ -362,8 +362,8 @@ this up:</p>
 <div id="option-a-connections.toml-recommended" class="section level3">
 <h3>Option A: connections.toml (recommended)</h3>
 <p>If you have a <code>~/.snowflake/connections.toml</code> file (the
-Snowflake standard), <code>snowflakeR</code> reads it automatically:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(snowflakeR)</span>
+Snowflake standard), <code>skiPatrol</code> reads it automatically:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(skiPatrol)</span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co"># Default connection from connections.toml</span></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>conn <span class="ot">&lt;-</span> <span class="fu">sfr_connect</span>()</span>
@@ -441,10 +441,10 @@ detects the active session – no credentials needed:</p>
 <h2>DBI / dbplyr Integration</h2>
 <p>For full DBI compliance (<code>dbGetQuery</code>,
 <code>dbWriteTable</code>, <code>dbListTables</code>, etc.) and
-<code>dbplyr</code> integration, use the companion <a href="https://github.com/Snowflake-Labs/RSnowflake"><strong>RSnowflake</strong></a>
+<code>dbplyr</code> integration, use the companion <a href="https://github.com/posit-dev/skiLift"><strong>skiLift</strong></a>
 package. You can bridge from an <code>sfr_connection</code> to a DBI
 connection with <code>sfr_dbi_connection()</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Obtain an RSnowflake DBI connection (requires RSnowflake to be installed)</span></span>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Obtain an skiLift DBI connection (requires skiLift to be installed)</span></span>
 <span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>dbi_con <span class="ot">&lt;-</span> <span class="fu">sfr_dbi_connection</span>(conn)</span>
 <span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
 <span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="fu">library</span>(DBI)</span>
@@ -463,10 +463,10 @@ manipulation:</p>
 <span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="fu">group_by</span>(category) <span class="sc">|&gt;</span></span>
 <span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">avg_value =</span> <span class="fu">mean</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div>
-<p>Alternatively, you can connect directly with RSnowflake without
-<code>snowflakeR</code>:</p>
+<p>Alternatively, you can connect directly with skiLift without
+<code>skiPatrol</code>:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">library</span>(DBI)</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">library</span>(RSnowflake)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">library</span>(skiLift)</span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(<span class="fu">Snowflake</span>(), <span class="at">name =</span> <span class="st">&quot;my_profile&quot;</span>)</span></code></pre></div>
 </div>
 <div id="disconnecting" class="section level2">

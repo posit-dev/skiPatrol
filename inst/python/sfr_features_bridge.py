@@ -2,7 +2,7 @@
 Snowflake Feature Store Bridge
 ===============================
 
-Python backend for snowflakeR::R/features.R.
+Python backend for skiPatrol::R/features.R.
 
 This module wraps the snowflake.ml.feature_store Python API, providing
 functions callable from R via reticulate. Each function receives a Snowpark
@@ -736,7 +736,7 @@ def generate_dataset(
             from snowflake.ml.dataset import load_dataset
             actual_ver = version or name
             fqn = f"{db}.{sc}.{name}"
-            print(f"[snowflakeR] Dataset {fqn}:{actual_ver} "
+            print(f"[skiPatrol] Dataset {fqn}:{actual_ver} "
                   "already exists, loading it.")
             ds = load_dataset(session, fqn, actual_ver)
         else:
@@ -748,7 +748,7 @@ def generate_dataset(
         actual_version = version or name
     cache_key = f"{name}:{actual_version}"
     _DATASET_CACHE[cache_key] = ds
-    print(f"[snowflakeR] Dataset cached: {cache_key} "
+    print(f"[skiPatrol] Dataset cached: {cache_key} "
           f"(type={type(ds).__name__})")
 
     # Use Snowpark DataFrame path instead of ds.read.to_pandas() to

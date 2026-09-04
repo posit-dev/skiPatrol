@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette covers everything you need **before** using `snowflakeR` --
+This vignette covers everything you need **before** using `skiPatrol` --
 system requirements, Python setup, authentication, and environment-specific
 configuration. For usage, see `vignette("getting-started")`.
 
@@ -26,12 +26,12 @@ configuration. For usage, see `vignette("getting-started")`.
 ### R
 
 Install R >= 4.1.0 from [CRAN](https://cran.r-project.org/) or via your
-system package manager. `snowflakeR` uses the base pipe (`|>`) and other
+system package manager. `skiPatrol` uses the base pipe (`|>`) and other
 features introduced in R 4.1.
 
 ### Python
 
-`snowflakeR` uses `reticulate` to call the Snowflake ML Python SDK under the
+`skiPatrol` uses `reticulate` to call the Snowflake ML Python SDK under the
 hood. You need Python >= 3.9 available on your system. We recommend Python
 3.11 for best compatibility with `snowflake-ml-python`.
 
@@ -42,12 +42,12 @@ environment. This avoids version conflicts between `snowflake-ml-python`,
 `pandas`, `pyarrow`, and other dependencies. `pip` works fine too if you
 prefer virtualenvs.
 
-## 2. Installing snowflakeR
+## 2. Installing skiPatrol
 
 ```r
 # Install from GitHub
 # install.packages("pak")
-pak::pak("Snowflake-Labs/snowflakeR")
+pak::pak("posit-dev/skiPatrol")
 ```
 
 ## 3. Setting up the Python environment
@@ -57,19 +57,19 @@ Choose **one** of the following approaches.
 ### Option A: Automatic (recommended for most users)
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 sfr_install_python_deps()
 ```
 
-This creates a conda environment called `r-snowflakeR` with Python 3.11 and
+This creates a conda environment called `r-skiPatrol` with Python 3.11 and
 all required packages. After running this once, `reticulate` will
 automatically find and use the environment.
 
 ### Option B: Conda (manual)
 
 ```bash
-conda create -n r-snowflakeR python=3.11 -y
-conda activate r-snowflakeR
+conda create -n r-skiPatrol python=3.11 -y
+conda activate r-skiPatrol
 pip install snowflake-ml-python snowflake-snowpark-python
 ```
 
@@ -77,22 +77,22 @@ Then tell R to use it:
 
 ```r
 # In your .Renviron or at the top of your script
-Sys.setenv(RETICULATE_PYTHON = "~/.conda/envs/r-snowflakeR/bin/python")
+Sys.setenv(RETICULATE_PYTHON = "~/.conda/envs/r-skiPatrol/bin/python")
 
 # Or in R:
-reticulate::use_condaenv("r-snowflakeR")
+reticulate::use_condaenv("r-skiPatrol")
 ```
 
 ### Option C: pip / virtualenv
 
 ```bash
-python3.11 -m venv ~/.virtualenvs/r-snowflakeR
-source ~/.virtualenvs/r-snowflakeR/bin/activate
+python3.11 -m venv ~/.virtualenvs/r-skiPatrol
+source ~/.virtualenvs/r-skiPatrol/bin/activate
 pip install snowflake-ml-python snowflake-snowpark-python
 ```
 
 ```r
-reticulate::use_virtualenv("~/.virtualenvs/r-snowflakeR")
+reticulate::use_virtualenv("~/.virtualenvs/r-skiPatrol")
 ```
 
 ### Option D: System Python
@@ -108,10 +108,10 @@ automatically.
 
 ## 4. Verifying the setup
 
-After installing `snowflakeR` and setting up Python, verify everything works:
+After installing `skiPatrol` and setting up Python, verify everything works:
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 sfr_check_environment()
 #> R version: "4.3.1"
 #> v reticulate available
@@ -129,7 +129,7 @@ This checks:
 
 ## 5. Authentication
 
-`snowflakeR` supports multiple authentication methods. Choose the one that
+`skiPatrol` supports multiple authentication methods. Choose the one that
 fits your environment.
 
 ### connections.toml (recommended for local use)
@@ -161,8 +161,8 @@ conn <- sfr_connect()                    # uses [default]
 conn <- sfr_connect(name = "production") # uses [production]
 ```
 
-If `snowflakeauth` is installed, `snowflakeR` uses it for credential
-resolution. If not, `snowflakeR` reads the TOML file directly.
+If `snowflakeauth` is installed, `skiPatrol` uses it for credential
+resolution. If not, `skiPatrol` reads the TOML file directly.
 
 ### Key-pair authentication
 
@@ -213,25 +213,25 @@ to find your Python:
 Create or edit `~/.Renviron`:
 
 ```
-RETICULATE_PYTHON=~/.conda/envs/r-snowflakeR/bin/python
+RETICULATE_PYTHON=~/.conda/envs/r-skiPatrol/bin/python
 ```
 
 Restart R after editing.
 
 **Option 2: RStudio Python settings**
 
-Go to **Tools > Global Options > Python** and select the `r-snowflakeR`
+Go to **Tools > Global Options > Python** and select the `r-skiPatrol`
 interpreter.
 
 **Option 3: Per-script**
 
 ```r
-reticulate::use_condaenv("r-snowflakeR")
-library(snowflakeR)
+reticulate::use_condaenv("r-skiPatrol")
+library(skiPatrol)
 ```
 
 > **Note**: `reticulate` locks the Python version on first use in an R
-> session. Make sure to configure Python *before* calling any `snowflakeR`
+> session. Make sure to configure Python *before* calling any `skiPatrol`
 > functions.
 
 ### VS Code
@@ -242,7 +242,7 @@ library(snowflakeR)
 ```json
 {
   "r.rterm.option": ["--no-save", "--no-restore"],
-  "python.defaultInterpreterPath": "~/.conda/envs/r-snowflakeR/bin/python"
+  "python.defaultInterpreterPath": "~/.conda/envs/r-skiPatrol/bin/python"
 }
 ```
 
@@ -256,7 +256,7 @@ The `.Renviron` approach works the same as in RStudio.
 
 ### Jupyter Notebooks (local)
 
-There are two ways to use `snowflakeR` in local Jupyter notebooks:
+There are two ways to use `skiPatrol` in local Jupyter notebooks:
 
 **Option A: R kernel (native R)**
 
@@ -267,10 +267,10 @@ install.packages("IRkernel")
 IRkernel::installspec(user = TRUE)
 ```
 
-Then create a notebook with the R kernel. `snowflakeR` code runs natively:
+Then create a notebook with the R kernel. `skiPatrol` code runs natively:
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 ```
 
@@ -294,7 +294,7 @@ In a Python notebook:
 
 ```r
 %%R
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 ```
 
@@ -306,11 +306,11 @@ run a **Python kernel** -- R is available via `rpy2` and `%%R` magic cells.
 The R environment is installed by the
 [`sfnb-multilang`](https://github.com/Snowflake-Labs/snowflake-notebook-multilang)
 toolkit, which handles micromamba, R, rpy2, and package installation. The
-`snowflakeR` package ships demo notebooks in `inst/notebooks/` -- find them
+`skiPatrol` package ships demo notebooks in `inst/notebooks/` -- find them
 with:
 
 ```r
-system.file("notebooks", package = "snowflakeR")
+system.file("notebooks", package = "skiPatrol")
 ```
 
 Upload the notebook(s) you need to your Workspace and follow the instructions
@@ -348,22 +348,22 @@ install_r()
    Each notebook directory includes `sfnb_setup.py`, which auto-detects the
    environment and installs `sfnb-multilang` from PyPI if needed. For advanced
    configurations (ADBC, custom packages, Scala/Julia), pass keyword arguments
-   or a YAML config: `install_r(config="configs/snowflaker.yaml")`.
+   or a YAML config: `install_r(config="configs/skipatrol.yaml")`.
 
-2. **Install and load `snowflakeR`:**
+2. **Install and load `skiPatrol`:**
 
 ```r
 %%R
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
-if (nzchar(Sys.getenv("SNOWFLAKER_PATH"))) {
-  install.packages(Sys.getenv("SNOWFLAKER_PATH"), repos = NULL, type = "source")
+if (nzchar(Sys.getenv("SKIPATROL_PATH"))) {
+  install.packages(Sys.getenv("SKIPATROL_PATH"), repos = NULL, type = "source")
 } else {
   install.packages("pak", type = "source", quiet = TRUE)
-  pak::pak("Snowflake-Labs/snowflakeR", ask = FALSE, upgrade = FALSE)
+  pak::pak("posit-dev/skiPatrol", ask = FALSE, upgrade = FALSE)
 }
 
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 
 conn <- sfr_load_notebook_config(conn)
@@ -403,18 +403,18 @@ Actions example.
 
 ## 7. Optional dependencies
 
-These R packages are optional but enhance `snowflakeR`:
+These R packages are optional but enhance `skiPatrol`:
 
 | Package | What it enables |
 |---|---|
-| `RSnowflake` | DBI-compliant database access (`dbGetQuery`, `dbWriteTable`, `dbplyr`, Connections Pane). See [RSnowflake](https://github.com/Snowflake-Labs/RSnowflake). |
+| `skiLift` | DBI-compliant database access (`dbGetQuery`, `dbWriteTable`, `dbplyr`, Connections Pane). See [skiLift](https://github.com/posit-dev/skiLift). |
 | `snowflakeauth` | `connections.toml` / `config.toml` credential management |
 | `httr2` | Pure-R REST inference via `sfr_predict_rest()` |
 | `knitr` + `rmarkdown` | Building vignettes from source |
 
-`snowflakeR` provides SQL querying via `sfr_query()` and `sfr_execute()`
+`skiPatrol` provides SQL querying via `sfr_query()` and `sfr_execute()`
 using the Python/Snowpark bridge. For full DBI compliance, `dbplyr`
-integration, and the RStudio Connections Pane, install `RSnowflake` and
+integration, and the RStudio Connections Pane, install `skiLift` and
 use `sfr_dbi_connection()` to bridge from an `sfr_connection`:
 
 ```r
@@ -428,7 +428,7 @@ tbl(dbi_con, "MY_TABLE") |> filter(score > 90) |> collect()
 Install all optional dependencies at once:
 
 ```r
-pak::pak("Snowflake-Labs/snowflakeR", dependencies = TRUE)
+pak::pak("posit-dev/skiPatrol", dependencies = TRUE)
 ```
 
 ## 8. Troubleshooting
@@ -440,7 +440,7 @@ pak::pak("Snowflake-Labs/snowflakeR", dependencies = TRUE)
 | Python version mismatch | Ensure Python >= 3.9; check with `reticulate::py_config()` |
 | `sfr_connect()` hangs | If using `externalbrowser`, check your browser opened a Snowflake tab |
 | `sfr_connect()` fails with "account required" | Set up `connections.toml` or pass `account` explicitly |
-| `reticulate` uses wrong Python | Call `reticulate::use_condaenv()` *before* loading `snowflakeR` |
+| `reticulate` uses wrong Python | Call `reticulate::use_condaenv()` *before* loading `skiPatrol` |
 | R packages missing in Workspace | Add to YAML config or install interactively via `install.packages()` |
 | `%%R` not recognised in Workspace | Run `%load_ext rpy2.ipython` in a Python cell |
 | Conda solve takes forever | Use `pip install` inside a conda env (see Option B above) |

@@ -1,11 +1,11 @@
 ---
 title: "RStudio, Posit & VS Code"
-subtitle: "Use RSnowflake and snowflakeR from desktop R tooling"
+subtitle: "Use skiLift and skiPatrol from desktop R tooling"
 ---
 
 ## Overview
 
-Most R users work in **RStudio**, **Posit Workbench**, **Positron**, or **VS Code**. Both packages support that workflow: RSnowflake integrates with the **Connections Pane** and **dbplyr**; snowflakeR runs the same ML APIs as in Workspace once Python is configured.
+Most R users work in **RStudio**, **Posit Workbench**, **Positron**, or **VS Code**. Both packages support that workflow: skiLift integrates with the **Connections Pane** and **dbplyr**; skiPatrol runs the same ML APIs as in Workspace once Python is configured.
 
 **Prerequisite:** complete [Local R Setup](../03_local_r_setup/index.qmd) (packages, Python env, authentication). This chapter does not repeat those steps except where an IDE needs a specific setting.
 
@@ -17,23 +17,23 @@ You do **not** need Workspace Notebooks to use Snowflake from R.
 - Set up VS Code for an RStudio-like experience
 - Use the **Snowflake VS Code extension** for SQL and object browsing
 - Know **Posit Workbench Native App** and container-hosted RStudio options
-- Choose between **RSnowflake** and Posit's **`odbc`** package with the Snowflake ODBC driver
+- Choose between **skiLift** and Posit's **`odbc`** package with the Snowflake ODBC driver
 
 ---
 
 ## RStudio & Posit Workbench {#sec-rstudio}
 
-### Python for snowflakeR
+### Python for skiPatrol
 
 1. Complete [Local R Setup](../03_local_r_setup/index.qmd) — choose conda, venv, or `sfr_install_python_deps()`.
 2. Set the interpreter — pick one:
    - **`~/.Renviron`:** `RETICULATE_PYTHON=/path/to/python` (restart R)
    - **Tools → Global Options → Python** — select your venv or conda env
-   - **Per session:** `reticulate::use_virtualenv(...)` or `use_condaenv(...)` before `library(snowflakeR)`
+   - **Per session:** `reticulate::use_virtualenv(...)` or `use_condaenv(...)` before `library(skiPatrol)`
 
-### RSnowflake Connections Pane
+### skiLift Connections Pane
 
-With RSnowflake installed, open **Connections** in RStudio (or Posit Workbench):
+With skiLift installed, open **Connections** in RStudio (or Posit Workbench):
 
 1. **New Connection → Snowflake** (or `dbConnect(Snowflake(), name = "...")`).
 2. Browse databases, schemas, tables, and preview data.
@@ -41,7 +41,7 @@ With RSnowflake installed, open **Connections** in RStudio (or Posit Workbench):
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 library(dplyr)
 
 con <- dbConnect(Snowflake(), name = "default")
@@ -52,35 +52,35 @@ orders <- tbl(con, in_schema("ANALYTICS", "ORDERS")) |>
 
 ---
 
-## RSnowflake vs `odbc` + Snowflake ODBC {#sec-odbc}
+## skiLift vs `odbc` + Snowflake ODBC {#sec-odbc}
 
 On desktop **RStudio**, **Posit Workbench**, and **Positron**, you have two well-supported ways to run **DBI** and **dbplyr** against Snowflake. Both are good options; many teams standardize on one for operations and keep the other in mind for edge cases.
 
-| Layer | **RSnowflake** | **`odbc`** + Snowflake ODBC |
+| Layer | **skiLift** | **`odbc`** + Snowflake ODBC |
 |-------|----------------|----------------------------|
-| R package | [RSnowflake](https://github.com/Snowflake-Labs/RSnowflake) | CRAN [`odbc`](https://odbc.r-dbi.org/) |
-| Under the hood | [SQL REST API](../11_rsnowflake_sql_api/index.qmd) (+ optional **ADBC** for bulk I/O) | **unixODBC** / iODBC → [Snowflake ODBC driver](https://docs.snowflake.com/en/developer-guide/odbc/odbc) |
+| R package | [skiLift](https://github.com/posit-dev/skiLift) | CRAN [`odbc`](https://odbc.r-dbi.org/) |
+| Under the hood | [SQL REST API](../11_skilift_sql_api/index.qmd) (+ optional **ADBC** for bulk I/O) | **unixODBC** / iODBC → [Snowflake ODBC driver](https://docs.snowflake.com/en/developer-guide/odbc/odbc) |
 | Extra install | None beyond R (optional `adbcsnowflake` for Arrow bulk) | OS driver manager + Snowflake ODBC driver ([install guide](https://docs.snowflake.com/en/developer-guide/odbc/odbc)) |
 | Posit-specific drivers | Not required | [Posit Professional Drivers](https://docs.posit.co/pro-drivers/) (paid products) or Snowflake's driver from Snowflake's site — see [Posit: Snowflake](https://solutions.posit.co/connections/db/databases/snowflake/) |
-| **Connections** pane | **New Connection → Snowflake** (RSnowflake) | ODBC DSN / driver-based connection (traditional path) |
+| **Connections** pane | **New Connection → Snowflake** (skiLift) | ODBC DSN / driver-based connection (traditional path) |
 | **`connections.toml`** | Supported via `dbConnect(Snowflake(), name = "...")` | Supported via `dbConnect(odbc::snowflake(), connection_name = "...")` |
 | **dbplyr** / **DBI** | Yes | Yes — same verbs, different driver |
-| **snowflakeR** (ML APIs) | Orthogonal — install Python + snowflakeR either way | Same |
+| **skiPatrol** (ML APIs) | Orthogonal — install Python + skiPatrol either way | Same |
 
 ### Practical differences to plan for
 
-| Topic | RSnowflake | `odbc` + Snowflake ODBC |
+| Topic | skiLift | `odbc` + Snowflake ODBC |
 |-------|------------|-------------------------|
 | **Admin / CI footprint** | R package (+ optional ADBC build for bulk) | Driver binaries, `odbc.ini` / DSN, often IT-managed |
-| **Stage file upload/download** | The SQL REST API does not support Snowflake **`PUT`** and **`GET`** commands (upload/download files to internal **stages**). Use ADBC bulk table loads, SQL `COPY`, or stage **volume mounts** in containers instead ([Query — limits](../13_rsnowflake_query/index.qmd#sec-limits)) | ODBC/JDBC drivers often support stage-oriented file workflows teams already use |
-| **Writing large data.frames to tables** | RSnowflake **`upload_method = "auto"`** (default) chooses the fastest path: **ADBC** bulk upload when installed, else Snowpark in Workspace, else batched SQL INSERT ([Query — bulk](../13_rsnowflake_query/index.qmd#sec-bulk)) | Depends on driver and DSN; no RSnowflake-specific routing |
+| **Stage file upload/download** | The SQL REST API does not support Snowflake **`PUT`** and **`GET`** commands (upload/download files to internal **stages**). Use ADBC bulk table loads, SQL `COPY`, or stage **volume mounts** in containers instead ([Query — limits](../13_skilift_query/index.qmd#sec-limits)) | ODBC/JDBC drivers often support stage-oriented file workflows teams already use |
+| **Writing large data.frames to tables** | skiLift **`upload_method = "auto"`** (default) chooses the fastest path: **ADBC** bulk upload when installed, else Snowpark in Workspace, else batched SQL INSERT ([Query — bulk](../13_skilift_query/index.qmd#sec-bulk)) | Depends on driver and DSN; no skiLift-specific routing |
 | **Workspace Notebooks** | First-class: session OAuth via `SNOWFLAKE_HOST`; default without ODBC install | **ODBC was impractical** in notebooks until **[CRE](../09_custom_runtime_and_ml_jobs/index.qmd)** — driver + unixODBC do not fit `setup_notebook()`; bake into CRE if you must use `odbc` |
 | **Workspace bulk I/O** | Optional **ADBC** in CRE (Snowflake's optimized Arrow path) | ODBC in CRE possible; not the direction Snowflake optimizes for new bulk work |
 | **WebR / WASM** | HTTPS SQL API works without a native driver | Needs ODBC in the environment — usually impractical |
-| **Identifier case** | Defaults to uppercase (ODBC-aligned); `RSnowflake.identifier_case` | Snowflake ODBC behaviour; same quoting pitfalls |
+| **Identifier case** | Defaults to uppercase (ODBC-aligned); `skiLift.identifier_case` | Snowflake ODBC behaviour; same quoting pitfalls |
 | **Ecosystem age** | Snowflake Labs, SQL API era | Long-running Posit + enterprise ODBC playbooks |
 
-Neither package replaces **snowflakeR** for Feature Store, Model Registry, or Snowpark ML — you still add Python + snowflakeR when you need those APIs.
+Neither package replaces **skiPatrol** for Feature Store, Model Registry, or Snowpark ML — you still add Python + skiPatrol when you need those APIs.
 
 ### Example: `odbc::snowflake()`
 
@@ -111,30 +111,30 @@ con <- dbConnect(
 
 ### When teams pick which
 
-| Prefer **RSnowflake** when… | Prefer **`odbc`** when… |
+| Prefer **skiLift** when… | Prefer **`odbc`** when… |
 |-----------------------------|-------------------------|
 | You want **no ODBC install** on analyst laptops | IT already **rolls out** the Snowflake ODBC driver to all machines |
 | You align with **Snowflake-Labs** R + Workspace bootstrap in this guide | You rely on **Posit Connect** credential patterns (`connectcreds`) or legacy ODBC DSNs |
-| You need **SQL API** semantics documented in [chapter 11](../11_rsnowflake_sql_api/index.qmd) | You need **driver-level** stage/file workflows from R that assume ODBC |
+| You need **SQL API** semantics documented in [chapter 11](../11_skilift_sql_api/index.qmd) | You need **driver-level** stage/file workflows from R that assume ODBC |
 | **WebR** or minimal client footprint matters | You have years of **validated ODBC** runbooks in production |
 
-Many teams use **RSnowflake for new notebooks and dplyr**, and keep **ODBC** for Shiny on Connect, older projects, or platforms where the driver is pre-installed (e.g. some Posit Workbench images).
+Many teams use **skiLift for new notebooks and dplyr**, and keep **ODBC** for Shiny on Connect, older projects, or platforms where the driver is pre-installed (e.g. some Posit Workbench images).
 
 ### Workspace: why SQL API won, and what CRE changes
 
-Historically in **Snowflake Workspace**, the **`odbc` package plus Snowflake ODBC driver** was a poor fit: installing and configuring unixODBC and the driver at notebook runtime was slow, brittle, and hard to secure compared with HTTPS. That is a major reason **RSnowflake** (SQL API) exists for in-notebook R. **ADBC** did not share ODBC's deployment shape — it installs as an R/Go driver package (bootstrap or CRE) and is Snowflake's **preferred Arrow-native** path for large bulk I/O alongside the SQL API.
+Historically in **Snowflake Workspace**, the **`odbc` package plus Snowflake ODBC driver** was a poor fit: installing and configuring unixODBC and the driver at notebook runtime was slow, brittle, and hard to secure compared with HTTPS. That is a major reason **skiLift** (SQL API) exists for in-notebook R. **ADBC** did not share ODBC's deployment shape — it installs as an R/Go driver package (bootstrap or CRE) and is Snowflake's **preferred Arrow-native** path for large bulk I/O alongside the SQL API.
 
 | Path | Workspace without CRE | Workspace with CRE |
 |------|----------------------|-------------------|
-| **RSnowflake** (SQL API) | Bootstrap or tarball | Pre-baked in image — skip bootstrap |
+| **skiLift** (SQL API) | Bootstrap or tarball | Pre-baked in image — skip bootstrap |
 | **ADBC** | Bootstrap (`languages.r.addons.adbc`) + EAI for Go modules | Pre-baked — recommended for bulk |
 | **`odbc` + ODBC driver** | Impractical via bootstrap | **Possible** if platform team installs driver + DSN in the **CRE image** — not via `setup_notebook()` |
 
-See [RSnowflake in Workspace — bootstrap](../14_rsnowflake_workspace/index.qmd#sec-order).
+See [skiLift in Workspace — bootstrap](../14_skilift_workspace/index.qmd#sec-order).
 
 ---
 
-### snowflakeR in RStudio projects
+### skiPatrol in RStudio projects
 
 ```
 my-ml-project/
@@ -160,10 +160,10 @@ my-ml-project/
 |--------|---------------|------------------|
 | Location | Your laptop | Snowflake account |
 | Auth | `connections.toml` / SSO | Inherited Snowflake session |
-| Packages | Install RSnowflake + snowflakeR | Same — install in Workbench session |
+| Packages | Install skiLift + skiPatrol | Same — install in Workbench session |
 | Best for | Day-to-day dev | Teams requiring in-account IDE |
 
-snowflakeR and RSnowflake work the same way: install R packages in the Workbench session, configure Python for snowflakeR, connect with standard APIs.
+skiPatrol and skiLift work the same way: install R packages in the Workbench session, configure Python for skiPatrol, connect with standard APIs.
 
 ::: {.callout-note}
 Deploying and licensing Posit Native App is a separate product process — this guide only covers R package usage once Workbench is available.
@@ -180,7 +180,7 @@ inside Snowflake but do not use Posit Workbench Native App.
 - **Cons:** you operate Docker, compute pool, ingress, and scaling
 
 **Full walkthrough:** [RStudio Server on SPCS](../04b_rstudio_spcs/index.qmd) — deploy kit in
-[snowflakeR/inst/rstudio-spcs](https://github.com/Snowflake-Labs/snowflakeR/tree/main/inst/rstudio-spcs),
+[skiPatrol/inst/rstudio-spcs](https://github.com/posit-dev/skiPatrol/tree/main/inst/rstudio-spcs),
 vignettes `rstudio-spcs` and `spcs-custom-services`.
 
 Posit **Workbench Native App** (above) is the managed Marketplace alternative.
@@ -210,7 +210,7 @@ VS Code R extension settings (example):
 {
   "r.rterm.option": ["--no-save", "--no-restore"],
   "r.lsp.enabled": true,
-  "python.defaultInterpreterPath": "${env:HOME}/.virtualenvs/r-snowflakeR/bin/python",
+  "python.defaultInterpreterPath": "${env:HOME}/.virtualenvs/r-skiPatrol/bin/python",
   "[r]": {
     "editor.formatOnSave": false
   }
@@ -225,9 +225,9 @@ Install the [**Snowflake Extension for VS Code**](https://docs.snowflake.com/en/
 
 - Account explorer (databases, schemas, tables)
 - SQL worksheets against Snowflake
-- Complements RSnowflake in R scripts — browse in sidebar, analyze in R
+- Complements skiLift in R scripts — browse in sidebar, analyze in R
 
-Workflow: Snowflake extension for exploration and ad hoc SQL; RSnowflake/dbplyr in `.R` files for reproducible pipelines; snowflakeR for ML APIs.
+Workflow: Snowflake extension for exploration and ad hoc SQL; skiLift/dbplyr in `.R` files for reproducible pipelines; skiPatrol for ML APIs.
 
 ### Local Jupyter with R (optional)
 
@@ -265,6 +265,6 @@ Feature views, registry models, and tables written from R are visible to R and P
 
 [Workspaces overview](../05_workspaces_overview/index.qmd) — Snowflake Notebooks.
 
-[SQL API](../11_rsnowflake_sql_api/index.qmd) → [RSnowflake: Connect](../12_rsnowflake_connect/index.qmd).
+[SQL API](../11_skilift_sql_api/index.qmd) → [skiLift: Connect](../12_skilift_connect/index.qmd).
 
-[MLOps on Snowflake](../15_mlops_on_snowflake/index.qmd) → [snowflakeR: Connect](../16_snowflaker_connect/index.qmd).
+[MLOps on Snowflake](../15_mlops_on_snowflake/index.qmd) → [skiPatrol: Connect](../16_skipatrol_connect/index.qmd).

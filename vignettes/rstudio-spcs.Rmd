@@ -15,12 +15,12 @@ knitr::opts_chunk$set(
 )
 ```
 
-Deploy **RStudio Server** as a custom **SPCS service** with **snowflakeR** and
-**RSnowflake** pre-installed. This vignette is the **technical reference** for
+Deploy **RStudio Server** as a custom **SPCS service** with **skiPatrol** and
+**skiLift** pre-installed. This vignette is the **technical reference** for
 the deploy kit shipped in this package:
 
 ```r
-kit <- system.file("rstudio-spcs", package = "snowflakeR")
+kit <- system.file("rstudio-spcs", package = "skiPatrol")
 list.files(kit)
 ```
 
@@ -32,8 +32,8 @@ same flow at a higher level.
 ```
 Browser ──HTTPS ingress──► SPCS service (RStudio :8787)
                               ├── Native R session
-                              ├── RSnowflake (SQL API / DBI)
-                              ├── snowflakeR + reticulate
+                              ├── skiLift (SQL API / DBI)
+                              ├── skiPatrol + reticulate
                               ├── Miniconda snowflake_ml (Snowpark Python)
                               └── /snowflake/session/token + SNOWFLAKE_HOST
 ```
@@ -53,13 +53,13 @@ R is the primary runtime.
 | Deploy service | `deploy_service.sh` + `service-spec.template.yaml` |
 | Validate | `smoke_test.R`, `smoke_test.py` |
 
-All paths are under `inst/rstudio-spcs/` in the snowflakeR repository.
+All paths are under `inst/rstudio-spcs/` in the skiPatrol repository.
 
-## RSnowflake in RStudio
+## skiLift in RStudio
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 
 con <- dbConnect(Snowflake())
 dbGetQuery(con, "SELECT CURRENT_USER(), CURRENT_WAREHOUSE()")
@@ -67,10 +67,10 @@ dbGetQuery(con, "SELECT CURRENT_USER(), CURRENT_WAREHOUSE()")
 
 Set `SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`, `SNOWFLAKE_SCHEMA`, and
 `SNOWFLAKE_ROLE` in the service spec. See
-**`vignette("spcs-custom-services", package = "RSnowflake")`** for REST API
+**`vignette("spcs-custom-services", package = "skiLift")`** for REST API
 limits (`USE WAREHOUSE`, `GET`/`PUT`).
 
-## snowflakeR: `sfr_connect_spcs()`
+## skiPatrol: `sfr_connect_spcs()`
 
 **`sfr_connect()`** auto-detects **Workspace Notebook** sessions only. Custom
 SPCS services need explicit host + OAuth token for Snowpark Python:
@@ -84,7 +84,7 @@ The helper:
 
 1. Points **reticulate** at Miniconda Python (`RETICULATE_PYTHON`).
 2. Sets `LD_LIBRARY_PATH` for Conda OpenSSL (avoids `OPENSSL_3.3.0` mismatch).
-3. Calls `snowflakeR`'s Python bridge with `authenticator = "oauth"`.
+3. Calls `skiPatrol`'s Python bridge with `authenticator = "oauth"`.
 
 ### reticulate notes
 
@@ -120,8 +120,8 @@ python3 ~/smoke_test.py
 ## Image build: tarballs
 
 Compiling R packages inside Image Builder is slow. The kit's
-`prepare_build_ctx.sh` builds a **snowflakeR** tarball locally and copies it
-into the flat build context. **RSnowflake** is included when available;
+`prepare_build_ctx.sh` builds a **skiPatrol** tarball locally and copies it
+into the flat build context. **skiLift** is included when available;
 otherwise `install_packages.R` installs from GitHub (requires build EAI).
 
 For production, pin tarball URLs or commit `.tar.gz` files under `pkg/` in the
@@ -158,6 +158,6 @@ volumes:
 
 ## Related reading
 
-- **`vignette("spcs-custom-services", package = "RSnowflake")`** — DBI auth and REST API constraints
+- **`vignette("spcs-custom-services", package = "skiLift")`** — DBI auth and REST API constraints
 - **`vignette("workspace-notebooks")`** — `%%R` / bootstrap path
-- Kit README: `system.file("rstudio-spcs/README.md", package = "snowflakeR")`
+- Kit README: `system.file("rstudio-spcs/README.md", package = "skiPatrol")`

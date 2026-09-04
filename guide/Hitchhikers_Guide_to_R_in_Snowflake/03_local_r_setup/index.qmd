@@ -5,23 +5,23 @@ subtitle: "Install packages, Python, and authentication outside Workspace"
 
 ## Overview
 
-**RSnowflake** and **snowflakeR** are ordinary R packages. You can use them from **RStudio**, **Posit Workbench / Positron**, **VS Code**, a terminal `R` session, or CI — not only from Snowflake Workspace Notebooks.
+**skiLift** and **skiPatrol** are ordinary R packages. You can use them from **RStudio**, **Posit Workbench / Positron**, **VS Code**, a terminal `R` session, or CI — not only from Snowflake Workspace Notebooks.
 
-This chapter covers what you install once on your machine and how you authenticate. The next chapter covers **IDE-specific** workflows (Connections Pane, VS Code extensions, RSnowflake vs ODBC) — not duplicate install steps.
+This chapter covers what you install once on your machine and how you authenticate. The next chapter covers **IDE-specific** workflows (Connections Pane, VS Code extensions, skiLift vs ODBC) — not duplicate install steps.
 
 ::: {.callout-note}
 ## How chapters 3 and 4 divide the work
 
 | Chapter | Focus |
 |---------|--------|
-| **This chapter** | Packages, Python/reticulate for snowflakeR, `connections.toml`, auth — **same on every IDE** |
-| **[RStudio, Posit & VS Code](../04_rstudio_posit_vscode/index.qmd)** | Per-IDE settings, Snowflake VS Code extension, **RSnowflake vs `odbc`**, Posit Native App — assumes install/auth from here |
+| **This chapter** | Packages, Python/reticulate for skiPatrol, `connections.toml`, auth — **same on every IDE** |
+| **[RStudio, Posit & VS Code](../04_rstudio_posit_vscode/index.qmd)** | Per-IDE settings, Snowflake VS Code extension, **skiLift vs `odbc`**, Posit Native App — assumes install/auth from here |
 :::
 
 ## Learning Objectives
 
-- Install RSnowflake and snowflakeR locally
-- Configure Python for snowflakeR using **conda, pip/venv, or automatic install**
+- Install skiLift and skiPatrol locally
+- Configure Python for skiPatrol using **conda, pip/venv, or automatic install**
 - Connect with `connections.toml`, key-pair, PAT, or browser SSO
 - Choose the right authenticator for interactive vs automated workloads
 - Verify the stack with `sfr_check_environment()`
@@ -32,19 +32,19 @@ This chapter covers what you install once on your machine and how you authentica
 
 ```r
 # install.packages("pak")
-pak::pak(c("Snowflake-Labs/RSnowflake", "Snowflake-Labs/snowflakeR"))
+pak::pak(c("posit-dev/skiLift", "posit-dev/skiPatrol"))
 ```
 
 | Package | Local role |
 |---------|------------|
-| **RSnowflake** | DBI, dbplyr, Connections Pane — **no Python ML stack required** |
-| **snowflakeR** | Feature Store, Registry, etc. — requires Python + `snowflake-ml-python` |
+| **skiLift** | DBI, dbplyr, Connections Pane — **no Python ML stack required** |
+| **skiPatrol** | Feature Store, Registry, etc. — requires Python + `snowflake-ml-python` |
 
-You can use **RSnowflake alone** for SQL/dplyr workflows. Install **snowflakeR** when you need the ML platform APIs.
+You can use **skiLift alone** for SQL/dplyr workflows. Install **skiPatrol** when you need the ML platform APIs.
 
-## Python environment (snowflakeR only) {#sec-python}
+## Python environment (skiPatrol only) {#sec-python}
 
-snowflakeR calls the Snowflake ML Python SDK via **reticulate**. Pick one approach below.
+skiPatrol calls the Snowflake ML Python SDK via **reticulate**. Pick one approach below.
 
 ::: {.callout-note}
 Many enterprises **prefer pip/venv** over conda for policy or support reasons. All options below are valid — choose what your org standardizes on.
@@ -52,10 +52,10 @@ Many enterprises **prefer pip/venv** over conda for policy or support reasons. A
 
 ### Option A — Automatic (conda-based) {#sec-python-auto}
 
-Creates a dedicated conda env `r-snowflakeR` (simplest first run):
+Creates a dedicated conda env `r-skiPatrol` (simplest first run):
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 sfr_install_python_deps()   # conda env + pip packages inside it
 sfr_check_environment()
 ```
@@ -63,33 +63,33 @@ sfr_check_environment()
 ### Option B — pip + virtualenv (no conda) {#sec-python-venv}
 
 ```bash
-python3.11 -m venv ~/.virtualenvs/r-snowflakeR
-source ~/.virtualenvs/r-snowflakeR/bin/activate   # Windows: Scripts\activate
+python3.11 -m venv ~/.virtualenvs/r-skiPatrol
+source ~/.virtualenvs/r-skiPatrol/bin/activate   # Windows: Scripts\activate
 pip install --upgrade pip
 pip install snowflake-ml-python snowflake-snowpark-python
 ```
 
-Point R at that interpreter **before** the first snowflakeR call:
+Point R at that interpreter **before** the first skiPatrol call:
 
 ```r
 # In ~/.Renviron (recommended):
-# RETICULATE_PYTHON=~/.virtualenvs/r-snowflakeR/bin/python
+# RETICULATE_PYTHON=~/.virtualenvs/r-skiPatrol/bin/python
 
-reticulate::use_virtualenv("~/.virtualenvs/r-snowflakeR", required = TRUE)
-library(snowflakeR)
+reticulate::use_virtualenv("~/.virtualenvs/r-skiPatrol", required = TRUE)
+library(skiPatrol)
 sfr_check_environment()
 ```
 
 ### Option C — Manual conda {#sec-python-conda}
 
 ```bash
-conda create -n r-snowflakeR python=3.11 -y
-conda activate r-snowflakeR
+conda create -n r-skiPatrol python=3.11 -y
+conda activate r-skiPatrol
 pip install snowflake-ml-python snowflake-snowpark-python
 ```
 
 ```r
-reticulate::use_condaenv("r-snowflakeR", required = TRUE)
+reticulate::use_condaenv("r-skiPatrol", required = TRUE)
 ```
 
 ### Option D — System / managed Python {#sec-python-system}
@@ -110,20 +110,20 @@ Sys.setenv(RETICULATE_PYTHON = "/usr/local/bin/python3.11")
 For teams using [uv](https://github.com/astral-sh/uv) or lockfiles:
 
 ```bash
-uv venv ~/.virtualenvs/r-snowflakeR --python 3.11
-source ~/.virtualenvs/r-snowflakeR/bin/activate
+uv venv ~/.virtualenvs/r-skiPatrol --python 3.11
+source ~/.virtualenvs/r-skiPatrol/bin/activate
 uv pip install snowflake-ml-python snowflake-snowpark-python
 ```
 
 Same `RETICULATE_PYTHON` / `use_virtualenv()` wiring as Option B.
 
 ::: {.callout-warning}
-`reticulate` **locks Python on first use** in an R session. Configure the interpreter before calling `sfr_connect()` or other snowflakeR functions.
+`reticulate` **locks Python on first use** in an R session. Configure the interpreter before calling `sfr_connect()` or other skiPatrol functions.
 :::
 
 ## Authentication {#sec-auth}
 
-Snowflake supports several authentication mechanisms. RSnowflake and snowflakeR accept the same options as the Python connector and CLI.
+Snowflake supports several authentication mechanisms. skiLift and skiPatrol accept the same options as the Python connector and CLI.
 
 ### Authentication options {#sec-auth-options}
 
@@ -152,8 +152,8 @@ It stores **named connection profiles** — account, user, authenticator, defaul
 |------|--------|
 | **Snowflake CLI** (`snow`) | `snow connection test --connection default` |
 | **Python connector** | `snowflake.connector.connect(connection_name="default")` |
-| **RSnowflake** | `dbConnect(Snowflake(), name = "default")` |
-| **snowflakeR** | `sfr_connect()` or `sfr_connect(name = "production")` |
+| **skiLift** | `dbConnect(Snowflake(), name = "default")` |
+| **skiPatrol** | `sfr_connect()` or `sfr_connect(name = "production")` |
 
 This lets R, Python scripts, and CLI share the same profiles without duplicating secrets across config formats.
 
@@ -180,18 +180,18 @@ schema = "ML"
 role = "ML_ROLE"
 ```
 
-**RSnowflake:**
+**skiLift:**
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 con <- dbConnect(Snowflake(), name = "default")
 ```
 
-**snowflakeR:**
+**skiPatrol:**
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()                      # [default]
 conn <- sfr_connect(name = "production") # named profile
 ```
@@ -219,7 +219,7 @@ Prefer environment variables in R (do not commit tokens):
 
 ```r
 conn <- sfr_connect(token = Sys.getenv("SNOWFLAKE_PAT"))
-# RSnowflake: dbConnect(Snowflake(), token = Sys.getenv("SNOWFLAKE_PAT"))
+# skiLift: dbConnect(Snowflake(), token = Sys.getenv("SNOWFLAKE_PAT"))
 ```
 
 Rotate PATs on the same schedule as passwords. Do not commit tokens to git.
@@ -233,11 +233,11 @@ Set `authenticator = "externalbrowser"` in TOML or pass it to `sfr_connect()` fo
 | Aspect | Local IDE | Workspace Notebook |
 |--------|-----------|-------------------|
 | Auth | TOML, key-pair, browser | Session token (auto) |
-| snowflakeR Python | You configure reticulate (conda or pip) | Bootstrap / CRE |
-| RSnowflake | Full DBI | Full DBI + gateway host detection |
+| skiPatrol Python | You configure reticulate (conda or pip) | Bootstrap / CRE |
+| skiLift | Full DBI | Full DBI + gateway host detection |
 | ML platform | Same R APIs | Same R APIs |
 
-Parts on RSnowflake and snowflakeR apply **unchanged** once connected — only bootstrap differs.
+Parts on skiLift and skiPatrol apply **unchanged** once connected — only bootstrap differs.
 
 ## Next steps {#sec-next}
 

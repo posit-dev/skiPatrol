@@ -14,16 +14,16 @@
 #
 # Column names are preserved as-is from Snowflake by default (UPPER case
 # for unquoted identifiers).  This matches the Python connector, Snowpark,
-# and RSnowflake DBI behaviour.  Set `lowercase = TRUE` to get the legacy
-# behaviour, or set `options(snowflakeR.lowercase_columns = TRUE)` globally.
+# and skiLift DBI behaviour.  Set `lowercase = TRUE` to get the legacy
+# behaviour, or set `options(skiPatrol.lowercase_columns = TRUE)` globally.
 #
 # @param result  A list with `$columns`, `$data`, `$nrows` (from the Python bridge).
 # @param lowercase Logical. Lowercase column names? Default respects the
-#   global option `snowflakeR.lowercase_columns` (which defaults to `FALSE`).
+#   global option `skiPatrol.lowercase_columns` (which defaults to `FALSE`).
 # @returns A data.frame.
 # @noRd
 .bridge_dict_to_df <- function(result,
-                               lowercase = getOption("snowflakeR.lowercase_columns", FALSE)) {
+                               lowercase = getOption("skiPatrol.lowercase_columns", FALSE)) {
   cols <- result$columns
 
   if (result$nrows == 0L) {
@@ -305,7 +305,7 @@ sfr_fqn <- function(conn, table_name, database = NULL, schema = NULL) {
 }
 
 
-#' Check the snowflakeR environment
+#' Check the skiPatrol environment
 #'
 #' Runs diagnostics on R, Python, and Snowflake ML dependencies.
 #'

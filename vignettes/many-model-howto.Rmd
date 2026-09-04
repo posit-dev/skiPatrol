@@ -21,7 +21,7 @@ Snowpark Container Services (SPCS), persist them to a stage, register them in
 Model Registry as a single model version, and run server-side batch inference
 via `run_batch`.
 
-The accompanying **reference notebooks** ship in snowflakeR:
+The accompanying **reference notebooks** ship in skiPatrol:
 `inst/notebooks/workspace_parallel_spcs_setup.ipynb` and
 `workspace_parallel_spcs_demo.ipynb`. The code snippets below follow that
 pattern. Lines marked `## ADAPT` are the parts you replace for your own data
@@ -79,7 +79,7 @@ spent where it matters most.
 ### Local R environment
 
 ```r
-install.packages(c("snowflakeR", "foreach", "iterators", "forecast",
+install.packages(c("skiPatrol", "foreach", "iterators", "forecast",
                     "ggplot2", "yaml"))
 ```
 
@@ -105,7 +105,7 @@ role      = "MY_ROLE"
 ### The YAML config file
 
 All environment-specific values live in a single YAML file. The reference
-implementation uses `snowflaker_parallel_spcs_benchmark_ak_small.yaml`:
+implementation uses `skipatrol_parallel_spcs_benchmark_ak_small.yaml`:
 
 ```yaml
 ## ADAPT: replace every value below with your account's objects
@@ -137,10 +137,10 @@ parallel_lab:
 ### Loading config and connecting
 
 ```r
-source("snowflakeR/inst/notebooks/parallel_spcs_workflow.R")
+source("skiPatrol/inst/notebooks/parallel_spcs_workflow.R")
 
 cfg  <- parallel_lab_load_config("path/to/my_config.yaml")
-conn <- snowflakeR::sfr_connect(
+conn <- skiPatrol::sfr_connect(
   name = "my_demo_jwt",
   private_key_file = "~/.snowflake/keys/rsa_key.p8"
 )
@@ -475,11 +475,11 @@ to avoid wrapping a stale, expired Python session. If you see
 `JWT token is invalid` after a timeout, explicitly reconnect:
 
 ```r
-conn <- snowflakeR::sfr_connect(
+conn <- skiPatrol::sfr_connect(
   name = "my_demo_jwt",
   private_key_file = "~/.snowflake/keys/rsa_key.p8"
 )
-dbi_con <- snowflakeR::sfr_dbi_connection(conn)
+dbi_con <- skiPatrol::sfr_dbi_connection(conn)
 ```
 
 ### RStudio Connections Pane

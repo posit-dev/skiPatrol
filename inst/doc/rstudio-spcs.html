@@ -341,11 +341,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 <p>Deploy <strong>RStudio Server</strong> as a custom <strong>SPCS
-service</strong> with <strong>snowflakeR</strong> and
-<strong>RSnowflake</strong> pre-installed. This vignette is the
+service</strong> with <strong>skiPatrol</strong> and
+<strong>skiLift</strong> pre-installed. This vignette is the
 <strong>technical reference</strong> for the deploy kit shipped in this
 package:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>kit <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;rstudio-spcs&quot;</span>, <span class="at">package =</span> <span class="st">&quot;snowflakeR&quot;</span>)</span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>kit <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;rstudio-spcs&quot;</span>, <span class="at">package =</span> <span class="st">&quot;skiPatrol&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">list.files</span>(kit)</span></code></pre></div>
 <p>The Hitchhiker’s Guide chapter <strong>RStudio Server on
 SPCS</strong> walks through the same flow at a higher level.</p>
@@ -353,8 +353,8 @@ SPCS</strong> walks through the same flow at a higher level.</p>
 <h2>Architecture</h2>
 <pre><code>Browser ──HTTPS ingress──► SPCS service (RStudio :8787)
                               ├── Native R session
-                              ├── RSnowflake (SQL API / DBI)
-                              ├── snowflakeR + reticulate
+                              ├── skiLift (SQL API / DBI)
+                              ├── skiPatrol + reticulate
                               ├── Miniconda snowflake_ml (Snowpark Python)
                               └── /snowflake/session/token + SNOWFLAKE_HOST</code></pre>
 <p>Unlike Workspace Notebooks, there is <strong>no Python
@@ -408,25 +408,25 @@ runtime.</p>
 </tr>
 </tbody>
 </table>
-<p>All paths are under <code>inst/rstudio-spcs/</code> in the snowflakeR
+<p>All paths are under <code>inst/rstudio-spcs/</code> in the skiPatrol
 repository.</p>
 </div>
-<div id="rsnowflake-in-rstudio" class="section level2">
-<h2>RSnowflake in RStudio</h2>
+<div id="skilift-in-rstudio" class="section level2">
+<h2>skiLift in RStudio</h2>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(DBI)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(RSnowflake)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(skiLift)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(<span class="fu">Snowflake</span>())</span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">dbGetQuery</span>(con, <span class="st">&quot;SELECT CURRENT_USER(), CURRENT_WAREHOUSE()&quot;</span>)</span></code></pre></div>
 <p>Set <code>SNOWFLAKE_WAREHOUSE</code>,
 <code>SNOWFLAKE_DATABASE</code>, <code>SNOWFLAKE_SCHEMA</code>, and
 <code>SNOWFLAKE_ROLE</code> in the service spec. See
-<strong><code>vignette(&quot;spcs-custom-services&quot;, package = &quot;RSnowflake&quot;)</code></strong>
+<strong><code>vignette(&quot;spcs-custom-services&quot;, package = &quot;skiLift&quot;)</code></strong>
 for REST API limits (<code>USE WAREHOUSE</code>,
 <code>GET</code>/<code>PUT</code>).</p>
 </div>
-<div id="snowflaker-sfr_connect_spcs" class="section level2">
-<h2>snowflakeR: <code>sfr_connect_spcs()</code></h2>
+<div id="skipatrol-sfr_connect_spcs" class="section level2">
+<h2>skiPatrol: <code>sfr_connect_spcs()</code></h2>
 <p><strong><code>sfr_connect()</code></strong> auto-detects
 <strong>Workspace Notebook</strong> sessions only. Custom SPCS services
 need explicit host + OAuth token for Snowpark Python:</p>
@@ -438,7 +438,7 @@ need explicit host + OAuth token for Snowpark Python:</p>
 (<code>RETICULATE_PYTHON</code>).</li>
 <li>Sets <code>LD_LIBRARY_PATH</code> for Conda OpenSSL (avoids
 <code>OPENSSL_3.3.0</code> mismatch).</li>
-<li>Calls <code>snowflakeR</code>’s Python bridge with
+<li>Calls <code>skiPatrol</code>’s Python bridge with
 <code>authenticator = &quot;oauth&quot;</code>.</li>
 </ol>
 <div id="reticulate-notes" class="section level3">
@@ -474,9 +474,9 @@ the result.</p>
 <div id="image-build-tarballs" class="section level2">
 <h2>Image build: tarballs</h2>
 <p>Compiling R packages inside Image Builder is slow. The kit’s
-<code>prepare_build_ctx.sh</code> builds a <strong>snowflakeR</strong>
+<code>prepare_build_ctx.sh</code> builds a <strong>skiPatrol</strong>
 tarball locally and copies it into the flat build context.
-<strong>RSnowflake</strong> is included when available; otherwise
+<strong>skiLift</strong> is included when available; otherwise
 <code>install_packages.R</code> installs from GitHub (requires build
 EAI).</p>
 <p>For production, pin tarball URLs or commit <code>.tar.gz</code> files
@@ -527,12 +527,12 @@ packages:</p>
 <div id="related-reading" class="section level2">
 <h2>Related reading</h2>
 <ul>
-<li><strong><code>vignette(&quot;spcs-custom-services&quot;, package = &quot;RSnowflake&quot;)</code></strong>
+<li><strong><code>vignette(&quot;spcs-custom-services&quot;, package = &quot;skiLift&quot;)</code></strong>
 — DBI auth and REST API constraints</li>
 <li><strong><code>vignette(&quot;workspace-notebooks&quot;)</code></strong> —
 <code>%%R</code> / bootstrap path</li>
 <li>Kit README:
-<code>system.file(&quot;rstudio-spcs/README.md&quot;, package = &quot;snowflakeR&quot;)</code></li>
+<code>system.file(&quot;rstudio-spcs/README.md&quot;, package = &quot;skiPatrol&quot;)</code></li>
 </ul>
 </div>
 

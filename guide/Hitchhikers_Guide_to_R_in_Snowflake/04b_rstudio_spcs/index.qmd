@@ -8,10 +8,10 @@ subtitle: "Native R IDE in a custom container service"
 **RStudio Server on SPCS** runs the open-source RStudio IDE as a **long-running
 Snowpark Container Services (SPCS) service**. You get a full native R session —
 Connections pane, debugger, Quarto, plots — **inside the Snowflake security
-perimeter**, with **RSnowflake** and **snowflakeR** baked into the image.
+perimeter**, with **skiLift** and **skiPatrol** baked into the image.
 
 This chapter is the **walkthrough**. Deep reference material lives in package
-vignettes and the deploy kit under `snowflakeR/inst/rstudio-spcs/`.
+vignettes and the deploy kit under `skiPatrol/inst/rstudio-spcs/`.
 
 ::: {.callout-note}
 **Prerequisites:** SPCS compute pool, image repository, role with `CREATE SERVICE`,
@@ -22,7 +22,7 @@ and (for in-account builds) Snowflake CLI ≥ 3.16 with Image Builder preview.
 
 - Decide when RStudio-on-SPCS fits vs Workspace, Posit Native App, or Remote Dev
 - Provision stages, build an image, and deploy a service end-to-end
-- Connect with RSnowflake and snowflakeR in a native R session
+- Connect with skiLift and skiPatrol in a native R session
 - Run smoke tests and recover the ingress URL after redeploy
 
 ---
@@ -59,8 +59,8 @@ flowchart TB
 | Component | Role |
 |-----------|------|
 | **RStudio Server** | Native R IDE on port 8787 |
-| **RSnowflake** | `dbConnect(Snowflake())` via SQL REST API + SPCS OAuth |
-| **snowflakeR** | ML APIs via reticulate → Snowpark Python |
+| **skiLift** | `dbConnect(Snowflake())` via SQL REST API + SPCS OAuth |
+| **skiPatrol** | ML APIs via reticulate → Snowpark Python |
 | **Miniconda `snowflake_ml`** | Shared Python env for reticulate (not Ubuntu system Python) |
 | **Stage volumes** | Persist workspace files and user R libraries |
 
@@ -68,13 +68,13 @@ flowchart TB
 
 ## Deploy kit {#sec-kit}
 
-The reference implementation ships with **snowflakeR**:
+The reference implementation ships with **skiPatrol**:
 
 ```r
-system.file("rstudio-spcs", package = "snowflakeR")
+system.file("rstudio-spcs", package = "skiPatrol")
 ```
 
-Public source: [snowflakeR/inst/rstudio-spcs](https://github.com/Snowflake-Labs/snowflakeR/tree/main/inst/rstudio-spcs).
+Public source: [skiPatrol/inst/rstudio-spcs](https://github.com/posit-dev/skiPatrol/tree/main/inst/rstudio-spcs).
 
 | File | Purpose |
 |------|---------|
@@ -90,8 +90,8 @@ Public source: [snowflakeR/inst/rstudio-spcs](https://github.com/Snowflake-Labs/
 
 **Vignettes (detail):**
 
-- [snowflakeR: rstudio-spcs](../../vignettes/snowflakeR/rstudio-spcs.html) — kit, reticulate, `sfr_connect_spcs()`
-- [RSnowflake: spcs-custom-services](../../vignettes/RSnowflake/spcs-custom-services.html) — DBI auth, REST API limits
+- [skiPatrol: rstudio-spcs](../../vignettes/skiPatrol/rstudio-spcs.html) — kit, reticulate, `sfr_connect_spcs()`
+- [skiLift: spcs-custom-services](../../vignettes/skiLift/spcs-custom-services.html) — DBI auth, REST API limits
 
 ---
 
@@ -139,9 +139,9 @@ source config.env
 PUSH=1 ./build_local.sh    # always linux/amd64 for SPCS
 ```
 
-The build context uploads **pre-built snowflakeR/RSnowflake tarballs** when
+The build context uploads **pre-built skiPatrol/skiLift tarballs** when
 possible — compiling from source inside the builder is slow. See
-[R package tarball workflow](https://github.com/Snowflake-Labs/snowflakeR#installation).
+[R package tarball workflow](https://github.com/posit-dev/skiPatrol#installation).
 
 ### 4. Store the RStudio password (Snowflake secret)
 
@@ -161,7 +161,7 @@ source config.env
 ```
 
 `service-spec.template.yaml` sets `SNOWFLAKE_WAREHOUSE` and other context env vars
-(required because RSnowflake cannot run `USE WAREHOUSE` on the SQL REST API).
+(required because skiLift cannot run `USE WAREHOUSE` on the SQL REST API).
 The RStudio password is **not** in the rendered spec — only the secret object name.
 
 ### 6. Open RStudio and smoke test
@@ -184,11 +184,11 @@ Re-run `SHOW ENDPOINTS` after every redeploy.
 
 ---
 
-## Using RSnowflake {#sec-rsnowflake}
+## Using skiLift {#sec-skilift}
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 
 con <- dbConnect(Snowflake())
 dbGetQuery(con, "SELECT CURRENT_USER(), CURRENT_WAREHOUSE()")
@@ -196,11 +196,11 @@ dbGetQuery(con, "SELECT CURRENT_USER(), CURRENT_WAREHOUSE()")
 
 Warehouse, database, schema, and role come from **service env vars** set at
 deploy time. Full detail:
-[vignette: spcs-custom-services](../../vignettes/RSnowflake/spcs-custom-services.html).
+[vignette: spcs-custom-services](../../vignettes/skiLift/spcs-custom-services.html).
 
 ---
 
-## Using snowflakeR {#sec-snowflaker}
+## Using skiPatrol {#sec-skipatrol}
 
 **`sfr_connect()`** auto-detects **Workspace Notebooks** only. In this custom
 SPCS service, use **`sfr_connect_spcs()`** from the kit:
@@ -212,7 +212,7 @@ conn <- sfr_connect_spcs()
 
 The image configures **reticulate** with Miniconda Python at
 `/opt/conda/envs/snowflake_ml/bin/python`. See the
-[rstudio-spcs vignette](../../vignettes/snowflakeR/rstudio-spcs.html) for
+[rstudio-spcs vignette](../../vignettes/skiPatrol/rstudio-spcs.html) for
 `collect()` vs `to_pandas()` and OpenSSL notes.
 
 ---
@@ -227,7 +227,7 @@ The image configures **reticulate** with Miniconda Python at
 | **Security** | Use ingress OAuth; set a strong `PASSWORD`; do not use `DISABLE_AUTH` |
 | **Cost** | Dedicated service + pool — size `MIN_NODES` / `MAX_NODES` for pilots |
 
-Stage file I/O: mount stages as volumes — RSnowflake does not support SQL
+Stage file I/O: mount stages as volumes — skiLift does not support SQL
 `GET`/`PUT`. Same pattern as [Parallel doSnowflake](../22_parallel_dosnowflake/index.qmd) workers.
 
 ---
@@ -236,5 +236,5 @@ Stage file I/O: mount stages as volumes — RSnowflake does not support SQL
 
 - [RStudio, Posit & VS Code](../04_rstudio_posit_vscode/index.qmd) — desktop IDE and Posit Native App
 - [CRE & ML Jobs](../09_custom_runtime_and_ml_jobs/index.qmd) — SPCS images for Workspace (different use case)
-- [RSnowflake in Workspace](../14_rsnowflake_workspace/index.qmd) — `%%R` bootstrap path
+- [skiLift in Workspace](../14_skilift_workspace/index.qmd) — `%%R` bootstrap path
 - [Parallel doSnowflake](../22_parallel_dosnowflake/index.qmd) — batch R workers on SPCS

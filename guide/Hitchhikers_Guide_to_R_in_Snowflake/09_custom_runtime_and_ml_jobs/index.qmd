@@ -74,10 +74,10 @@ First `setup_notebook()` in a fresh Workspace session typically:
 1. Resolves **EAI** (network rules for CRAN, conda, GitHub)
 2. Installs or activates **micromamba** (~2 GB disk for R + tidyverse stack)
 3. Installs CRAN/conda packages from YAML
-4. Installs **snowflakeR / RSnowflake tarballs**
+4. Installs **skiPatrol / skiLift tarballs**
 5. Registers **`%%R`** IPython magic via rpy2
 
-Expect **~60 seconds per compute restart** for a typical snowflakeR + RSnowflake YAML configuration. Additional conda/CRAN packages, ADBC, DuckDB, or multilanguage installs increase that time (several minutes for heavy stacks). **Each idle recycle** starts a new container and re-runs bootstrap unless you use a CRE.
+Expect **~60 seconds per compute restart** for a typical skiPatrol + skiLift YAML configuration. Additional conda/CRAN packages, ADBC, DuckDB, or multilanguage installs increase that time (several minutes for heavy stacks). **Each idle recycle** starts a new container and re-runs bootstrap unless you use a CRE.
 
 CRE moves steps 2–4 into the **image build** — runtime only verifies versions and registers magic if needed.
 
@@ -89,7 +89,7 @@ CRE moves steps 2–4 into the **image build** — runtime only verifies version
 
 A **Custom Runtime Image** is a Docker image you build, push to a Snowflake **image repository**, register as a **Custom Runtime Environment**, and attach to Workspace Notebooks (or ML Jobs). It must **extend** the official [`snowbooks`](https://docs.snowflake.com/en/developer-guide/snowflake-ml/container-runtime-ml) ML runtime — you add R and tooling on top; you do **not** replace Snowflake's entrypoint or mandatory Python packages.
 
-CRE answers: *"Why should every session pay 45+ seconds and run bootstrap cells just to get `%%R` and snowflakeR?"* A well-built CRE starts the kernel with R, packages, ADBC, helpers, and `%%R` already wired — including on **container restart**.
+CRE answers: *"Why should every session pay 45+ seconds and run bootstrap cells just to get `%%R` and skiPatrol?"* A well-built CRE starts the kernel with R, packages, ADBC, helpers, and `%%R` already wired — including on **container restart**.
 
 Reference implementation: [snowflake-notebook-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang) (`docker/Dockerfile.multilang-r`, `docker/install_prebaked_r.sh`).
 
@@ -110,7 +110,7 @@ flowchart TB
   subgraph bake [Your CRE layer — image build time]
     MM["micromamba + workspace_env"]
     RPK["R 4.5.2 + tidyverse / dbplyr / DBI"]
-    SF["snowflakeR + RSnowflake tarballs"]
+    SF["skiPatrol + skiLift tarballs"]
     ADBC["ADBC stack"]
     PY["rpy2 + sfnb-multilang"]
     HOOK["IPython startup → %%R"]
@@ -136,7 +136,7 @@ flowchart TB
 |-------|----------|---------|
 | `snowbooks` base | Snowflake image | Kernel, Snowpark, CRE validation |
 | micromamba + `workspace_env` | `~/micromamba`, `~/.workspace_env_prefix` | Same paths as cold bootstrap |
-| snowflakeR / RSnowflake | R library | Tarballs at **build** time |
+| skiPatrol / skiLift | R library | Tarballs at **build** time |
 | ADBC | R + conda | `adbcdrivermanager`, `adbcsnowflake`, `libadbc-driver-snowflake` |
 | rpy2 + sfnb-multilang | snowbooks Python | `setup_notebook`, `enable_r_cells` |
 | IPython startup | `~/.ipython/profile_default/startup/` | **`%%R` on kernel start/restart** |
@@ -246,13 +246,13 @@ The sfnb CRE startup hook prints a banner when the **Python kernel** starts (not
 ```r
 %%R
 cat(R.version.string, "\n")
-packageVersion("snowflakeR")
+packageVersion("skiPatrol")
 ```
 
 ```r
 %%R
 requireNamespace("adbcsnowflake", quietly = TRUE)
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 conn
 ```
@@ -260,11 +260,11 @@ conn
 Expect `Connected via active Workspace Notebook session`.
 
 ::: {.callout-note appearance="minimal"}
-Optional Python cell — EAI checks, YAML context, RSnowflake OAuth only:
+Optional Python cell — EAI checks, YAML context, skiLift OAuth only:
 
 ```python
 from sfnb_setup import setup_notebook
-setup_notebook(config="/opt/sfnb/config/cre_multilang_r.yaml", packages=["snowflakeR", "RSnowflake"])
+setup_notebook(config="/opt/sfnb/config/cre_multilang_r.yaml", packages=["skiPatrol", "skiLift"])
 ```
 :::
 
@@ -299,7 +299,7 @@ sequenceDiagram
   WS->>Hook: sfnb startup hook
   Hook->>R: setup_r_environment
   Hook-->>User: CRE ready for R cells
-  User->>R: library snowflakeR and connect
+  User->>R: library skiPatrol and connect
 ```
 
 ---
@@ -327,7 +327,7 @@ PUSH=1 SNOW_CONNECTION=my_conn ./docker/create_cre.sh configs/my_team.yaml
 | `extras.conda_r` | Extra conda-forge R packages |
 | `extras.cran` | Extra CRAN packages at build time |
 | `extras.pip` | Extra pip packages on the notebook kernel |
-| `tarballs.snowflakeR` / `RSnowflake` | Pin release tarball URLs |
+| `tarballs.skiPatrol` / `skiLift` | Pin release tarball URLs |
 
 `create_cre.sh` renders `docker/generated/cre_extra_install.sh`, runs `build_cre.sh`, validates with `snow custom-image validate`, optionally pushes, and prints `docker/generated/cre_register.sql`.
 
@@ -339,7 +339,7 @@ Production CREs should be **reproducible**: same image tag → same R/Python sta
 |-------|------------|---------|
 | **Image identity** | `cre.tag` + `version_label` in profile; bump on every rebuild | `tag: v1`, `version_label: v1.20260529` |
 | **R base** | `cre.r_version` and conda `r-base=` | `r_version: "4.5.2"` → `r-base=4.5.2` in micromamba |
-| **snowflakeR / RSnowflake** | `tarballs:` URLs to a **specific GitHub release** | `.../releases/download/v0.1.0/snowflakeR_0.1.0.tar.gz` |
+| **skiPatrol / skiLift** | `tarballs:` URLs to a **specific GitHub release** | `.../releases/download/v0.1.0/skiPatrol_0.1.0.tar.gz` |
 | **Conda R packages** | conda-forge specs in `extras.conda_r` or `CONDA_PACKAGES` | `r-reticulate>=1.25`, `r-dplyr=1.1.4`, `r-fable=0.4.0` |
 | **CRAN packages** | Pin in `extras.cran` + build script installs at fixed CRAN snapshot date, or use **remotes** in a generated R block | Prefer conda-forge when a recipe exists |
 | **Python (kernel)** | `extras.pip` with `==` or `>=` | `rpy2==3.5.17`, `scikit-learn>=1.3,<2` |
@@ -357,8 +357,8 @@ cre:
   snowbooks_tag: "2.5.0"
 
 tarballs:
-  snowflakeR: "https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.1.0/snowflakeR_0.1.0.tar.gz"
-  RSnowflake: "https://github.com/Snowflake-Labs/RSnowflake/releases/download/v0.2.0/RSnowflake_0.2.0.tar.gz"
+  skiPatrol: "https://github.com/posit-dev/skiPatrol/releases/download/v0.1.0/skiPatrol_0.1.0.tar.gz"
+  skiLift: "https://github.com/posit-dev/skiLift/releases/download/v0.2.0/skiLift_0.2.0.tar.gz"
 
 extras:
   conda_r:
@@ -410,11 +410,11 @@ CONDA_PACKAGES=(
   'rpy2>=3.5,<4' 'tabulate>=0.9' 'scikit-learn==1.5.2'
 ```
 
-**Pin snowflakeR / RSnowflake tarballs** (required for team reproducibility):
+**Pin skiPatrol / skiLift tarballs** (required for team reproducibility):
 
 ```bash
-export SNOWFLAKER_TARBALL="https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.1.0/snowflakeR_0.1.0.tar.gz"
-export RSNOWFLAKE_TARBALL="https://github.com/Snowflake-Labs/RSnowflake/releases/download/v0.2.0/RSnowflake_0.2.0.tar.gz"
+export SKIPATROL_TARBALL="https://github.com/posit-dev/skiPatrol/releases/download/v0.1.0/skiPatrol_0.1.0.tar.gz"
+export SKILIFT_TARBALL="https://github.com/posit-dev/skiLift/releases/download/v0.2.0/skiLift_0.2.0.tar.gz"
 ```
 
 | Build variable | Default |
@@ -602,4 +602,4 @@ Use the right tier for the workload — see diagram in [tiers](#sec-tiers).
 
 [Beyond R](../10_multilang_beyond_r/index.qmd) — optional other languages in the same CRE toolkit.
 
-[RSnowflake: Connect](../12_rsnowflake_connect/index.qmd) — data access after bootstrap.
+[skiLift: Connect](../12_skilift_connect/index.qmd) — data access after bootstrap.

@@ -1,11 +1,11 @@
 ---
 title: "Appendix B: Configuration Reference"
-subtitle: "snowflaker_*.yaml and tarball installs"
+subtitle: "skipatrol_*.yaml and tarball installs"
 ---
 
 ## Overview
 
-Workspace bootstrap is driven by a **per-notebook YAML** file — typically `snowflaker_config.yaml` or a project-specific name passed to `setup_notebook(config=...)`.
+Workspace bootstrap is driven by a **per-notebook YAML** file — typically `skipatrol_config.yaml` or a project-specific name passed to `setup_notebook(config=...)`.
 
 Full schema: [configuration.md](https://github.com/Snowflake-Labs/snowflake-notebook-multilang/blob/main/docs/configuration.md).
 
@@ -47,8 +47,8 @@ languages:
       - r-forecast
       - r-reticulate>=1.25
     tarballs:
-      snowflakeR: https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.1.0/snowflakeR_0.1.0.tar.gz
-      RSnowflake: https://github.com/Snowflake-Labs/RSnowflake/releases/download/v0.2.0/RSnowflake_0.2.0.tar.gz
+      skiPatrol: https://github.com/posit-dev/skiPatrol/releases/download/v0.1.0/skiPatrol_0.1.0.tar.gz
+      skiLift: https://github.com/posit-dev/skiLift/releases/download/v0.2.0/skiLift_0.2.0.tar.gz
     addons:
       adbc: false   # set true if Go + EAI available
 
@@ -59,21 +59,21 @@ custom_runtime:
 Pass to bootstrap:
 
 ```python
-setup_notebook(config="/absolute/path/to/snowflaker_config.yaml",
-               packages=["snowflakeR", "RSnowflake"])
+setup_notebook(config="/absolute/path/to/skipatrol_config.yaml",
+               packages=["skiPatrol", "skiLift"])
 ```
 
 ---
 
-## Tarballs (required for snowflakeR / RSnowflake in prod) {#sec-tarballs}
+## Tarballs (required for skiPatrol / skiLift in prod) {#sec-tarballs}
 
 ::: {.callout-warning}
-**Avoid compiling snowflakeR or RSnowflake from source in Workspace.** Build tarballs locally (~10 seconds) and reference URLs or committed `.tar.gz` files. If you must compile from source, ensure you are using the latest version of the code and that you have the necessary dependencies installed.
+**Avoid compiling skiPatrol or skiLift from source in Workspace.** Build tarballs locally (~10 seconds) and reference URLs or committed `.tar.gz` files. If you must compile from source, ensure you are using the latest version of the code and that you have the necessary dependencies installed.
 :::
 
 ```bash
-R CMD build --no-build-vignettes --no-manual snowflakeR
-R CMD build --no-build-vignettes --no-manual RSnowflake
+R CMD build --no-build-vignettes --no-manual skiPatrol
+R CMD build --no-build-vignettes --no-manual skiLift
 ```
 
 Ship via GitHub Release or commit next to config (with `.gitignore` exception).
@@ -82,7 +82,7 @@ Ship via GitHub Release or commit next to config (with `.gitignore` exception).
 languages:
   r:
     tarballs:
-      snowflakeR: ./snowflakeR_0.1.0.tar.gz   # relative to config or URL
+      skiPatrol: ./skiPatrol_0.1.0.tar.gz   # relative to config or URL
 ```
 
 Update URL after each release your notebooks depend on.
@@ -122,7 +122,7 @@ Preset: `configs/cre_multilang_r.yaml` in snowflake-notebook-multilang repo.
 
 ```python
 from sfnb_setup import setup_notebook
-setup_notebook(packages=["snowflakeR"])
+setup_notebook(packages=["skiPatrol"])
 ```
 
 Uses session defaults for context; installs minimal R. Fine for smoke tests — production notebooks should pin YAML.

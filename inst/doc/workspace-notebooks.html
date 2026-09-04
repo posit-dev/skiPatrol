@@ -12,7 +12,7 @@
 
 
 
-<title>Using snowflakeR in Workspace Notebooks</title>
+<title>Using skiPatrol in Workspace Notebooks</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -336,18 +336,18 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Using snowflakeR in Workspace
+<h1 class="title toc-ignore">Using skiPatrol in Workspace
 Notebooks</h1>
 
 
 
 <p>Snowflake Workspace Notebooks provide a managed Jupyter environment
-with a Python kernel. <code>snowflakeR</code> works seamlessly in this
+with a Python kernel. <code>skiPatrol</code> works seamlessly in this
 environment via <code>rpy2</code> and <code>%%R</code> magic cells,
 giving R users full access to Snowflake ML features without leaving the
 notebook.</p>
 <p>This vignette covers the Workspace-specific setup and patterns. For
-general <code>snowflakeR</code> usage, see
+general <code>skiPatrol</code> usage, see
 <code>vignette(&quot;getting-started&quot;)</code>.</p>
 <div id="how-r-cells-work" class="section level2">
 <h2>How <code>%%R</code> Cells Work</h2>
@@ -369,33 +369,33 @@ to run. After that, everything is <code>%%R</code>.</p>
 <pre><code>Python Kernel (Jupyter)
   |-- rpy2 (Python-R bridge)
   |     |-- %%R magic cells (R code execution)
-  |     |-- snowflakeR (R package, ML platform features)
+  |     |-- skiPatrol (R package, ML platform features)
   |     |     |-- reticulate (R-Python bridge)
   |     |           |-- snowflake-ml-python (Snowflake ML SDK)
   |     |                 |-- Snowpark Session (built-in)
   |     |
-  |     |-- RSnowflake (R package, DBI/dbplyr, optional)
+  |     |-- skiLift (R package, DBI/dbplyr, optional)
   |           |-- Snowflake SQL API v2 (reads, small writes)
   |           |-- reticulate -&gt; write_pandas (bulk writes via SPCS path)
   |           |-- ADBC (optional, Arrow-native reads)
   |
-  |-- Active Snowpark Session (auto-detected by sfr_connect() / RSnowflake)</code></pre>
-<p><code>snowflakeR</code> uses <code>reticulate</code> to call the
-Snowflake ML Python SDK, while <code>RSnowflake</code> connects directly
+  |-- Active Snowpark Session (auto-detected by sfr_connect() / skiLift)</code></pre>
+<p><code>skiPatrol</code> uses <code>reticulate</code> to call the
+Snowflake ML Python SDK, while <code>skiLift</code> connects directly
 to Snowflake via HTTPS (no Python needed). Both work in Workspace
 Notebooks. For ML workflows (Model Registry, Feature Store), use
-<code>snowflakeR</code>. For standard DBI/dbplyr database operations,
-install <code>RSnowflake</code> and use
+<code>skiPatrol</code>. For standard DBI/dbplyr database operations,
+install <code>skiLift</code> and use
 <code>sfr_dbi_connection()</code>.</p>
 </div>
 <div id="setup" class="section level2">
 <h2>Setup</h2>
-<p><code>snowflakeR</code> ships a <strong>self-contained
+<p><code>skiPatrol</code> ships a <strong>self-contained
 <code>notebooks/</code> directory</strong> with all the scripts, config,
 and helpers needed. Upload the folder contents to your Workspace, then
 follow the steps below.</p>
 <p>To find the directory after installing the package:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;notebooks&quot;</span>, <span class="at">package =</span> <span class="st">&quot;snowflakeR&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;notebooks&quot;</span>, <span class="at">package =</span> <span class="st">&quot;skiPatrol&quot;</span>)</span></code></pre></div>
 <div id="step-0-configure-optional" class="section level3">
 <h3>Step 0: Configure (optional)</h3>
 <p>Workspace Notebooks do <a href="https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-edit-run#set-the-execution-context">not
@@ -403,7 +403,7 @@ auto-set database or schema</a>. Each notebook has a
 <code>_config.yaml</code> where you can optionally override the session
 context. If omitted, <code>setup_notebook()</code> uses the Snowpark
 session’s current database/schema/warehouse:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># snowflaker_config.yaml -- all sections optional</span></span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># skipatrol_config.yaml -- all sections optional</span></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">context</span><span class="kw">:</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="at">  </span><span class="fu">warehouse</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;MY_WAREHOUSE&quot;</span></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="at">  </span><span class="fu">database</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;MY_DATABASE&quot;</span></span>
@@ -419,7 +419,7 @@ toolkit handles installation. Each notebook directory includes an
 <code>setup_notebook()</code> handles everything:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Python cell -- run once per session (~45 sec fresh, ~2 sec cached)</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="im">from</span> sfnb_setup <span class="im">import</span> setup_notebook</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>setup_notebook(config<span class="op">=</span><span class="st">&quot;snowflaker_config.yaml&quot;</span>, packages<span class="op">=</span>[<span class="st">&quot;snowflakeR&quot;</span>])</span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>setup_notebook(config<span class="op">=</span><span class="st">&quot;skipatrol_config.yaml&quot;</span>, packages<span class="op">=</span>[<span class="st">&quot;skiPatrol&quot;</span>])</span></code></pre></div>
 <p>This single call:</p>
 <ul>
 <li>Sets session context (from config or session defaults)</li>
@@ -428,15 +428,15 @@ toolkit handles installation. Each notebook directory includes an
 the <code>%%R</code> magic</li>
 <li>Installs R packages (from tarballs, URLs, or GitHub via
 <code>pak</code>)</li>
-<li>Exports SPCS OAuth env vars for RSnowflake DBI connectivity</li>
+<li>Exports SPCS OAuth env vars for skiLift DBI connectivity</li>
 </ul>
 <p>Everything is installed in <strong>user-space</strong> – no
 <code>sudo</code> or root access is required.</p>
 <p><strong>Alternative (step-by-step):</strong> If you prefer separate
 steps:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="im">from</span> sfnb_setup <span class="im">import</span> install_r, install_r_packages</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>install_r(config<span class="op">=</span><span class="st">&quot;snowflaker_config.yaml&quot;</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>install_r_packages(config<span class="op">=</span><span class="st">&quot;snowflaker_config.yaml&quot;</span>, packages<span class="op">=</span>[<span class="st">&quot;snowflakeR&quot;</span>])</span></code></pre></div>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>install_r(config<span class="op">=</span><span class="st">&quot;skipatrol_config.yaml&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>install_r_packages(config<span class="op">=</span><span class="st">&quot;skipatrol_config.yaml&quot;</span>, packages<span class="op">=</span>[<span class="st">&quot;skiPatrol&quot;</span>])</span></code></pre></div>
 <p><strong>Alternative (no sfnb_setup.py):</strong> Install the toolkit
 directly:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="op">!</span>pip install sfnb<span class="op">-</span>multilang</span>
@@ -460,8 +460,8 @@ Access Integration</a> that allows these hosts. The toolkit can generate
 the required EAI SQL for you – see the <a href="https://github.com/Snowflake-Labs/snowflake-notebook-multilang/blob/main/docs/network_rules.md">network
 rules documentation</a>.</p>
 </div>
-<div id="step-2-install-and-load-snowflaker" class="section level3">
-<h3>Step 2: Install and load snowflakeR</h3>
+<div id="step-2-install-and-load-skipatrol" class="section level3">
+<h3>Step 2: Install and load skiPatrol</h3>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="sc">%%</span>R</span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">&quot;https://cloud.r-project.org&quot;</span>))</span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
@@ -471,15 +471,15 @@ rules documentation</a>.</p>
 <span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="fu">install.packages</span>(pkg, <span class="at">type =</span> <span class="st">&quot;source&quot;</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>}</span>
 <span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nzchar</span>(<span class="fu">Sys.getenv</span>(<span class="st">&quot;SNOWFLAKER_PATH&quot;</span>))) {</span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="fu">Sys.getenv</span>(<span class="st">&quot;SNOWFLAKER_PATH&quot;</span>), <span class="at">repos =</span> <span class="cn">NULL</span>, <span class="at">type =</span> <span class="st">&quot;source&quot;</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nzchar</span>(<span class="fu">Sys.getenv</span>(<span class="st">&quot;SKIPATROL_PATH&quot;</span>))) {</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="fu">Sys.getenv</span>(<span class="st">&quot;SKIPATROL_PATH&quot;</span>), <span class="at">repos =</span> <span class="cn">NULL</span>, <span class="at">type =</span> <span class="st">&quot;source&quot;</span>)</span>
 <span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>} <span class="cf">else</span> {</span>
 <span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">&quot;pak&quot;</span>, <span class="at">type =</span> <span class="st">&quot;source&quot;</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">&quot;Snowflake-Labs/snowflakeR&quot;</span>, <span class="at">ask =</span> <span class="cn">FALSE</span>, <span class="at">upgrade =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">&quot;posit-dev/skiPatrol&quot;</span>, <span class="at">ask =</span> <span class="cn">FALSE</span>, <span class="at">upgrade =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>}</span>
-<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="fu">library</span>(snowflakeR)</span></code></pre></div>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="fu">library</span>(skiPatrol)</span></code></pre></div>
 <p>When running from the internal monorepo, <code>sfnb_setup.py</code>
-automatically sets <code>SNOWFLAKER_PATH</code> to the local package
+automatically sets <code>SKIPATROL_PATH</code> to the local package
 source. From the public repository, the <code>else</code> branch
 installs from GitHub via <code>pak</code>.</p>
 </div>
@@ -515,7 +515,7 @@ those libraries are missing. Use conda-forge equivalents (e.g.,
 required system libraries.</p>
 <p><strong>Persistence:</strong> Packages installed interactively don’t
 persist across container recycles. Add regularly-used packages to a YAML
-config preset (see <code>configs/snowflaker.yaml</code> in the
+config preset (see <code>configs/skipatrol.yaml</code> in the
 <code>sfnb-multilang</code> toolkit) for automatic reinstallation.</p>
 </div>
 <div id="step-5-connect-and-set-execution-context" class="section level3">
@@ -602,7 +602,7 @@ vectors, etc.).</p>
 <div id="output-helpers" class="section level2">
 <h2>Output helpers</h2>
 <p>Workspace Notebooks add extra line breaks to R output.
-<code>snowflakeR</code> includes helper functions for cleaner
+<code>skiPatrol</code> includes helper functions for cleaner
 display:</p>
 <table>
 <colgroup>
@@ -654,7 +654,7 @@ display:</p>
 </div>
 <div id="bulk-write-performance" class="section level2">
 <h2>Bulk Write Performance</h2>
-<p>When writing large data from R in Workspace Notebooks, RSnowflake
+<p>When writing large data from R in Workspace Notebooks, skiLift
 automatically routes through ADBC (if installed) or the Python Snowpark
 session as a fallback. Both paths use the <strong>internal SPCS
 gateway</strong> (<code>SNOWFLAKE_HOST</code>) with SPCS OAuth
@@ -670,14 +670,14 @@ authentication – zero-config, no public endpoint or PAT required.</p>
                                                      |
                                      Internal SPCS gateway (PUT + COPY INTO)
                                      ~2.5s for 50K rows</code></pre>
-<p>Outside Workspace, RSnowflake uses ADBC (if available) for bulk
-writes via the public endpoint. See the RSnowflake
+<p>Outside Workspace, skiLift uses ADBC (if available) for bulk
+writes via the public endpoint. See the skiLift
 <code>getting-started</code> vignette for the full
 <code>upload_method</code> options table.</p>
 </div>
 <div id="pat-management" class="section level2">
 <h2>PAT management</h2>
-<p>Most <code>snowflakeR</code> operations use the Snowpark session
+<p>Most <code>skiPatrol</code> operations use the Snowpark session
 directly (no extra auth needed). A <strong>Programmatic Access Token
 (PAT)</strong> is only required for:</p>
 <ul>
@@ -751,17 +751,17 @@ routes through the Snowpark session and requires no separate token.</p>
 </tr>
 </tbody>
 </table>
-<p>The key design goal: <strong>your <code>snowflakeR</code> code is
+<p>The key design goal: <strong>your <code>skiPatrol</code> code is
 identical</strong> in both environments. Only the setup differs.</p>
 </div>
 <div id="typical-workflow" class="section level2">
 <h2>Typical workflow</h2>
 <div class="sourceCode" id="cb21"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="co"># Cell 1 (Python): Bootstrap R, packages, EAI, and context</span></span>
 <span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="im">from</span> sfnb_setup <span class="im">import</span> setup_notebook</span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>setup_notebook(config<span class="op">=</span><span class="st">&quot;snowflaker_config.yaml&quot;</span>, packages<span class="op">=</span>[<span class="st">&quot;snowflakeR&quot;</span>])</span></code></pre></div>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>setup_notebook(config<span class="op">=</span><span class="st">&quot;skipatrol_config.yaml&quot;</span>, packages<span class="op">=</span>[<span class="st">&quot;skiPatrol&quot;</span>])</span></code></pre></div>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="sc">%%</span>R</span>
 <span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="co"># Cell 2 (R): Load and connect</span></span>
-<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="fu">library</span>(snowflakeR)</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="fu">library</span>(skiPatrol)</span>
 <span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>conn <span class="ot">&lt;-</span> <span class="fu">sfr_connect</span>()</span>
 <span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a></span>
 <span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>fs   <span class="ot">&lt;-</span> <span class="fu">sfr_feature_store</span>(conn)</span>
@@ -786,7 +786,7 @@ identical</strong> in both environments. Only the setup differs.</p>
 <p>For runnable notebook versions of the examples above, see the
 self-contained <code>notebooks/</code> directory included with the
 package:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;notebooks&quot;</span>, <span class="at">package =</span> <span class="st">&quot;snowflakeR&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;notebooks&quot;</span>, <span class="at">package =</span> <span class="st">&quot;skiPatrol&quot;</span>)</span></code></pre></div>
 <table>
 <colgroup>
 <col width="33%" />
@@ -894,8 +894,8 @@ package:</p>
 </tbody>
 </table>
 <p>Supporting files in the same directory include per-notebook
-<code>snowflaker_*.yaml</code> configs (for example
-<code>snowflaker_parallel_spcs_config.yaml</code> for the parallel lab),
+<code>skipatrol_*.yaml</code> configs (for example
+<code>skipatrol_parallel_spcs_config.yaml</code> for the parallel lab),
 <code>sfnb_setup.py</code>, <code>PARALLEL_SPCS_DEMO.md</code>,
 <code>parallel_lab_config.py</code>, and optional
 <code>streamlit_parallel_demo_monitor.py</code>. See
@@ -910,7 +910,7 @@ started.</p>
 <p>SPCS-backed parallelism uses compute pools, image repositories, and
 (for queue mode) Hybrid Tables configured in your account. The shipped
 lab wires these through
-<strong><code>snowflaker_parallel_spcs_config.yaml</code></strong> and
+<strong><code>skipatrol_parallel_spcs_config.yaml</code></strong> and
 shared Python helpers (<code>parallel_lab_config.py</code>).</p>
 <p><strong>Suggested order:</strong></p>
 <ol style="list-style-type: decimal">

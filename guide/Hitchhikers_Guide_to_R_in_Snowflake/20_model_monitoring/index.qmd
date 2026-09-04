@@ -5,7 +5,7 @@ subtitle: "Drift, performance, and inference logs"
 
 ## Overview
 
-After deployment, **model monitoring** tracks drift, performance degradation, and statistical shifts on production inference data — configured through the Model Registry API in snowflakeR.
+After deployment, **model monitoring** tracks drift, performance degradation, and statistical shifts on production inference data — configured through the Model Registry API in skiPatrol.
 
 Read this chapter **after** you have a **logged model version** in the registry ([Model Registry](../18_model_registry/index.qmd)) and, for partition-heavy workloads, after [Many-Model Patterns](../21_many_model/index.qmd). Monitoring complements [Experiments](../19_experiments/index.qmd) (training exploration) on the path to production.
 
@@ -36,7 +36,7 @@ Typical inference log population: batch scoring SQL, streaming ingest, or applic
 ## Configure source and registry {#sec-config}
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 reg <- sfr_model_registry(conn, database = "ML_DB", schema = "MODELS")

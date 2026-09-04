@@ -1,7 +1,7 @@
 # Flat build context for SPCS Image Builder (all files in one directory).
 FROM rocker/rstudio:4.4.2
 
-LABEL description="RStudio Server with RSnowflake and snowflakeR for SPCS"
+LABEL description="RStudio Server with skiLift and skiPatrol for SPCS"
 
 USER root
 
@@ -24,7 +24,7 @@ COPY install_packages.R /tmp/install_packages.R
 RUN mkdir -p /tmp/pkg "${R_LIBS_USER}" \
     && chown -R rstudio:rstudio "${R_LIBS_USER}" /opt/conda
 
-# prepare_build_ctx.sh places *.tar.gz here (snowflakeR required; RSnowflake optional)
+# prepare_build_ctx.sh places *.tar.gz here (skiPatrol required; skiLift optional)
 COPY *.tar.gz /tmp/pkg/
 RUN R -f /tmp/install_packages.R \
     && rm -rf /tmp/install_packages.R /tmp/pkg

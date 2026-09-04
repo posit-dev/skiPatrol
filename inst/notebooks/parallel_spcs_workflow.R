@@ -6,9 +6,9 @@
 # - Mirror the notebook helper flow with explicit, testable functions.
 #
 # Typical usage:
-#   source("snowflakeR/inst/notebooks/parallel_spcs_workflow.R")
-#   conn <- snowflakeR::sfr_connect()
-#   cfg  <- parallel_lab_load_config("snowflakeR/inst/notebooks/snowflaker_parallel_spcs_config.yaml")
+#   source("skiPatrol/inst/notebooks/parallel_spcs_workflow.R")
+#   conn <- skiPatrol::sfr_connect()
+#   cfg  <- parallel_lab_load_config("skiPatrol/inst/notebooks/skipatrol_parallel_spcs_config.yaml")
 #   parallel_lab_validate_clean_room(cfg)
 #   parallel_lab_setup(conn, cfg, create_series = TRUE)
 #   out <- parallel_lab_run_tasks_demo(conn, cfg, run = TRUE)
@@ -34,7 +34,7 @@
   out
 }
 
-parallel_lab_load_config <- function(config_path = "snowflaker_parallel_spcs_config.yaml") {
+parallel_lab_load_config <- function(config_path = "skipatrol_parallel_spcs_config.yaml") {
   if (!requireNamespace("yaml", quietly = TRUE)) {
     .abort("Package 'yaml' is required. Install with install.packages('yaml').")
   }
@@ -270,8 +270,8 @@ parallel_lab_setup <- function(
     n_units = 120L,
     n_days = 1095L
 ) {
-  if (!requireNamespace("snowflakeR", quietly = TRUE)) {
-    .abort("Package 'snowflakeR' is required.")
+  if (!requireNamespace("skiPatrol", quietly = TRUE)) {
+    .abort("Package 'skiPatrol' is required.")
   }
   if (!inherits(conn, "Snowflake")) {
     warning("Connection does not inherit 'Snowflake'; continuing anyway.")
@@ -280,18 +280,18 @@ parallel_lab_setup <- function(
   parallel_lab_validate_clean_room(cfg, require_runtime = FALSE)
   sql <- parallel_lab_sql_bootstrap(cfg)
   for (q in sql) {
-    snowflakeR::sfr_execute(conn, q)
+    skiPatrol::sfr_execute(conn, q)
   }
 
   if (isTRUE(create_series)) {
-    snowflakeR::sfr_execute(conn, parallel_lab_sql_seed_series_events(
+    skiPatrol::sfr_execute(conn, parallel_lab_sql_seed_series_events(
       cfg, n_units = n_units, n_days = n_days))
     message("Created SERIES_EVENTS synthetic table.")
   } else {
     message("Skipped SERIES_EVENTS creation (create_series = FALSE).")
   }
 
-  snowflakeR::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
+  skiPatrol::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
 }
 
 parallel_lab_run_tasks_demo <- function(
@@ -325,11 +325,11 @@ parallel_lab_run_tasks_demo <- function(
   img <- cfg$image_uri
   series_table <- sprintf("%s.%s.SERIES_EVENTS", cfg$database, cfg$schemas$source_data)
   if (nzchar(cfg$warehouse %||% "")) {
-    snowflakeR::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
+    skiPatrol::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
   }
-  snowflakeR::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
+  skiPatrol::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
 
-  unit_ids <- snowflakeR::sfr_query(conn, sprintf(
+  unit_ids <- skiPatrol::sfr_query(conn, sprintf(
     "SELECT DISTINCT UNIT_ID FROM %s ORDER BY UNIT_ID LIMIT %d",
     series_table, n_skus
   ))$UNIT_ID
@@ -362,7 +362,7 @@ parallel_lab_run_tasks_demo <- function(
   if (nzchar(cfg$warehouse %||% "")) {
     reg_args$warehouse <- cfg$warehouse
   }
-  do.call(snowflakeR::registerDoSnowflake, reg_args)
+  do.call(skiPatrol::registerDoSnowflake, reg_args)
 
   message(sprintf("model_run_id = %s | stepwise=%s h=%d | save_models=%s",
                   model_run_id, arima_stepwise, forecast_h, save_models))
@@ -449,11 +449,11 @@ parallel_lab_run_queue_demo <- function(
   queue <- parallel_lab_queue_fqn(cfg)
   series_table <- sprintf("%s.%s.SERIES_EVENTS", cfg$database, cfg$schemas$source_data)
   if (nzchar(cfg$warehouse %||% "")) {
-    snowflakeR::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
+    skiPatrol::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
   }
-  snowflakeR::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
+  skiPatrol::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
 
-  unit_ids <- snowflakeR::sfr_query(conn, sprintf(
+  unit_ids <- skiPatrol::sfr_query(conn, sprintf(
     "SELECT DISTINCT UNIT_ID FROM %s ORDER BY UNIT_ID LIMIT %d",
     series_table, n_skus
   ))$UNIT_ID
@@ -469,7 +469,7 @@ parallel_lab_run_queue_demo <- function(
     database   = cfg$database
   )
 
-  snowflakeR::registerDoSnowflake(
+  skiPatrol::registerDoSnowflake(
     conn,
     mode = "queue",
     compute_pool = cfg$compute_pool,
@@ -585,13 +585,13 @@ parallel_lab_run_queue_timeboxed <- function(
                           cfg$database, cfg$schemas$source_data)
 
   if (nzchar(cfg$warehouse %||% "")) {
-    snowflakeR::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
+    skiPatrol::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
   }
-  snowflakeR::sfr_use(conn, database = cfg$database,
+  skiPatrol::sfr_use(conn, database = cfg$database,
                       schema = cfg$schemas$source_data)
 
   if (is.null(unit_ids) || length(unit_ids) == 0) {
-    unit_ids <- snowflakeR::sfr_query(conn, sprintf(
+    unit_ids <- skiPatrol::sfr_query(conn, sprintf(
       "SELECT DISTINCT UNIT_ID FROM %s ORDER BY UNIT_ID LIMIT %d",
       series_table, n_skus
     ))$UNIT_ID
@@ -702,7 +702,7 @@ parallel_lab_run_queue_timeboxed <- function(
   }
 
   # Serialize chunks to stage
-  bridge <- snowflakeR:::get_bridge_module("sfr_queue_bridge")
+  bridge <- skiPatrol:::get_bridge_module("sfr_queue_bridge")
   job_id <- paste0(sprintf("%04x", sample(0:65535, 4, replace = TRUE)),
                    collapse = "-")
 
@@ -725,7 +725,7 @@ parallel_lab_run_queue_timeboxed <- function(
     "Serializing %d chunks (%d units/chunk) to stage | model_run_id=%s | %s h=%d",
     n_chunks, units_per_chunk, model_run_id, mode_label, forecast_h
   ))
-  job <- snowflakeR:::.serialize_job_to_stage(
+  job <- skiPatrol:::.serialize_job_to_stage(
     conn, job_id, forecast_expr, queue_args, queue_fo, parent.frame(), queue_opts
   )
 
@@ -773,7 +773,7 @@ parallel_lab_run_queue_timeboxed <- function(
     chunk_id <- sprintf("%03d", i)
     result_stage <- paste0(job$stage_path, "/results/result_", chunk_id, ".rds")
     tryCatch({
-      snowflakeR:::.dosnowflake_stage_get(conn, result_stage, tmp_dir)
+      skiPatrol:::.dosnowflake_stage_get(conn, result_stage, tmp_dir)
       result_file <- file.path(tmp_dir, paste0("result_", chunk_id, ".rds"))
       if (file.exists(result_file)) {
         chunk_result <- readRDS(result_file)
@@ -839,11 +839,11 @@ parallel_lab_run_benchmark <- function(conn, cfg, run = FALSE) {
   series_table <- sprintf("%s.%s.SERIES_EVENTS", cfg$database, cfg$schemas$source_data)
 
   if (nzchar(cfg$warehouse %||% "")) {
-    snowflakeR::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
+    skiPatrol::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
   }
-  snowflakeR::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
+  skiPatrol::sfr_use(conn, database = cfg$database, schema = cfg$schemas$source_data)
 
-  unit_ids <- snowflakeR::sfr_query(conn, sprintf(
+  unit_ids <- skiPatrol::sfr_query(conn, sprintf(
     "SELECT DISTINCT UNIT_ID FROM %s ORDER BY UNIT_ID LIMIT %d",
     series_table, n_skus
   ))$UNIT_ID
@@ -898,7 +898,7 @@ parallel_lab_run_benchmark <- function(conn, cfg, run = FALSE) {
     data_query = data_query
   )
   if (nzchar(cfg$warehouse %||% "")) reg_args$warehouse <- cfg$warehouse
-  do.call(snowflakeR::registerDoSnowflake, reg_args)
+  do.call(skiPatrol::registerDoSnowflake, reg_args)
 
   t0_tasks <- Sys.time()
   tasks_out <- foreach::foreach(
@@ -929,7 +929,7 @@ parallel_lab_run_benchmark <- function(conn, cfg, run = FALSE) {
   n_queue_total <- units_per_chunk * n_queue_ch
   queue_unit_ids <- rep_len(unit_ids, n_queue_total)
 
-  bridge <- snowflakeR:::get_bridge_module("sfr_queue_bridge")
+  bridge <- skiPatrol:::get_bridge_module("sfr_queue_bridge")
   job_id <- paste0(sprintf("%04x", sample(0:65535, 4, replace = TRUE)),
                    collapse = "-")
 
@@ -945,7 +945,7 @@ parallel_lab_run_benchmark <- function(conn, cfg, run = FALSE) {
     chunks_per_job = n_queue_ch,
     data_query = data_query
   )
-  job <- snowflakeR:::.serialize_job_to_stage(
+  job <- skiPatrol:::.serialize_job_to_stage(
     conn, job_id, forecast_expr, queue_args, queue_fo, parent.frame(), queue_opts
   )
 
@@ -1009,14 +1009,14 @@ parallel_lab_plot_series <- function(conn, cfg, unit_ids = NULL, n = 6) {
   series_table <- sprintf("%s.%s.SERIES_EVENTS", cfg$database, cfg$schemas$source_data)
 
   if (is.null(unit_ids)) {
-    unit_ids <- snowflakeR::sfr_query(conn, sprintf(
+    unit_ids <- skiPatrol::sfr_query(conn, sprintf(
       "SELECT DISTINCT UNIT_ID FROM %s ORDER BY UNIT_ID LIMIT %d",
       series_table, as.integer(n)
     ))$UNIT_ID
   }
 
   sql_in <- paste(sprintf("'%s'", unit_ids), collapse = ", ")
-  df <- snowflakeR::sfr_query(conn, sprintf(
+  df <- skiPatrol::sfr_query(conn, sprintf(
     "SELECT UNIT_ID, OBS_DATE, Y FROM %s WHERE UNIT_ID IN (%s) ORDER BY UNIT_ID, OBS_DATE",
     series_table, sql_in
   ))
@@ -1086,7 +1086,7 @@ parallel_lab_plot_forecasts <- function(conn, cfg, run_results, unit_ids = NULL,
   }
 
   sql_in <- paste(sprintf("'%s'", unit_ids), collapse = ", ")
-  hist_df <- snowflakeR::sfr_query(conn, sprintf(
+  hist_df <- skiPatrol::sfr_query(conn, sprintf(
     "SELECT UNIT_ID, OBS_DATE, Y FROM %s WHERE UNIT_ID IN (%s) ORDER BY UNIT_ID, OBS_DATE",
     series_table, sql_in
   ))
@@ -1174,7 +1174,7 @@ parallel_lab_save_metrics <- function(conn, cfg, run_results) {
       "INSERT INTO %s (MODEL_RUN_ID,UNIT_ID,ARIMA_MODEL,AICC,RMSE,MAPE,MASE,N_OBS) VALUES %s",
       metrics_tbl, paste(vals, collapse = ",")
     )
-    snowflakeR::sfr_execute(conn, sql)
+    skiPatrol::sfr_execute(conn, sql)
     n_inserted <- n_inserted + nrow(batch)
   }
 
@@ -1223,7 +1223,7 @@ parallel_lab_rank_skus_by_accuracy <- function(
       metrics_tbl, run_filter, col, col,
       if (descending) "DESC" else "ASC"
     )
-    df <- snowflakeR::sfr_query(conn, sql)
+    df <- skiPatrol::sfr_query(conn, sql)
     return(df$UNIT_ID)
   }
 
@@ -1377,13 +1377,13 @@ parallel_lab_plot_accuracy_comparison <- function(
 parallel_lab_refresh_directory <- function(conn, cfg) {
   stg <- sprintf("%s.%s.%s", cfg$database, cfg$schemas$source_data,
                  cfg$dosnowflake_stage_name)
-  snowflakeR::sfr_execute(conn, sprintf("ALTER STAGE %s REFRESH", stg))
+  skiPatrol::sfr_execute(conn, sprintf("ALTER STAGE %s REFRESH", stg))
   message(sprintf("Refreshed directory table for stage %s", stg))
 }
 
 parallel_lab_list_runs <- function(conn, cfg) {
   view <- sprintf("%s.%s.MODEL_INDEX", cfg$database, cfg$schemas$models)
-  snowflakeR::sfr_query(conn, sprintf(
+  skiPatrol::sfr_query(conn, sprintf(
     "SELECT RUN_ID, COUNT(*) AS N_MODELS FROM %s GROUP BY RUN_ID ORDER BY RUN_ID",
     view
   ))
@@ -1410,7 +1410,7 @@ parallel_lab_register_models <- function(
                           cfg$dosnowflake_stage_name)
   view_fqn <- sprintf("%s.%s.MODEL_INDEX", cfg$database, cfg$schemas$models)
 
-  model_index <- snowflakeR::sfr_build_model_index(
+  model_index <- skiPatrol::sfr_build_model_index(
     conn, view_fqn = view_fqn,
     run_id = model_run_id, stage_prefix = stage_prefix
   )
@@ -1435,11 +1435,11 @@ parallel_lab_register_models <- function(
     n_models, model_run_id, forecast_h
   )
 
-  reg <- snowflakeR::sfr_model_registry(
+  reg <- skiPatrol::sfr_model_registry(
     conn, database = cfg$database, schema = cfg$schemas$models
   )
 
-  result <- snowflakeR::sfr_log_many_model(
+  result <- skiPatrol::sfr_log_many_model(
     reg,
     model_name       = model_name,
     version_name     = version_name,
@@ -1496,7 +1496,7 @@ parallel_lab_run_inference <- function(
     model_index_view <- sprintf("%s.%s.MODEL_INDEX",
                                 cfg$database, cfg$schemas$models)
     unit_ids <- tryCatch(
-      snowflakeR::sfr_query(conn, sprintf(
+      skiPatrol::sfr_query(conn, sprintf(
         "SELECT DISTINCT PARTITION_KEY AS UNIT_ID FROM %s WHERE RUN_ID = '%s' ORDER BY UNIT_ID",
         model_index_view, model_run_id
       ))$UNIT_ID,
@@ -1504,7 +1504,7 @@ parallel_lab_run_inference <- function(
     )
     if (is.null(unit_ids) || length(unit_ids) == 0) {
       message("MODEL_INDEX lookup returned 0 rows; falling back to SERIES_EVENTS")
-      unit_ids <- snowflakeR::sfr_query(conn, sprintf(
+      unit_ids <- skiPatrol::sfr_query(conn, sprintf(
         "SELECT DISTINCT UNIT_ID FROM %s ORDER BY UNIT_ID",
         series_table
       ))$UNIT_ID
@@ -1535,7 +1535,7 @@ parallel_lab_run_inference <- function(
                           cfg$database, cfg$schemas$source_data,
                           cfg$dosnowflake_stage_name, version_name, run_ts)
 
-  reg <- snowflakeR::sfr_model_registry(
+  reg <- skiPatrol::sfr_model_registry(
     conn, database = cfg$database, schema = cfg$schemas$models
   )
 
@@ -1543,7 +1543,7 @@ parallel_lab_run_inference <- function(
                   cfg$compute_pool))
   t0 <- Sys.time()
 
-  result_df <- snowflakeR::sfr_run_batch(
+  result_df <- skiPatrol::sfr_run_batch(
     reg,
     model_name       = model_name,
     version_name     = version_name,
@@ -1568,7 +1568,7 @@ parallel_lab_run_inference <- function(
     n_units <- length(unique(result_df[[uid_col]]))
     message(sprintf("Got %d result rows for %d units", nrow(result_df), n_units))
 
-    snowflakeR::sfr_execute(conn, sprintf(
+    skiPatrol::sfr_execute(conn, sprintf(
       paste0(
         "CREATE TABLE IF NOT EXISTS %s (",
         "RUN_ID VARCHAR, UNIT_ID VARCHAR, HORIZON INTEGER, ",
@@ -1580,15 +1580,15 @@ parallel_lab_run_inference <- function(
       output_table
     ))
     existing_cols <- tryCatch({
-      snowflakeR::sfr_query(conn, sprintf(
+      skiPatrol::sfr_query(conn, sprintf(
         "SELECT COLUMN_NAME FROM %s.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s' AND TABLE_SCHEMA = '%s'",
         cfg$database, "FORECAST_RESULTS", cfg$schemas$models
       ))$COLUMN_NAME
     }, error = function(e) character(0))
     if (length(existing_cols) > 0 && !("LO_95" %in% existing_cols)) {
       message("Recreating FORECAST_RESULTS table with updated schema...")
-      snowflakeR::sfr_execute(conn, sprintf("DROP TABLE IF EXISTS %s", output_table))
-      snowflakeR::sfr_execute(conn, sprintf(
+      skiPatrol::sfr_execute(conn, sprintf("DROP TABLE IF EXISTS %s", output_table))
+      skiPatrol::sfr_execute(conn, sprintf(
         paste0(
           "CREATE TABLE %s (",
           "RUN_ID VARCHAR, UNIT_ID VARCHAR, HORIZON INTEGER, ",
@@ -1644,7 +1644,7 @@ parallel_lab_run_inference <- function(
         "INSERT INTO %s (RUN_ID,UNIT_ID,HORIZON,FORECAST_DATE,POINT_FORECAST,LO_80,HI_80,LO_95,HI_95,STATUS) VALUES %s",
         output_table, paste(vals, collapse = ",")
       )
-      snowflakeR::sfr_execute(conn, sql)
+      skiPatrol::sfr_execute(conn, sql)
       n_inserted <- n_inserted + nrow(batch)
     }
     message(sprintf("Inserted %d forecast rows into %s", n_inserted, output_table))

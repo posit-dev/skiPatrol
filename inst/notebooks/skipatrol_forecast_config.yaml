@@ -1,12 +1,12 @@
 # =============================================================================
-# snowflakeR -- Forecasting Demo Config
+# skiPatrol -- Forecasting Demo Config
 # =============================================================================
-# Extends the base snowflakeR config with r-forecast pre-compiled from
+# Extends the base skiPatrol config with r-forecast pre-compiled from
 # conda-forge (avoids CRAN stdin prompts in Workspace).
 #
 # Usage (single cell):
 #   from sfnb_setup import setup_notebook
-#   setup_notebook(config="snowflaker_forecast_config.yaml", packages=["snowflakeR"])
+#   setup_notebook(config="skipatrol_forecast_config.yaml", packages=["skiPatrol"])
 #
 # All sections below are OPTIONAL -- sensible defaults are used when omitted.
 # =============================================================================
@@ -45,7 +45,7 @@ languages:
       adbc: false
       duckdb: false
     tarballs:
-      snowflakeR: "https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.2.0/snowflakeR_0.2.0.tar.gz"
+      skiPatrol: "https://github.com/posit-dev/skiPatrol/releases/download/v0.2.0/skiPatrol_0.2.0.tar.gz"
 
   scala:
     enabled: false

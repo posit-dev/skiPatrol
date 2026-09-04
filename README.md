@@ -1,4 +1,4 @@
-# snowflakeR <img src="man/figures/logo.png" align="right" height="139" />
+# skiPatrol <img src="man/figures/logo.png" align="right" height="139" />
 
 > **Community Project -- Not Officially Supported**
 > This is a community-developed project from
@@ -6,17 +6,17 @@
 > Snowflake offering. It is provided **as-is** without warranty or official
 > Snowflake support. Use it for prototyping and experimentation; production
 > use is at your own risk. Feedback, bug reports, and contributions are
-> welcome via [GitHub Issues](https://github.com/Snowflake-Labs/snowflakeR/issues).
+> welcome via [GitHub Issues](https://github.com/posit-dev/skiPatrol/issues).
 
 > **Author:** [Simon Field](https://www.linkedin.com/in/fieldy6961) — SnowCAT
 
 R interface to the Snowflake ML platform -- Model Registry, Feature Store, Datasets, and SPCS model serving. Works in **local R environments** (RStudio, VS Code, terminal) and **Snowflake Workspace Notebooks**.
 
-> **Companion package:** For standard DBI-compliant database access (`dbGetQuery`, `dbWriteTable`, `dbplyr`, RStudio Connections Pane, etc.), see [**RSnowflake**](https://github.com/Snowflake-Labs/RSnowflake). `snowflakeR` focuses on ML platform features; `RSnowflake` provides the database connectivity layer.
+> **Companion package:** For standard DBI-compliant database access (`dbGetQuery`, `dbWriteTable`, `dbplyr`, RStudio Connections Pane, etc.), see [**skiLift**](https://github.com/posit-dev/skiLift). `skiPatrol` focuses on ML platform features; `skiLift` provides the database connectivity layer.
 
 ## Overview
 
-**snowflakeR** provides idiomatic R functions for the full Snowflake ML lifecycle, whether you're working locally or directly inside Snowflake:
+**skiPatrol** provides idiomatic R functions for the full Snowflake ML lifecycle, whether you're working locally or directly inside Snowflake:
 
 | Module | What it does |
 |---|---|
@@ -33,22 +33,22 @@ R interface to the Snowflake ML platform -- Model Registry, Feature Store, Datas
 | **Workspace Notebooks** | First-class support for Snowflake Workspace Notebooks with zero-config auth and `%%R` magic cells |
 | **RStudio on SPCS** | Deploy kit for RStudio Server as a custom SPCS service (`inst/rstudio-spcs/`) |
 
-Under the hood, `snowflakeR` uses [`reticulate`](https://rstudio.github.io/reticulate/) to bridge to the [`snowflake-ml-python`](https://docs.snowflake.com/en/developer-guide/snowpark-ml/index) SDK while exposing a native R API with `snake_case` naming, S3 classes, and `cli` messaging. The same code runs identically in local R sessions and Snowflake Workspace Notebooks.
+Under the hood, `skiPatrol` uses [`reticulate`](https://rstudio.github.io/reticulate/) to bridge to the [`snowflake-ml-python`](https://docs.snowflake.com/en/developer-guide/snowpark-ml/index) SDK while exposing a native R API with `snake_case` naming, S3 classes, and `cli` messaging. The same code runs identically in local R sessions and Snowflake Workspace Notebooks.
 
 ### RStudio Server on SPCS
 
 For a **native RStudio IDE** inside Snowflake (not `%%R` notebooks), use the deploy kit shipped in this package:
 
 ```r
-system.file("rstudio-spcs", package = "snowflakeR")
+system.file("rstudio-spcs", package = "skiPatrol")
 ```
 
-Walkthrough: [Hitchhiker's Guide — RStudio Server on SPCS](https://snowflake-labs.github.io/snowflakeR/04b_rstudio_spcs/index.html).  
-Vignettes: `vignette("rstudio-spcs")`, `vignette("spcs-custom-services", package = "RSnowflake")`.
+Walkthrough: [Hitchhiker's Guide — RStudio Server on SPCS](https://snowflake-labs.github.io/skiPatrol/04b_rstudio_spcs/index.html).  
+Vignettes: `vignette("rstudio-spcs")`, `vignette("spcs-custom-services", package = "skiLift")`.
 
 ### DBI / dbplyr
 
-For full DBI compliance, `dbplyr` integration, and the RStudio Connections Pane, use the companion **RSnowflake** package. You can obtain an `RSnowflake` connection from an existing `sfr_connection`:
+For full DBI compliance, `dbplyr` integration, and the RStudio Connections Pane, use the companion **skiLift** package. You can obtain an `skiLift` connection from an existing `sfr_connection`:
 
 ```r
 dbi_con <- sfr_dbi_connection(conn)  # lazy, cached on first call
@@ -58,11 +58,11 @@ library(dplyr)
 tbl(dbi_con, "MY_TABLE") |> filter(score > 90) |> collect()
 ```
 
-Or connect directly with RSnowflake:
+Or connect directly with skiLift:
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 con <- dbConnect(Snowflake(), name = "my_profile")
 ```
 
@@ -71,16 +71,16 @@ con <- dbConnect(Snowflake(), name = "my_profile")
 ```r
 # Install from GitHub
 # install.packages("pak")
-pak::pak("Snowflake-Labs/snowflakeR")
+pak::pak("posit-dev/skiPatrol")
 ```
 
 ### Python dependencies
 
-snowflakeR requires Python >= 3.9 with the Snowflake ML packages:
+skiPatrol requires Python >= 3.9 with the Snowflake ML packages:
 
 ```r
-# Let snowflakeR install them into a dedicated virtualenv
-snowflakeR::sfr_install_python_deps()
+# Let skiPatrol install them into a dedicated virtualenv
+skiPatrol::sfr_install_python_deps()
 ```
 
 Or install manually:
@@ -92,7 +92,7 @@ pip install snowflake-ml-python snowflake-snowpark-python
 ## Quick start
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 # Connect (reads ~/.snowflake/connections.toml by default)
 conn <- sfr_connect()
@@ -119,14 +119,14 @@ sfr_register_feature_view(fs, fv, version = "V1")
 
 ## Snowflake Workspace Notebooks
 
-snowflakeR is designed to work seamlessly inside [Snowflake Workspace Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks). It auto-detects the Workspace environment, connects via the active session token (no credentials needed), and supports the `%%R` magic cell pattern for mixing Python and R:
+skiPatrol is designed to work seamlessly inside [Snowflake Workspace Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks). It auto-detects the Workspace environment, connects via the active session token (no credentials needed), and supports the `%%R` magic cell pattern for mixing Python and R:
 
 ```r
 # In a Workspace Notebook %%R cell -- zero-config connection
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()   # auto-detects Workspace session
 
-# All snowflakeR functions work identically
+# All skiPatrol functions work identically
 df <- sfr_query(conn, "SELECT * FROM my_table LIMIT 10")
 reg <- sfr_model_registry(conn)
 fs  <- sfr_feature_store(conn)
@@ -142,16 +142,16 @@ The package also provides `rprint()`, `rview()`, `rglimpse()`, and `rcat()` help
 
 ## Example Notebooks
 
-`snowflakeR` ships with a **self-contained `notebooks/` directory** that has
+`skiPatrol` ships with a **self-contained `notebooks/` directory** that has
 everything you need to get started, including the bootstrap script and
 per-notebook config files:
 
 ```r
 # Find the notebooks directory in the installed package
-system.file("notebooks", package = "snowflakeR")
+system.file("notebooks", package = "skiPatrol")
 
 # Or copy the entire folder to your working directory
-nb_dir <- system.file("notebooks", package = "snowflakeR")
+nb_dir <- system.file("notebooks", package = "skiPatrol")
 file.copy(list.files(nb_dir, full.names = TRUE), ".", recursive = TRUE)
 ```
 
@@ -172,12 +172,12 @@ open `workspace_quickstart.ipynb`. For **local** environments, open
 | `workspace_forecasting_demo.ipynb` | Time series (ARIMA) with custom `predict` logic (Workspace) |
 | `local_forecasting_demo.ipynb` | Forecasting demo for local environments |
 | `workspace_credit_risk_setup.ipynb` / `workspace_credit_risk_demo.ipynb` | Credit risk: data prep, training, registry (Workspace) |
-| `workspace_parallel_spcs_setup.ipynb` | Parallel SPCS lab: synthetic data and setup (`snowflaker_parallel_spcs_config.yaml`) |
+| `workspace_parallel_spcs_setup.ipynb` | Parallel SPCS lab: synthetic data and setup (`skipatrol_parallel_spcs_config.yaml`) |
 | `workspace_parallel_spcs_demo.ipynb` | Parallel SPCS lab: driver (tasks / queue patterns) |
 | `workspace_parallel_spcs_monitor.ipynb` | Parallel SPCS lab: SQL monitoring while the driver runs |
 | `workspace_dosnowflake.ipynb` | doSnowflake walkthrough (Workspace) |
 | `sfnb_setup.py` | All-in-one bootstrap: EAI, R runtime, packages, context (Workspace) |
-| `snowflaker_*.yaml` | Per-notebook configs (see `inst/notebooks/README.md` for the full list) |
+| `skipatrol_*.yaml` | Per-notebook configs (see `inst/notebooks/README.md` for the full list) |
 | `PARALLEL_SPCS_DEMO.md` | Design notes for the parallel SPCS lab |
 | `streamlit_parallel_demo_monitor.py` | Optional Streamlit monitor for the parallel lab |
 
@@ -208,7 +208,7 @@ context automatically. No separate config copy step is needed -- edit the
 
 Optional:
 
-- [`RSnowflake`](https://github.com/Snowflake-Labs/RSnowflake) -- DBI-compliant database access, `dbplyr`, RStudio Connections Pane
+- [`skiLift`](https://github.com/posit-dev/skiLift) -- DBI-compliant database access, `dbplyr`, RStudio Connections Pane
 - [`snowflakeauth`](https://github.com/Snowflake-Labs/snowflakeauth) -- `connections.toml` credential management
 
 ## License

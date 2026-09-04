@@ -1,19 +1,19 @@
 ---
-title: "Using snowflakeR in Workspace Notebooks"
+title: "Using skiPatrol in Workspace Notebooks"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using snowflakeR in Workspace Notebooks}
+  %\VignetteIndexEntry{Using skiPatrol in Workspace Notebooks}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 Snowflake Workspace Notebooks provide a managed Jupyter environment with a
-Python kernel. `snowflakeR` works seamlessly in this environment via `rpy2`
+Python kernel. `skiPatrol` works seamlessly in this environment via `rpy2`
 and `%%R` magic cells, giving R users full access to Snowflake ML features
 without leaving the notebook.
 
 This vignette covers the Workspace-specific setup and patterns. For general
-`snowflakeR` usage, see `vignette("getting-started")`.
+`skiPatrol` usage, see `vignette("getting-started")`.
 
 ## How `%%R` Cells Work
 
@@ -37,35 +37,35 @@ In a Workspace Notebook, the data flow is:
 Python Kernel (Jupyter)
   |-- rpy2 (Python-R bridge)
   |     |-- %%R magic cells (R code execution)
-  |     |-- snowflakeR (R package, ML platform features)
+  |     |-- skiPatrol (R package, ML platform features)
   |     |     |-- reticulate (R-Python bridge)
   |     |           |-- snowflake-ml-python (Snowflake ML SDK)
   |     |                 |-- Snowpark Session (built-in)
   |     |
-  |     |-- RSnowflake (R package, DBI/dbplyr, optional)
+  |     |-- skiLift (R package, DBI/dbplyr, optional)
   |           |-- Snowflake SQL API v2 (reads, small writes)
   |           |-- reticulate -> write_pandas (bulk writes via SPCS path)
   |           |-- ADBC (optional, Arrow-native reads)
   |
-  |-- Active Snowpark Session (auto-detected by sfr_connect() / RSnowflake)
+  |-- Active Snowpark Session (auto-detected by sfr_connect() / skiLift)
 ```
 
-`snowflakeR` uses `reticulate` to call the Snowflake ML Python SDK,
-while `RSnowflake` connects directly to Snowflake via HTTPS (no Python
+`skiPatrol` uses `reticulate` to call the Snowflake ML Python SDK,
+while `skiLift` connects directly to Snowflake via HTTPS (no Python
 needed). Both work in Workspace Notebooks. For ML workflows (Model
-Registry, Feature Store), use `snowflakeR`. For standard DBI/dbplyr
-database operations, install `RSnowflake` and use `sfr_dbi_connection()`.
+Registry, Feature Store), use `skiPatrol`. For standard DBI/dbplyr
+database operations, install `skiLift` and use `sfr_dbi_connection()`.
 
 ## Setup
 
-`snowflakeR` ships a **self-contained `notebooks/` directory** with all the
+`skiPatrol` ships a **self-contained `notebooks/` directory** with all the
 scripts, config, and helpers needed. Upload the folder contents to your
 Workspace, then follow the steps below.
 
 To find the directory after installing the package:
 
 ```r
-system.file("notebooks", package = "snowflakeR")
+system.file("notebooks", package = "skiPatrol")
 ```
 
 ### Step 0: Configure (optional)
@@ -77,7 +77,7 @@ session context. If omitted, `setup_notebook()` uses the Snowpark session's
 current database/schema/warehouse:
 
 ```yaml
-# snowflaker_config.yaml -- all sections optional
+# skipatrol_config.yaml -- all sections optional
 context:
   warehouse: "MY_WAREHOUSE"
   database: "MY_DATABASE"
@@ -97,7 +97,7 @@ bootstrap file. A single call to `setup_notebook()` handles everything:
 ```python
 # Python cell -- run once per session (~45 sec fresh, ~2 sec cached)
 from sfnb_setup import setup_notebook
-setup_notebook(config="snowflaker_config.yaml", packages=["snowflakeR"])
+setup_notebook(config="skipatrol_config.yaml", packages=["skiPatrol"])
 ```
 
 This single call:
@@ -106,7 +106,7 @@ This single call:
 - Validates/creates the EAI with all required domains
 - Installs R via `micromamba` + conda-forge and registers the `%%R` magic
 - Installs R packages (from tarballs, URLs, or GitHub via `pak`)
-- Exports SPCS OAuth env vars for RSnowflake DBI connectivity
+- Exports SPCS OAuth env vars for skiLift DBI connectivity
 
 Everything is installed in **user-space** -- no `sudo` or root access is required.
 
@@ -114,8 +114,8 @@ Everything is installed in **user-space** -- no `sudo` or root access is require
 
 ```python
 from sfnb_setup import install_r, install_r_packages
-install_r(config="snowflaker_config.yaml")
-install_r_packages(config="snowflaker_config.yaml", packages=["snowflakeR"])
+install_r(config="skipatrol_config.yaml")
+install_r_packages(config="skipatrol_config.yaml", packages=["skiPatrol"])
 ```
 
 **Alternative (no sfnb_setup.py):** Install the toolkit directly:
@@ -144,7 +144,7 @@ that allows these hosts. The toolkit can generate the required EAI SQL for you
 -- see the
 [network rules documentation](https://github.com/Snowflake-Labs/snowflake-notebook-multilang/blob/main/docs/network_rules.md).
 
-### Step 2: Install and load snowflakeR
+### Step 2: Install and load skiPatrol
 
 ```r
 %%R
@@ -156,17 +156,17 @@ for (pkg in deps) {
     install.packages(pkg, type = "source", quiet = TRUE)
 }
 
-if (nzchar(Sys.getenv("SNOWFLAKER_PATH"))) {
-  install.packages(Sys.getenv("SNOWFLAKER_PATH"), repos = NULL, type = "source")
+if (nzchar(Sys.getenv("SKIPATROL_PATH"))) {
+  install.packages(Sys.getenv("SKIPATROL_PATH"), repos = NULL, type = "source")
 } else {
   install.packages("pak", type = "source", quiet = TRUE)
-  pak::pak("Snowflake-Labs/snowflakeR", ask = FALSE, upgrade = FALSE)
+  pak::pak("posit-dev/skiPatrol", ask = FALSE, upgrade = FALSE)
 }
-library(snowflakeR)
+library(skiPatrol)
 ```
 
 When running from the internal monorepo, `sfnb_setup.py` automatically sets
-`SNOWFLAKER_PATH` to the local package source. From the public repository,
+`SKIPATROL_PATH` to the local package source. From the public repository,
 the `else` branch installs from GitHub via `pak`.
 
 ### Installing additional R packages
@@ -200,7 +200,7 @@ the required system libraries.
 
 **Persistence:** Packages installed interactively don't persist across
 container recycles. Add regularly-used packages to a YAML config preset
-(see `configs/snowflaker.yaml` in the `sfnb-multilang` toolkit) for
+(see `configs/skipatrol.yaml` in the `sfnb-multilang` toolkit) for
 automatic reinstallation.
 
 ### Step 5: Connect and set execution context
@@ -304,7 +304,7 @@ print(p)  # print() is required to render in Workspace
 
 ## Output helpers
 
-Workspace Notebooks add extra line breaks to R output. `snowflakeR` includes
+Workspace Notebooks add extra line breaks to R output. `skiPatrol` includes
 helper functions for cleaner display:
 
 | Function | Replaces | Description |
@@ -330,7 +330,7 @@ rglimpse(df)
 
 ## Bulk Write Performance
 
-When writing large data from R in Workspace Notebooks, RSnowflake
+When writing large data from R in Workspace Notebooks, skiLift
 automatically routes through ADBC (if installed) or the Python Snowpark
 session as a fallback. Both paths use the **internal SPCS gateway**
 (`SNOWFLAKE_HOST`) with SPCS OAuth authentication -- zero-config, no
@@ -355,13 +355,13 @@ R data.frame  -->  reticulate::r_to_py()  -->  pandas DataFrame
                                      ~2.5s for 50K rows
 ```
 
-Outside Workspace, RSnowflake uses ADBC (if available) for bulk writes
-via the public endpoint. See the RSnowflake `getting-started` vignette
+Outside Workspace, skiLift uses ADBC (if available) for bulk writes
+via the public endpoint. See the skiLift `getting-started` vignette
 for the full `upload_method` options table.
 
 ## PAT management
 
-Most `snowflakeR` operations use the Snowpark session directly (no extra
+Most `skiPatrol` operations use the Snowpark session directly (no extra
 auth needed). A **Programmatic Access Token (PAT)** is only required for:
 
 - `sfr_predict_rest()` -- pure-R REST inference against SPCS endpoints
@@ -391,7 +391,7 @@ no separate token.
 | **Python interop** | `reticulate` | `rpy2` (bidirectional) |
 | **`sfr_connect()`** | Reads credentials | Wraps active session |
 
-The key design goal: **your `snowflakeR` code is identical** in both
+The key design goal: **your `skiPatrol` code is identical** in both
 environments. Only the setup differs.
 
 ## Typical workflow
@@ -399,13 +399,13 @@ environments. Only the setup differs.
 ```python
 # Cell 1 (Python): Bootstrap R, packages, EAI, and context
 from sfnb_setup import setup_notebook
-setup_notebook(config="snowflaker_config.yaml", packages=["snowflakeR"])
+setup_notebook(config="skipatrol_config.yaml", packages=["skiPatrol"])
 ```
 
 ```r
 %%R
 # Cell 2 (R): Load and connect
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 
 fs   <- sfr_feature_store(conn)
@@ -441,7 +441,7 @@ For runnable notebook versions of the examples above, see the self-contained
 `notebooks/` directory included with the package:
 
 ```r
-system.file("notebooks", package = "snowflakeR")
+system.file("notebooks", package = "skiPatrol")
 ```
 
 | Notebook | Environment | Description |
@@ -465,8 +465,8 @@ system.file("notebooks", package = "snowflakeR")
 | `local_feature_store.ipynb` | Local | Feature Store for local R environments |
 | `local_forecasting_demo.ipynb` | Local | Forecasting demo for local R environments |
 
-Supporting files in the same directory include per-notebook `snowflaker_*.yaml`
-configs (for example `snowflaker_parallel_spcs_config.yaml` for the parallel
+Supporting files in the same directory include per-notebook `skipatrol_*.yaml`
+configs (for example `skipatrol_parallel_spcs_config.yaml` for the parallel
 lab), `sfnb_setup.py`, `PARALLEL_SPCS_DEMO.md`, `parallel_lab_config.py`, and
 optional `streamlit_parallel_demo_monitor.py`. See `README.md` in that folder
 for the authoritative list.
@@ -479,7 +479,7 @@ your Workspace or copy to a local directory to get started.
 
 SPCS-backed parallelism uses compute pools, image repositories, and (for
 queue mode) Hybrid Tables configured in your account. The shipped lab wires
-these through **`snowflaker_parallel_spcs_config.yaml`** and shared Python
+these through **`skipatrol_parallel_spcs_config.yaml`** and shared Python
 helpers (`parallel_lab_config.py`).
 
 **Suggested order:**

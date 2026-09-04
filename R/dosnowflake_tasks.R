@@ -115,7 +115,7 @@
       data$options$chunks_per_job %||% "auto"
     ),
     name    = "doSnowflake",
-    version = as.character(utils::packageVersion("snowflakeR")),
+    version = as.character(utils::packageVersion("skiPatrol")),
     NULL
   )
 }

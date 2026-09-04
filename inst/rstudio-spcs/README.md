@@ -1,7 +1,7 @@
 # RStudio Server on SPCS
 
 Deploy **RStudio Server** as a custom **Snowpark Container Services (SPCS)**
-service with **RSnowflake** and **snowflakeR** pre-installed. R users get a
+service with **skiLift** and **skiPatrol** pre-installed. R users get a
 full native R IDE inside the Snowflake security perimeter.
 
 > **Community reference implementation** — not an official Snowflake product.
@@ -17,18 +17,18 @@ full native R IDE inside the Snowflake security perimeter.
 
 **Documentation**
 
-- Hitchhiker's Guide: [RStudio Server on SPCS](https://snowflake-labs.github.io/snowflakeR/04b_rstudio_spcs/index.html) (walkthrough)
-- Vignettes: `vignette("rstudio-spcs", package = "snowflakeR")`, `vignette("spcs-custom-services", package = "RSnowflake")`
+- Hitchhiker's Guide: [RStudio Server on SPCS](https://snowflake-labs.github.io/skiPatrol/04b_rstudio_spcs/index.html) (walkthrough)
+- Vignettes: `vignette("rstudio-spcs", package = "skiPatrol")`, `vignette("spcs-custom-services", package = "skiLift")`
 
 ## Kit location
 
-After installing snowflakeR:
+After installing skiPatrol:
 
 ```r
-system.file("rstudio-spcs", package = "snowflakeR")
+system.file("rstudio-spcs", package = "skiPatrol")
 ```
 
-Or clone [Snowflake-Labs/snowflakeR](https://github.com/Snowflake-Labs/snowflakeR) and `cd inst/rstudio-spcs`.
+Or clone [posit-dev/skiPatrol](https://github.com/posit-dev/skiPatrol) and `cd inst/rstudio-spcs`.
 
 ## Quick start
 
@@ -78,8 +78,8 @@ source config.env
 PUSH=1 ./build_local.sh
 ```
 
-`prepare_build_ctx.sh` builds a **snowflakeR** tarball from the package source.
-**RSnowflake** is included when the monorepo sibling exists; otherwise
+`prepare_build_ctx.sh` builds a **skiPatrol** tarball from the package source.
+**skiLift** is included when the monorepo sibling exists; otherwise
 `install_packages.R` installs from GitHub during the image build (requires EAI).
 
 ### 4. Create password secret (first deploy or rotation)
@@ -127,9 +127,9 @@ source("~/smoke_test.R")
 
 ## Key technical notes
 
-- **RSnowflake:** `dbConnect(Snowflake())` uses `SNOWFLAKE_HOST` + `/snowflake/session/token`. Set `SNOWFLAKE_WAREHOUSE` in the service spec — `USE WAREHOUSE` is not supported on the SQL REST API.
-- **snowflakeR:** `sfr_connect()` auto-detects Workspace only. Use `sfr_connect_spcs()` in this container.
+- **skiLift:** `dbConnect(Snowflake())` uses `SNOWFLAKE_HOST` + `/snowflake/session/token`. Set `SNOWFLAKE_WAREHOUSE` in the service spec — `USE WAREHOUSE` is not supported on the SQL REST API.
+- **skiPatrol:** `sfr_connect()` auto-detects Workspace only. Use `sfr_connect_spcs()` in this container.
 - **reticulate:** Image uses Miniconda `snowflake_ml` env; `use_python(full_path)` not `use_condaenv()`.
-- **Stage I/O:** RSnowflake REST API has no `GET`/`PUT` — use stage volume mounts for file transfer.
+- **Stage I/O:** skiLift REST API has no `GET`/`PUT` — use stage volume mounts for file transfer.
 
 See [BUILD.md](BUILD.md) for Image Builder vs local Docker comparison and troubleshooting.

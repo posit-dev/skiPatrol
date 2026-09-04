@@ -1,6 +1,6 @@
 # RStudio on Snowflake (SPCS)
 
-Welcome. This container ships **RStudio Server** with **RSnowflake** and **snowflakeR**
+Welcome. This container ships **RStudio Server** with **skiLift** and **skiPatrol**
 for in-account R development via SPCS OAuth.
 
 ## First-time smoke tests
@@ -24,7 +24,7 @@ python3 ~/smoke_test.py
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 
 con <- dbConnect(Snowflake())
 dbGetQuery(con, "SELECT CURRENT_USER(), CURRENT_WAREHOUSE()")
@@ -38,6 +38,6 @@ ml <- sfr_connect_spcs()
 ## Environment
 
 Warehouse, database, schema, and role are set via container env vars in
-`service-spec.template.yaml` (not `USE WAREHOUSE` — RSnowflake uses the SQL REST API).
+`service-spec.template.yaml` (not `USE WAREHOUSE` — skiLift uses the SQL REST API).
 
-Python for snowflakeR: Conda env `snowflake_ml` at `/opt/conda`.
+Python for skiPatrol: Conda env `snowflake_ml` at `/opt/conda`.

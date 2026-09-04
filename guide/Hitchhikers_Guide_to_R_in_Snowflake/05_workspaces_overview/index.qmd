@@ -10,7 +10,7 @@ Before bootstrapping R, understand **where** you work in Snowflake. **Snowsight*
 [Workspace Bootstrap](../06_workspace_bootstrap/index.qmd) covers `setup_notebook()` next.
 
 ::: {.callout-important}
-**Workspace Notebooks required.** The multi-language R stack in this guide (`setup_notebook()`, `%%R`, snowflakeR) runs only in **Workspace Notebooks** on ML Container Runtime — not in legacy standalone Snowsight notebooks.
+**Workspace Notebooks required.** The multi-language R stack in this guide (`setup_notebook()`, `%%R`, skiPatrol) runs only in **Workspace Notebooks** on ML Container Runtime — not in legacy standalone Snowsight notebooks.
 :::
 
 ## Learning Objectives
@@ -35,7 +35,7 @@ Before bootstrapping R, understand **where** you work in Snowflake. **Snowsight*
 
 | Capability | Benefit |
 |------------|---------|
-| **Project + files** | Organize notebooks, scripts, configs (`snowflaker_config.yaml`) |
+| **Project + files** | Organize notebooks, scripts, configs (`skipatrol_config.yaml`) |
 | **Git integration** | Clone, commit, push — team collaboration |
 | **Notebooks** | Cell-based Python/SQL/Markdown (Jupyter-compatible in Workspaces) |
 | **Compute session** | Attached warehouse + container runtime for kernel |
@@ -63,7 +63,7 @@ Typical flow — product walkthrough: [Snowflake Notebooks in Workspaces](https:
 1. Open **Snowsight** → **Workspace** ([Workspaces overview](https://docs.snowflake.com/en/user-guide/ui-snowsight/workspaces))
 2. Select or create a **workspace** (private or shared); optionally connect a **Git** repository ([Integrate workspaces with Git](https://docs.snowflake.com/en/user-guide/ui-snowsight/workspaces-git#create-a-git-workspace))
 3. **Create notebook** (+ **Add new** / upload `.ipynb`) or open an existing notebook file in the workspace ([overview — file management](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-overview#overview))
-4. **Start session** — connect to a notebook service so the kernel runs on container runtime ([compute setup](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-compute-setup#setting-up-compute)). When configuring the service (**Connected → Edit**), you can optionally select a **Custom Runtime Environment (CRE)** registered by you or your organisation (`cre@<org_name>`) so R, `%%R`, snowflakeR, and RSnowflake are **pre-installed** — see [CRE & ML Jobs](../09_custom_runtime_and_ml_jobs/index.qmd). If no CRE is available, use the default ML Container Runtime and bootstrap R in step 7.
+4. **Start session** — connect to a notebook service so the kernel runs on container runtime ([compute setup](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-compute-setup#setting-up-compute)). When configuring the service (**Connected → Edit**), you can optionally select a **Custom Runtime Environment (CRE)** registered by you or your organisation (`cre@<org_name>`) so R, `%%R`, skiPatrol, and skiLift are **pre-installed** — see [CRE & ML Jobs](../09_custom_runtime_and_ml_jobs/index.qmd). If no CRE is available, use the default ML Container Runtime and bootstrap R in step 7.
 5. Set **execution context**: role, warehouse, database, schema ([editing and running — set execution context](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-edit-run#set-the-execution-context))
 6. Run a SQL or Python smoke cell (`SELECT CURRENT_USER()`, etc.) ([run cells](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-edit-run#run-cells))
 7. **If you did not select a CRE in step 4:** run the Python bootstrap cell (`setup_notebook()`) — [Workspace Bootstrap](../06_workspace_bootstrap/index.qmd)
@@ -117,7 +117,7 @@ Add a **Python** cell, put `%%R` on the **first line**, then write R below it. I
 
 - **SQL cells** run on the **warehouse** you selected in context, or switch to via `USE WAREHOUSE`. The warehouse can be changed at any time, and the context will be updated accordingly. This is useful for running SQL queries in different warehouse sizes.
 - **Python kernel** runs on **ML Container Runtime** (compute pool selected for the notebook session)
-- **`%%R` in a Python cell** — R code runs inside the Python process via rpy2. When R calls **RSnowflake** / **dbplyr** or **snowflakeR** `sfr_query()`, that SQL runs on the **virtual warehouse** (same as SQL cells), not on the container pool
+- **`%%R` in a Python cell** — R code runs inside the Python process via rpy2. When R calls **skiLift** / **dbplyr** or **skiPatrol** `sfr_query()`, that SQL runs on the **virtual warehouse** (same as SQL cells), not on the container pool
 
 See [R Cells & Interop](../08_r_cells_and_interop/index.qmd) for data exchange patterns. Container internals (nbctl, uvenv kernel, `/filesystem`): [Appendix G](../appendices/G_workspace_container_internals/index.qmd).
 
@@ -134,7 +134,7 @@ flowchart LR
   WH[Virtual warehouse]
   PY --> Rcell
   PY -->|Snowpark from Python| WH
-  Rcell -->|RSnowflake dbplyr sfr_query| WH
+  Rcell -->|skiLift dbplyr sfr_query| WH
   SQLcell[SQL cells] --> WH
 ```
 
@@ -142,8 +142,8 @@ flowchart LR
 |-----------|---------|------|
 | Python kernel (hosts `%%R` / rpy2) | Compute pool / container runtime | Container credits |
 | SQL cells; Snowpark from Python | Virtual warehouse | Warehouse credits |
-| SQL from R (`%%R` + RSnowflake, dbplyr, snowflakeR) | Virtual warehouse | Warehouse credits |
-| Model training via snowflakeR ML APIs | Mixed — ML API may use warehouse + stages | Both |
+| SQL from R (`%%R` + skiLift, dbplyr, skiPatrol) | Virtual warehouse | Warehouse credits |
+| Model training via skiPatrol ML APIs | Mixed — ML API may use warehouse + stages | Both |
 
 **Practical tips:**
 
@@ -173,7 +173,7 @@ flowchart LR
 | **Workspace Notebooks** | Mixed Python/R/SQL, team Git repos, ML exploration |
 | **[Posit Workbench Native App](https://posit.co/products/enterprise/posit-workbench/)** | Full RStudio/Posit IDE in Snowflake |
 | **ML Jobs** | Non-interactive batch on container runtime |
-| **Local RStudio + RSnowflake** | Familiar desktop IDE, `connections.toml` auth |
+| **Local RStudio + skiLift** | Familiar desktop IDE, `connections.toml` auth |
 | **[RStudio Server in SPCS](../04b_rstudio_spcs/index.qmd)** | Custom containerized IDE (you operate the image) |
 
 ## Next steps {#sec-next}

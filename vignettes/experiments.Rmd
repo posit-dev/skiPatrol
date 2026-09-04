@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-`snowflakeR` exposes **ML experiment tracking** on Snowflake (runs, parameters,
+`skiPatrol` exposes **ML experiment tracking** on Snowflake (runs, parameters,
 metrics, artifacts, and logged models) through a small R API on top of the
 `snowflake-ml-python` SDK. Experiment tracking requires a recent
 **`snowflake-ml-python`** build (see `?sfr_experiment` for the minimum version
@@ -28,7 +28,7 @@ training exploration and **tidymodels `tune`** grids.
 ## Basic workflow
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 exp <- sfr_experiment(conn, name = "MY_EXPERIMENT")

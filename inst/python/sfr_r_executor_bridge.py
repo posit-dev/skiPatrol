@@ -15,7 +15,7 @@ Supports two usage modes:
 
 Architecture:
     R user code
-        -> snowflakeR::sfr_log_executor()
+        -> skiPatrol::sfr_log_executor()
         -> reticulate bridge
         -> sfr_r_executor_bridge.py  (this file)
         -> snowflake.ml.registry + snowflake.ml.model.custom_model

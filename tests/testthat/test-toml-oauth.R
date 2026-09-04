@@ -43,7 +43,7 @@
 test_that(".read_connections_toml attaches toml_file and toml_name", {
   tmp_dir <- .write_oauth_profile()
   withr::with_envvar(c(SNOWFLAKE_HOME = tmp_dir), {
-    profile <- snowflakeR:::.read_connections_toml("workbench")
+    profile <- skiPatrol:::.read_connections_toml("workbench")
     expect_equal(profile$token, "wb-token-123")
     expect_equal(attr(profile, "toml_name"), "workbench")
     expect_equal(attr(profile, "toml_file"), file.path(tmp_dir, "connections.toml"))
@@ -58,7 +58,7 @@ test_that(".read_connections_toml attaches toml_file and toml_name", {
 test_that(".resolve_oauth_connection_name detects an oauth-with-token profile", {
   tmp_dir <- .write_oauth_profile(name = "workbench")
   withr::with_envvar(c(SNOWFLAKE_HOME = tmp_dir), {
-    expect_equal(snowflakeR:::.resolve_oauth_connection_name("workbench"), "workbench")
+    expect_equal(skiPatrol:::.resolve_oauth_connection_name("workbench"), "workbench")
   })
   unlink(tmp_dir, recursive = TRUE)
 })
@@ -69,14 +69,14 @@ test_that(".resolve_oauth_connection_name returns NULL without authenticator=oau
   writeLines(c("[keypair]", 'account = "a"', 'private_key_path = "/k.p8"'),
              file.path(tmp_dir, "connections.toml"))
   withr::with_envvar(c(SNOWFLAKE_HOME = tmp_dir), {
-    expect_null(snowflakeR:::.resolve_oauth_connection_name("keypair"))
+    expect_null(skiPatrol:::.resolve_oauth_connection_name("keypair"))
   })
   unlink(tmp_dir, recursive = TRUE)
 })
 
 test_that(".resolve_oauth_connection_name returns NULL when there is no toml", {
   withr::with_envvar(c(SNOWFLAKE_HOME = tempfile()), {
-    expect_null(snowflakeR:::.resolve_oauth_connection_name(NULL))
+    expect_null(skiPatrol:::.resolve_oauth_connection_name(NULL))
   })
 })
 
@@ -98,7 +98,7 @@ test_that("sfr_connect routes an oauth profile through connection_name, not extr
         }
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   withr::with_envvar(c(SNOWFLAKE_HOME = tmp_dir, SNOWFLAKE_ACCOUNT = NA,
@@ -132,7 +132,7 @@ test_that("an explicit account bypasses the oauth-profile route", {
         }
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   withr::with_envvar(c(SNOWFLAKE_HOME = tmp_dir, SNOWFLAKE_ACCOUNT = NA,
@@ -164,7 +164,7 @@ test_that("an explicit authenticator bypasses the oauth-profile route", {
         }
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   withr::with_envvar(c(SNOWFLAKE_HOME = tmp_dir, SNOWFLAKE_ACCOUNT = NA,
@@ -192,7 +192,7 @@ test_that("sfr_connect(session = ) wraps the given session directly", {
       bridge_touched <<- TRUE
       list(get_active_session = function() stop("should not be called"))
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   conn <- sfr_connect(session = fake)

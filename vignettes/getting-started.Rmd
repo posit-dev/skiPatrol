@@ -1,13 +1,13 @@
 ---
-title: "Getting Started with snowflakeR"
+title: "Getting Started with skiPatrol"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started with snowflakeR}
+  %\VignetteIndexEntry{Getting Started with skiPatrol}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-`snowflakeR` provides a native R interface to the Snowflake ML platform.
+`skiPatrol` provides a native R interface to the Snowflake ML platform.
 This vignette covers installation, connecting to Snowflake, running queries,
 and using the DBI integration.
 
@@ -17,10 +17,10 @@ Install the development version from GitHub:
 
 ```r
 # install.packages("pak")
-pak::pak("Snowflake-Labs/snowflakeR")
+pak::pak("posit-dev/skiPatrol")
 ```
 
-`snowflakeR` requires a Python environment with `snowflake-ml-python`.
+`skiPatrol` requires a Python environment with `snowflake-ml-python`.
 The package includes a helper to set this up:
 
 ```r
@@ -30,8 +30,8 @@ sfr_install_python_deps()
 Or create the environment manually:
 
 ```bash
-conda create -n r-snowflakeR python=3.11 -y
-conda activate r-snowflakeR
+conda create -n r-skiPatrol python=3.11 -y
+conda activate r-skiPatrol
 pip install snowflake-ml-python snowflake-snowpark-python
 ```
 
@@ -40,10 +40,10 @@ pip install snowflake-ml-python snowflake-snowpark-python
 ### Option A: connections.toml (recommended)
 
 If you have a `~/.snowflake/connections.toml` file (the Snowflake standard),
-`snowflakeR` reads it automatically:
+`skiPatrol` reads it automatically:
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 # Default connection from connections.toml
 conn <- sfr_connect()
@@ -133,12 +133,12 @@ sfr_list_fields(conn, "MY_TABLE")
 
 For full DBI compliance (`dbGetQuery`, `dbWriteTable`, `dbListTables`, etc.)
 and `dbplyr` integration, use the companion
-[**RSnowflake**](https://github.com/Snowflake-Labs/RSnowflake) package. You
+[**skiLift**](https://github.com/posit-dev/skiLift) package. You
 can bridge from an `sfr_connection` to a DBI connection with
 `sfr_dbi_connection()`:
 
 ```r
-# Obtain an RSnowflake DBI connection (requires RSnowflake to be installed)
+# Obtain an skiLift DBI connection (requires skiLift to be installed)
 dbi_con <- sfr_dbi_connection(conn)
 
 library(DBI)
@@ -162,12 +162,12 @@ tbl(dbi_con, "MY_TABLE") |>
   collect()
 ```
 
-Alternatively, you can connect directly with RSnowflake without
-`snowflakeR`:
+Alternatively, you can connect directly with skiLift without
+`skiPatrol`:
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 con <- dbConnect(Snowflake(), name = "my_profile")
 ```
 

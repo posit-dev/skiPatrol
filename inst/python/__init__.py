@@ -1,2 +1,2 @@
-# snowflakeR Python bridge modules
+# skiPatrol Python bridge modules
 # These are loaded by R/connect.R via reticulate::import_from_path()

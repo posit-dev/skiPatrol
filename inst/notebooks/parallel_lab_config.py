@@ -2,7 +2,7 @@
 Single source of truth for parallel-lab runtime identifiers.
 
 Reads the `parallel_lab` (and optional `context`) section from
-`snowflaker_parallel_spcs_config.yaml` next to this file. Used by:
+`skipatrol_parallel_spcs_config.yaml` next to this file. Used by:
 
 - workspace_parallel_spcs_setup.ipynb
 - workspace_parallel_spcs_demo.ipynb
@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-DEFAULT_YAML = "snowflaker_parallel_spcs_config.yaml"
+DEFAULT_YAML = "skipatrol_parallel_spcs_config.yaml"
 
 _ENV_PREFIX = "PARALLEL_LAB_"
 

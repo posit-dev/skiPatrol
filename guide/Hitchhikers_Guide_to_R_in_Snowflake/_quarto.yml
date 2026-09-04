@@ -5,7 +5,7 @@ project:
     - scripts/copy_vignette_html_to_site.sh
 
 website:
-  site-url: https://snowflake-labs.github.io/snowflakeR/
+  site-url: https://snowflake-labs.github.io/skiPatrol/
 
 book:
   title: "The Hitchhiker's Guide to R in Snowflake"
@@ -15,7 +15,7 @@ book:
       url: "https://www.linkedin.com/in/fieldy6961/"
   date: "2026-05-29"
   search: true
-  repo-url: https://github.com/Snowflake-Labs/snowflakeR
+  repo-url: https://github.com/posit-dev/skiPatrol
   repo-subdir: guide/Hitchhikers_Guide_to_R_in_Snowflake
   repo-actions: [edit, issue]
 
@@ -45,16 +45,16 @@ book:
     - part: "Beyond R"
       chapters:
         - 10_multilang_beyond_r/index.qmd
-    - part: "RSnowflake"
+    - part: "skiLift"
       chapters:
-        - 11_rsnowflake_sql_api/index.qmd
-        - 12_rsnowflake_connect/index.qmd
-        - 13_rsnowflake_query/index.qmd
-        - 14_rsnowflake_workspace/index.qmd
-    - part: "snowflakeR"
+        - 11_skilift_sql_api/index.qmd
+        - 12_skilift_connect/index.qmd
+        - 13_skilift_query/index.qmd
+        - 14_skilift_workspace/index.qmd
+    - part: "skiPatrol"
       chapters:
         - 15_mlops_on_snowflake/index.qmd
-        - 16_snowflaker_connect/index.qmd
+        - 16_skipatrol_connect/index.qmd
         - 17_feature_store/index.qmd
         - 17b_authoring_feature_views/index.qmd
         - 17a_training_data_in_r/index.qmd
@@ -92,9 +92,9 @@ format:
     highlight-style: github
     open-graph:
       title: "The Hitchhiker's Guide to R in Snowflake"
-      description: "Practical guide to R on Snowflake — platform primer, RStudio, Posit, VS Code, Workspace, RSnowflake, and snowflakeR."
+      description: "Practical guide to R on Snowflake — platform primer, RStudio, Posit, VS Code, Workspace, skiLift, and skiPatrol."
       site-name: "Snowflake-Labs"
-    description: "End-to-end guide for R users — Snowflake platform basics, desktop IDEs, Workspace Notebooks, DBI connectivity, and the snowflakeR ML platform."
+    description: "End-to-end guide for R users — Snowflake platform basics, desktop IDEs, Workspace Notebooks, DBI connectivity, and the skiPatrol ML platform."
 
 execute:
   freeze: auto
@@ -104,4 +104,4 @@ execute:
 jupyter: python3
 
 metadata:
-  keywords: [snowflake, R, RStudio, Posit, VS Code, workspace notebooks, snowflakeR, RSnowflake, mlops]
+  keywords: [snowflake, R, RStudio, Posit, VS Code, workspace notebooks, skiPatrol, skiLift, mlops]

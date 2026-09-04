@@ -194,12 +194,12 @@ sfr_deploy_many_model <- function(reg,
 # =============================================================================
 
 .get_many_model_bridge <- function() {
-  pkg_python <- system.file("python", package = "snowflakeR")
+  pkg_python <- system.file("python", package = "skiPatrol")
   reticulate::import_from_path("sfr_many_model_bridge", path = pkg_python)
 }
 
 .get_registry_bridge <- function() {
-  pkg_python <- system.file("python", package = "snowflakeR")
+  pkg_python <- system.file("python", package = "skiPatrol")
   reticulate::import_from_path("sfr_registry_bridge", path = pkg_python)
 }
 

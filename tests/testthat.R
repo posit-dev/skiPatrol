@@ -5,6 +5,6 @@
 # Learn more about testing at https://r-pkgs.org/testing-basics.html
 
 library(testthat)
-library(snowflakeR)
+library(skiPatrol)
 
-test_check("snowflakeR")
+test_check("skiPatrol")

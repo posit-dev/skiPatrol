@@ -21,11 +21,11 @@ test_that("sfr_connect requires account", {
 
 test_that("validate_connection rejects non-connection objects", {
   expect_error(
-    snowflakeR:::validate_connection("not a connection"),
+    skiPatrol:::validate_connection("not a connection"),
     "sfr_connection"
   )
   expect_error(
-    snowflakeR:::validate_connection(42),
+    skiPatrol:::validate_connection(42),
     "sfr_connection"
   )
 })
@@ -40,8 +40,8 @@ test_that("is_sfr_connection identifies connection objects", {
     list(session = NULL, account = "test"),
     class = c("sfr_connection", "list")
   )
-  expect_true(snowflakeR:::is_sfr_connection(fake_conn))
-  expect_false(snowflakeR:::is_sfr_connection("not a connection"))
+  expect_true(skiPatrol:::is_sfr_connection(fake_conn))
+  expect_false(skiPatrol:::is_sfr_connection("not a connection"))
 })
 
 # ---------------------------------------------------------------------------
@@ -57,16 +57,16 @@ test_that("is_sfr_connection identifies connection objects", {
 # ---------------------------------------------------------------------------
 
 test_that(".clean_session_value treats NA the same as NULL/empty/None", {
-  expect_null(snowflakeR:::.clean_session_value(NA))
-  expect_null(snowflakeR:::.clean_session_value(NA_character_))
-  expect_null(snowflakeR:::.clean_session_value(NULL))
-  expect_null(snowflakeR:::.clean_session_value(""))
-  expect_null(snowflakeR:::.clean_session_value("None"))
+  expect_null(skiPatrol:::.clean_session_value(NA))
+  expect_null(skiPatrol:::.clean_session_value(NA_character_))
+  expect_null(skiPatrol:::.clean_session_value(NULL))
+  expect_null(skiPatrol:::.clean_session_value(""))
+  expect_null(skiPatrol:::.clean_session_value("None"))
 })
 
 test_that(".clean_session_value strips quotes from a real value", {
-  expect_equal(snowflakeR:::.clean_session_value('"MY_WH"'), "MY_WH")
-  expect_equal(snowflakeR:::.clean_session_value("MY_WH"), "MY_WH")
+  expect_equal(skiPatrol:::.clean_session_value('"MY_WH"'), "MY_WH")
+  expect_equal(skiPatrol:::.clean_session_value("MY_WH"), "MY_WH")
 })
 
 test_that("$.sfr_connection does not error when a live getter returns NA", {
@@ -90,7 +90,7 @@ test_that("refresh_conn_from_session does not error on a bare session with nothi
          schema = NULL, role = NULL),
     class = c("sfr_connection", "list")
   )
-  result <- snowflakeR:::refresh_conn_from_session(fake_conn)
+  result <- skiPatrol:::refresh_conn_from_session(fake_conn)
   expect_null(result[["warehouse"]])
   expect_null(result[["database"]])
   expect_null(result[["schema"]])

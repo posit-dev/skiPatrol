@@ -1,6 +1,6 @@
-# snowflakeR Notebooks
+# skiPatrol Notebooks
 
-Interactive Jupyter notebooks demonstrating the `snowflakeR` package.
+Interactive Jupyter notebooks demonstrating the `skiPatrol` package.
 
 ## Contents
 
@@ -32,13 +32,13 @@ Interactive Jupyter notebooks demonstrating the `snowflakeR` package.
 | File | Purpose |
 |---|---|
 | `sfnb_setup.py` | All-in-one bootstrap: EAI, R runtime, packages, session context (Workspace) |
-| `snowflaker_config.yaml` | Per-notebook config for quickstart, model registry, feature store |
-| `snowflaker_forecast_config.yaml` | Per-notebook config for forecasting demo |
-| `snowflaker_feature_store_config.yaml` | Per-notebook config for feature store demo |
-| `snowflaker_credit_risk_config.yaml` | Per-notebook config for credit risk demo |
-| `snowflaker_parallel_spcs_config.yaml` | Parallel SPCS / doSnowflake / forecast lab |
+| `skipatrol_config.yaml` | Per-notebook config for quickstart, model registry, feature store |
+| `skipatrol_forecast_config.yaml` | Per-notebook config for forecasting demo |
+| `skipatrol_feature_store_config.yaml` | Per-notebook config for feature store demo |
+| `skipatrol_credit_risk_config.yaml` | Per-notebook config for credit risk demo |
+| `skipatrol_parallel_spcs_config.yaml` | Parallel SPCS / doSnowflake / forecast lab |
 | `PARALLEL_SPCS_DEMO.md` | Design notes: monitoring pattern, bundled Registry inference |
-| `parallel_lab_config.py` | Loads `parallel_lab` from `snowflaker_parallel_spcs_config.yaml` (shared by 3 notebooks + Streamlit) |
+| `parallel_lab_config.py` | Loads `parallel_lab` from `skipatrol_parallel_spcs_config.yaml` (shared by 3 notebooks + Streamlit) |
 | `streamlit_parallel_demo_monitor.py` | Streamlit monitor (FQNs from the same YAML as the notebooks) |
 
 ## Quick Start
@@ -50,7 +50,7 @@ optional -- if omitted, `setup_notebook()` uses the Snowpark session's
 current database, schema, and warehouse as defaults:
 
 ```yaml
-# snowflaker_config.yaml (example)
+# skipatrol_config.yaml (example)
 context:
   warehouse: "MY_WAREHOUSE"
   database: "MY_DATABASE"
@@ -63,7 +63,7 @@ languages:
   r:
     enabled: true
     tarballs:
-      snowflakeR: "https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.1.0/snowflakeR_0.1.0.tar.gz"
+      skiPatrol: "https://github.com/posit-dev/skiPatrol/releases/download/v0.1.0/skiPatrol_0.1.0.tar.gz"
 ```
 
 ### 2. Choose your environment
@@ -77,28 +77,28 @@ languages:
    - Installs R via [sfnb-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang)
    - Installs R packages (from tarballs or GitHub)
    - Sets session context (USE WAREHOUSE/DATABASE/SCHEMA)
-   - Exports SPCS OAuth env vars for RSnowflake DBI connectivity
+   - Exports SPCS OAuth env vars for skiLift DBI connectivity
 4. If this is a first-time setup and no EAI is attached yet, follow the
    printed instructions to attach it via the Snowsight UI (one-time step)
 
 **Local R environments** (RStudio, Posit Workbench, JupyterLab with R kernel):
 
 1. Open `local_quickstart.ipynb` (or copy cells to an R script)
-2. Ensure `snowflakeR` is installed (`pak::pak("Snowflake-Labs/snowflakeR")`)
+2. Ensure `skiPatrol` is installed (`pak::pak("posit-dev/skiPatrol")`)
 3. Configure `connections.toml` or pass credentials to `sfr_connect()`
 
 ## Accessing notebooks from an installed package
 
-After installing `snowflakeR`, find the notebooks with:
+After installing `skiPatrol`, find the notebooks with:
 
 ```r
-system.file("notebooks", package = "snowflakeR")
+system.file("notebooks", package = "skiPatrol")
 ```
 
 Or copy them to your working directory:
 
 ```r
-nb_dir <- system.file("notebooks", package = "snowflakeR")
+nb_dir <- system.file("notebooks", package = "skiPatrol")
 file.copy(list.files(nb_dir, full.names = TRUE), ".", recursive = TRUE)
 ```
 
@@ -106,15 +106,15 @@ file.copy(list.files(nb_dir, full.names = TRUE), ".", recursive = TRUE)
 
 These notebooks use `sfr_query()` and `sfr_execute()` for SQL. For full
 DBI compliance and `dbplyr` integration, install the companion
-[RSnowflake](https://github.com/Snowflake-Labs/RSnowflake) package and use
+[skiLift](https://github.com/posit-dev/skiLift) package and use
 `sfr_dbi_connection()` to bridge from an `sfr_connection`. See the
 `local_quickstart.ipynb` Section 4 for examples, or the standalone
-`RSnowflake/inst/notebooks/workspace_rsnowflake_test.ipynb`.
+`skiLift/inst/notebooks/workspace_skilift_test.ipynb`.
 
-## RSnowflake Test Notebook
+## skiLift Test Notebook
 
-A standalone test notebook for the **RSnowflake** DBI package is available at
-`RSnowflake/inst/notebooks/workspace_rsnowflake_test.ipynb`.
+A standalone test notebook for the **skiLift** DBI package is available at
+`skiLift/inst/notebooks/workspace_skilift_test.ipynb`.
 
 ## Troubleshooting: Model Registry & SPCS Inference
 
@@ -123,13 +123,13 @@ A standalone test notebook for the **RSnowflake** DBI package is available at
 If SPCS inference fails with `Error in hardhat::forge(new_data, blueprint = ...):`
 followed by an empty message, this is almost always a **column name case mismatch**.
 
-`snowflakeR` preserves column names as-is from Snowflake (UPPER case for
+`skiPatrol` preserves column names as-is from Snowflake (UPPER case for
 unquoted identifiers). Column names are consistent throughout the entire pipeline
 (training, registration, inference) so this error should not occur with default
 settings. If it does, verify that `names(new_data)` matches the columns the
 model was trained on.
 
-If you use `options(snowflakeR.lowercase_columns = TRUE)`, ensure this setting
+If you use `options(skiPatrol.lowercase_columns = TRUE)`, ensure this setting
 is consistent between training and inference environments.
 
 The empty error message occurs because `rlang`/`cli` error formatting uses ANSI

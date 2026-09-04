@@ -24,7 +24,7 @@ test_that("sfr_experiment creates correct S3 object and fields", {
     get_bridge_module = function(module_name) {
       list(set_experiment = function(...) invisible(NULL))
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   conn <- mock_sfr_conn()
@@ -44,7 +44,7 @@ test_that("print.sfr_experiment outputs expected class and name", {
     get_bridge_module = function(module_name) {
       list(set_experiment = function(...) invisible(NULL))
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   conn <- mock_sfr_conn()
@@ -59,7 +59,7 @@ test_that("sfr_start_run validates experiment class", {
     get_bridge_module = function(module_name) {
       list(start_run = function(...) invisible(NULL))
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   expect_error(
@@ -74,7 +74,7 @@ test_that("sfr_end_run validates experiment class", {
     get_bridge_module = function(module_name) {
       list(end_run = function(...) invisible(NULL))
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   expect_error(
@@ -89,7 +89,7 @@ test_that("sfr_exp_log_param validates experiment class", {
     get_bridge_module = function(module_name) {
       list(log_param = function(...) invisible(NULL))
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   expect_error(
@@ -112,7 +112,7 @@ test_that("sfr_exp_log_params converts ... to named list for bridge", {
         }
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   conn <- mock_sfr_conn()
@@ -130,7 +130,7 @@ test_that("sfr_exp_log_metric validates experiment class", {
     get_bridge_module = function(module_name) {
       list(log_metric = function(...) invisible(NULL))
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   expect_error(

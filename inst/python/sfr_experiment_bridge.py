@@ -2,7 +2,7 @@
 Snowflake Experiment Tracking Bridge for R
 ==========================================
 
-Python backend for snowflakeR::R/experiments.R.
+Python backend for skiPatrol::R/experiments.R.
 
 The ExperimentTracking class is a singleton -- only one active experiment/run
 context at a time. This module manages the global instance.

@@ -1,4 +1,4 @@
-# snowflakeR 0.2.0
+# skiPatrol 0.2.0
 
 ## New modules
 

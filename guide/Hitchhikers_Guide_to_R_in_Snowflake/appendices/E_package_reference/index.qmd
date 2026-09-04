@@ -5,23 +5,23 @@ subtitle: "Vignettes, repos, and API documentation"
 
 Package vignettes remain the **API reference of record**. This guide provides narrative context; use `?function` and vignettes for signatures and edge cases.
 
-**Browser-readable vignettes:** [Appendix H — Package vignettes (HTML)](../H_package_vignettes/index.qmd) links snowflakeR `inst/doc` HTML on this site and RSnowflake vignettes on GitHub (new tab).
+**Browser-readable vignettes:** [Appendix H — Package vignettes (HTML)](../H_package_vignettes/index.qmd) links skiPatrol `inst/doc` HTML on this site and skiLift vignettes on GitHub (new tab).
 
 ---
 
-## snowflakeR {#sec-snowflaker}
+## skiPatrol {#sec-skipatrol}
 
 | Resource | Link |
 |----------|------|
-| GitHub | [Snowflake-Labs/snowflakeR](https://github.com/Snowflake-Labs/snowflakeR) |
-| Issues | [github.com/Snowflake-Labs/snowflakeR/issues](https://github.com/Snowflake-Labs/snowflakeR/issues) |
-| Reference PDF | `system.file("doc/snowflakeR-reference.pdf", package = "snowflakeR")` |
+| GitHub | [posit-dev/skiPatrol](https://github.com/posit-dev/skiPatrol) |
+| Issues | [github.com/posit-dev/skiPatrol/issues](https://github.com/posit-dev/skiPatrol/issues) |
+| Reference PDF | `system.file("doc/skiPatrol-reference.pdf", package = "skiPatrol")` |
 
-After install: `browseVignettes("snowflakeR")`
+After install: `browseVignettes("skiPatrol")`
 
 | Vignette | Topic | Guide chapter |
 |----------|-------|---------------|
-| `getting-started` | Connect, query, tables | [16](../../16_snowflaker_connect/index.qmd) |
+| `getting-started` | Connect, query, tables | [16](../../16_skipatrol_connect/index.qmd) |
 | `setup` | Local env, Python, auth, IDE | [03](../../03_local_r_setup/index.qmd), [04](../../04_rstudio_posit_vscode/index.qmd) |
 | `workspace-notebooks` | `%%R`, bootstrap, outputs | [06–08](../../06_workspace_bootstrap/index.qmd) |
 | `feature-store` | Entities, views, datasets | [17](../../17_feature_store/index.qmd) |
@@ -44,17 +44,17 @@ After install: `browseVignettes("snowflakeR")`
 
 ---
 
-## RSnowflake {#sec-rsnowflake}
+## skiLift {#sec-skilift}
 
 | Resource | Link |
 |----------|------|
-| GitHub | [Snowflake-Labs/RSnowflake](https://github.com/Snowflake-Labs/RSnowflake) |
-| WORKSPACE_ADBC.md | [Workspace + ADBC engineering note](https://github.com/Snowflake-Labs/RSnowflake/blob/main/WORKSPACE_ADBC.md) |
+| GitHub | [posit-dev/skiLift](https://github.com/posit-dev/skiLift) |
+| WORKSPACE_ADBC.md | [Workspace + ADBC engineering note](https://github.com/posit-dev/skiLift/blob/main/WORKSPACE_ADBC.md) |
 
 | Vignette | Topic | Guide chapter |
 |----------|-------|---------------|
-| `getting-started` | DBI, auth, dbplyr, Arrow, bulk write | [12–13](../../12_rsnowflake_connect/index.qmd) |
-| `workspace-rsnowflake` | Workspace bootstrap, ADBC, gateway | [14](../../14_rsnowflake_workspace/index.qmd) |
+| `getting-started` | DBI, auth, dbplyr, Arrow, bulk write | [12–13](../../12_skilift_connect/index.qmd) |
+| `workspace-skilift` | Workspace bootstrap, ADBC, gateway | [14](../../14_skilift_workspace/index.qmd) |
 
 ---
 

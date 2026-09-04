@@ -15,16 +15,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette outlines **parallel and distributed R** options in `snowflakeR`:
+This vignette outlines **parallel and distributed R** options in `skiPatrol`:
 the **`foreach`** backend **doSnowflake**, the **generic SPCS R executor**, and
 optional **`crew`** / **mirai** workers. All patterns assume you are connected
 with `sfr_connect()` and have the right Snowflake entitlements (SPCS compute
 pools, image repositories, and where applicable Hybrid Tables or Tasks).
 
 For runnable Workspace examples, use the notebooks shipped under
-`system.file("notebooks", package = "snowflakeR")`, especially
+`system.file("notebooks", package = "skiPatrol")`, especially
 `workspace_parallel_spcs_setup.ipynb`, `workspace_parallel_spcs_demo.ipynb`,
-`snowflaker_parallel_spcs_config.yaml`, and `PARALLEL_SPCS_DEMO.md`.
+`skipatrol_parallel_spcs_config.yaml`, and `PARALLEL_SPCS_DEMO.md`.
 
 ## doSnowflake (`foreach`)
 
@@ -32,7 +32,7 @@ Install the **Suggests** packages `foreach` and `iterators`, then register a
 backend:
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 library(foreach)
 
 conn <- sfr_connect()
@@ -108,7 +108,7 @@ back to the controller. This path requires suggested packages **crew** and
 
 ```r
 library(crew)
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 ctl <- crew_controller_spcs(

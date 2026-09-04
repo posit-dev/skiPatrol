@@ -6,7 +6,7 @@ Python bridge for launching and managing SPCS containers as crew/mirai
 workers. Each worker connects back to a controller via TCP (NNG protocol)
 and processes tasks on demand.
 
-Called from R via reticulate (snowflakeR::crew_launcher_spcs).
+Called from R via reticulate (skiPatrol::crew_launcher_spcs).
 """
 
 import json

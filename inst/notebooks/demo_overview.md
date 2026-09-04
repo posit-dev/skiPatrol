@@ -16,19 +16,19 @@ installs packages, and configures the `%%R` cell magic.
 
 **Repo:** [github.com/Snowflake-Labs/snowflake-notebook-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang)
 
-### 2. `RSnowflake`
+### 2. `skiLift`
 **What:** DBI-compliant database driver for Snowflake from R.
 Supports REST API, ADBC (Arrow-native), and SPCS OAuth authentication.
 Enables `dbplyr` for dplyr-to-SQL translation -- write R, execute in Snowflake.
 
-**Repo:** [github.com/Snowflake-Labs/RSnowflake](https://github.com/Snowflake-Labs/RSnowflake)
+**Repo:** [github.com/posit-dev/skiLift](https://github.com/posit-dev/skiLift)
 
-### 3. `snowflakeR`
+### 3. `skiPatrol`
 **What:** R interface to Snowflake's ML platform -- Feature Store, Model Registry,
 Datasets, and SPCS deployment. Train models in R, register them in Snowflake,
 and serve them in containers. Full ML Lineage support.
 
-**Repo:** [github.com/Snowflake-Labs/snowflakeR](https://github.com/Snowflake-Labs/snowflakeR)
+**Repo:** [github.com/posit-dev/skiPatrol](https://github.com/posit-dev/skiPatrol)
 
 ## Architecture
 
@@ -39,8 +39,8 @@ and serve them in containers. Full ML Lineage support.
 │  Python cells    R cells (%%R magic)    SQL cells               │
 │       │                │                    │                   │
 │       │       ┌────────┴────────┐           │                   │
-│       │       │   RSnowflake    │ DBI/dbplyr│                   │
-│       │       │   snowflakeR    │ ML platform                   │
+│       │       │   skiLift    │ DBI/dbplyr│                   │
+│       │       │   skiPatrol    │ ML platform                   │
 │       │       └────────┬────────┘           │                   │
 │       │                │                    │                   │
 │       │       Python bridge (rpy2)          │                   │
@@ -67,7 +67,7 @@ and serve them in containers. Full ML Lineage support.
   (CRAN, GitHub, conda-forge). The setup process detects or creates the required
   External Access Integration (EAI) and network rules automatically. If the user lacks
   `CREATE INTEGRATION` privileges, a SQL script is provided for an admin to run.
-- **No Python required from the R user** -- `snowflakeR` handles the Python bridge internally
+- **No Python required from the R user** -- `skiPatrol` handles the Python bridge internally
 - **Snowflake-native objects** -- Feature Views, Datasets, and Models created in R are
   visible and usable from Python (and vice versa)
 - **Train in R, serve in Snowflake** -- Models are wrapped in a Python `CustomModel`
@@ -81,8 +81,8 @@ and serve them in containers. Full ML Lineage support.
 An end-to-end workflow using real marketing data:
 
 1. **Setup** -- `snowflake-notebook-multilang` bootstraps R + packages (~2 min)
-2. **Connect** -- `RSnowflake` provides DBI connectivity, `dbplyr` for lazy SQL
-3. **Feature Store** -- `snowflakeR` creates Feature Views from dplyr pipelines
+2. **Connect** -- `skiLift` provides DBI connectivity, `dbplyr` for lazy SQL
+3. **Feature Store** -- `skiPatrol` creates Feature Views from dplyr pipelines
 4. **CausalImpact** -- Bayesian causal inference to measure campaign lift
 5. **Model Registry** -- Register the bsts model with full ML Lineage
 6. **Robyn** -- Marketing Mix Modeling with Meta's open-source MMM framework

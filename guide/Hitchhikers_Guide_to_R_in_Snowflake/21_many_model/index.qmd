@@ -12,11 +12,11 @@ That pattern is everywhere in retail, supply chain, and IoT, but it collides wit
 1. **Scale** — thousands of `for` loops on a laptop take days
 2. **Governance** — exporting each series to CSV loses Snowflake's access controls and lineage
 
-snowflakeR addresses both by combining **doSnowflake** (parallel R on SPCS), **stage** persistence (`.rds` models in-account), and **Model Registry** batch APIs (`sfr_log_many_model()`, `sfr_run_batch()`). You write one `foreach` loop; Snowflake runs it across a compute pool and registers the result as a **single registry version** that knows how to score every partition.
+skiPatrol addresses both by combining **doSnowflake** (parallel R on SPCS), **stage** persistence (`.rds` models in-account), and **Model Registry** batch APIs (`sfr_log_many_model()`, `sfr_run_batch()`). You write one `foreach` loop; Snowflake runs it across a compute pool and registers the result as a **single registry version** that knows how to score every partition.
 
 This chapter applies **doSnowflake** to partitioned forecasting and registry batch scoring. Read [Parallel doSnowflake](../22_parallel_dosnowflake/index.qmd) first for serialization, `tasks/task_XXX.rds`, queue rows, and **how `unit_data` reaches workers** (`data_query` vs stage files).
 
-Primary reference: [many-model-howto vignette (HTML)](../appendices/H_package_vignettes/index.qmd#sec-snowflaker) or `vignette("many-model-howto", package = "snowflakeR")` after install.
+Primary reference: [many-model-howto vignette (HTML)](../appendices/H_package_vignettes/index.qmd#sec-skipatrol) or `vignette("many-model-howto", package = "skiPatrol")` after install.
 
 ## Learning Objectives
 
@@ -140,7 +140,7 @@ flowchart LR
   P2 --> STG[Refined .rds on stage]
 ```
 
-Runnable walkthrough: [many-model-howto](https://github.com/Snowflake-Labs/snowflakeR/blob/main/vignettes/many-model-howto.Rmd) vignette and `workspace_parallel_spcs_demo.ipynb` in [snowflakeR/inst/notebooks](https://github.com/Snowflake-Labs/snowflakeR/tree/main/inst/notebooks).
+Runnable walkthrough: [many-model-howto](https://github.com/posit-dev/skiPatrol/blob/main/vignettes/many-model-howto.Rmd) vignette and `workspace_parallel_spcs_demo.ipynb` in [skiPatrol/inst/notebooks](https://github.com/posit-dev/skiPatrol/tree/main/inst/notebooks).
 
 ---
 
@@ -216,7 +216,7 @@ parallel_lab:
 Setup workflow:
 
 ```r
-cfg  <- parallel_lab_load_config("snowflaker_parallel_spcs_config.yaml")
+cfg  <- parallel_lab_load_config("skipatrol_parallel_spcs_config.yaml")
 conn <- sfr_connect(name = "my_demo_jwt")
 parallel_lab_setup(conn, cfg, create_series = TRUE, n_units = 2000)
 ```
@@ -258,7 +258,7 @@ Snowflake runs **server-side** scoring: for each partition, load `.rds` from sta
 | Resource | Description |
 |----------|-------------|
 | `many-model-howto` vignette | Step-by-step with code excerpts |
-| `workspace_parallel_spcs_setup.ipynb` | One-time infrastructure (snowflakeR `inst/notebooks`) |
+| `workspace_parallel_spcs_setup.ipynb` | One-time infrastructure (skiPatrol `inst/notebooks`) |
 | `workspace_parallel_spcs_demo.ipynb` | Runnable forecast demo |
 
 ---

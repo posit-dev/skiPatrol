@@ -7,9 +7,9 @@ subtitle: "Log, deploy, and serve R models"
 
 Training a model in R is only half the MLOps story. Production needs **versioned artifacts**, **metadata**, **reproducible deployment**, and **governed inference** — the same discipline application teams apply with git and CI/CD, not a shared drive of `model_v3_final.RData`.
 
-The Snowflake **Model Registry** is the in-account **system of record** for ML models. Each **version** is an immutable snapshot: serialized model files, schema contracts, metrics, lineage to training data, and the configuration needed to run inference. Python teams use `snowflake-ml-python` directly; **snowflakeR** lets R teams register fits from `lm`, tidymodels, forecast, lme4, and custom objects via **`sfr_log_model()`** without hand-writing Python serving code.
+The Snowflake **Model Registry** is the in-account **system of record** for ML models. Each **version** is an immutable snapshot: serialized model files, schema contracts, metrics, lineage to training data, and the configuration needed to run inference. Python teams use `snowflake-ml-python` directly; **skiPatrol** lets R teams register fits from `lm`, tidymodels, forecast, lme4, and custom objects via **`sfr_log_model()`** without hand-writing Python serving code.
 
-The important architectural fact: Snowflake's **serving runtime is Python-first**. snowflakeR bridges that gap at registration time by uploading your `.rds` and a generated **CustomModel** wrapper. At inference, **SPCS** runs Python, which calls back into R through **rpy2** to execute `predict()` — you stay in R for training; the platform handles the container contract.
+The important architectural fact: Snowflake's **serving runtime is Python-first**. skiPatrol bridges that gap at registration time by uploading your `.rds` and a generated **CustomModel** wrapper. At inference, **SPCS** runs Python, which calls back into R through **rpy2** to execute `predict()` — you stay in R for training; the platform handles the container contract.
 
 Context: [MLOps on Snowflake](../15_mlops_on_snowflake/index.qmd) (lifecycle and Posit interplay), [Feature Store](../17_feature_store/index.qmd) (datasets and lineage inputs).
 
@@ -125,7 +125,7 @@ Understanding the two runtimes — **your R session at log time** vs **the SPCS 
 ```{mermaid}
 sequenceDiagram
   participant R as R train session
-  participant SFR as snowflakeR
+  participant SFR as skiPatrol
   participant ST as Internal stage
   participant REG as Model Registry
   participant SPCS as SPCS inference container
@@ -172,7 +172,7 @@ Same bridges as [Architecture](../02_architecture/index.qmd), reversed at serve 
 Start every registry workflow by connecting and pinning the catalog location. Explicit `sfr_model_registry()` avoids ambiguity when your notebook session database/schema differ from where models should live.
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 conn <- sfr_load_notebook_config(conn)
 
@@ -203,7 +203,7 @@ preds <- sfr_predict_local(model, test_data)
 
 If this fails or column names differ from your production scoring table, fix it here — SPCS deploy/debug cycles are much slower.
 
-**tidymodels:** pass the fitted **workflow** object to `sfr_log_model()`; snowflakeR extracts the parsnip fit and predict interface.
+**tidymodels:** pass the fitted **workflow** object to `sfr_log_model()`; skiPatrol extracts the parsnip fit and predict interface.
 
 ---
 

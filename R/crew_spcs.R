@@ -42,7 +42,7 @@
 #' @examples
 #' \dontrun{
 #' library(crew)
-#' library(snowflakeR)
+#' library(skiPatrol)
 #'
 #' conn <- sfr_connect()
 #' controller <- crew_controller_spcs(
@@ -265,6 +265,6 @@ sfr_crew_launch_workers <- function(conn,
 # =============================================================================
 
 .get_crew_bridge <- function() {
-  pkg_python <- system.file("python", package = "snowflakeR")
+  pkg_python <- system.file("python", package = "skiPatrol")
   reticulate::import_from_path("sfr_crew_bridge", path = pkg_python)
 }

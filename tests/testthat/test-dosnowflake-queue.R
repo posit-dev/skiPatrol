@@ -69,7 +69,7 @@ test_that("sfr_parcel_iterator handles parcel_size larger than keys", {
 
 test_that(".resolve_queue_options errors for ephemeral without compute_pool", {
   data <- list(options = list(worker_type = "ephemeral"))
-  expect_error(snowflakeR:::.resolve_queue_options(data), "compute_pool")
+  expect_error(skiPatrol:::.resolve_queue_options(data), "compute_pool")
 })
 
 test_that(".resolve_queue_options errors for ephemeral without image_uri", {
@@ -77,12 +77,12 @@ test_that(".resolve_queue_options errors for ephemeral without image_uri", {
     worker_type = "ephemeral",
     compute_pool = "MY_POOL"
   ))
-  expect_error(snowflakeR:::.resolve_queue_options(data), "image_uri")
+  expect_error(skiPatrol:::.resolve_queue_options(data), "image_uri")
 })
 
 test_that(".resolve_queue_options succeeds for persistent without compute_pool", {
   data <- list(options = list(worker_type = "persistent"))
-  opts <- snowflakeR:::.resolve_queue_options(data)
+  opts <- skiPatrol:::.resolve_queue_options(data)
   expect_equal(opts$worker_type, "persistent")
   expect_equal(opts$compute_pool, "")
 })
@@ -93,7 +93,7 @@ test_that(".resolve_queue_options sets defaults correctly", {
     compute_pool = "MY_POOL",
     image_uri    = "/db/schema/repo/worker:latest"
   ))
-  opts <- snowflakeR:::.resolve_queue_options(data)
+  opts <- skiPatrol:::.resolve_queue_options(data)
   expect_equal(opts$queue_fqn, "CONFIG.DOSNOWFLAKE_QUEUE")
   expect_equal(opts$stage, "DOSNOWFLAKE_STAGE")
   expect_equal(opts$n_workers, 4L)
@@ -105,7 +105,7 @@ test_that(".resolve_queue_options sets defaults correctly", {
 
 test_that(".resolve_queue_options rejects invalid worker_type", {
   data <- list(options = list(worker_type = "invalid"))
-  expect_error(snowflakeR:::.resolve_queue_options(data), "ephemeral")
+  expect_error(skiPatrol:::.resolve_queue_options(data), "ephemeral")
 })
 
 test_that(".resolve_queue_options respects user overrides", {
@@ -120,7 +120,7 @@ test_that(".resolve_queue_options respects user overrides", {
     stale_timeout_sec = 300,
     chunks_per_job = 20
   ))
-  opts <- snowflakeR:::.resolve_queue_options(data)
+  opts <- skiPatrol:::.resolve_queue_options(data)
   expect_equal(opts$n_workers, 8L)
   expect_equal(opts$queue_fqn, "CUSTOM.MY_QUEUE")
   expect_equal(opts$timeout_min, 60)
@@ -135,17 +135,17 @@ test_that(".resolve_queue_options respects user overrides", {
 
 test_that(".doSnowflakeQueueInfo returns correct worker count", {
   data <- list(options = list(n_workers = 6))
-  expect_equal(snowflakeR:::.doSnowflakeQueueInfo(data, "workers"), 6L)
+  expect_equal(skiPatrol:::.doSnowflakeQueueInfo(data, "workers"), 6L)
 })
 
 test_that(".doSnowflakeQueueInfo returns name", {
   data <- list(options = list())
-  expect_equal(snowflakeR:::.doSnowflakeQueueInfo(data, "name"), "doSnowflake")
+  expect_equal(skiPatrol:::.doSnowflakeQueueInfo(data, "name"), "doSnowflake")
 })
 
 test_that(".doSnowflakeQueueInfo returns version", {
   data <- list(options = list())
-  v <- snowflakeR:::.doSnowflakeQueueInfo(data, "version")
+  v <- skiPatrol:::.doSnowflakeQueueInfo(data, "version")
   expect_true(nzchar(v))
 })
 

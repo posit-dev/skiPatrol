@@ -40,7 +40,7 @@ test_that(".r_is_conda_build falls back to CONDA_PREFIX containment", {
 # ---------------------------------------------------------------------------
 
 test_that("a conda-build R gets an exact r-base pin", {
-  local_mocked_bindings(.r_is_conda_build = function(...) TRUE, .package = "snowflakeR")
+  local_mocked_bindings(.r_is_conda_build = function(...) TRUE, .package = "skiPatrol")
 
   result <- suppressMessages(.pin_r_versions(character(0), NULL))
   expected <- paste0("r-base==", R.version$major, ".", R.version$minor)
@@ -48,14 +48,14 @@ test_that("a conda-build R gets an exact r-base pin", {
 })
 
 test_that("a non-conda R does not get an exact r-base pin", {
-  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "snowflakeR")
+  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "skiPatrol")
 
   result <- suppressMessages(.pin_r_versions(character(0), NULL))
   expect_false(any(grepl("^r-base==", result)))
 })
 
 test_that("a non-conda R informs, rather than silently dropping the pin", {
-  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "snowflakeR")
+  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "skiPatrol")
 
   expect_message(
     .pin_r_versions(character(0), NULL),
@@ -64,12 +64,12 @@ test_that("a non-conda R informs, rather than silently dropping the pin", {
 })
 
 test_that("a user-supplied r-base pin is never overridden, conda or not", {
-  local_mocked_bindings(.r_is_conda_build = function(...) TRUE, .package = "snowflakeR")
+  local_mocked_bindings(.r_is_conda_build = function(...) TRUE, .package = "skiPatrol")
   result_conda <- suppressMessages(.pin_r_versions(character(0), "r-base==4.5.3"))
   expect_equal(sum(grepl("^r-base", result_conda)), 1L)
   expect_true("r-base==4.5.3" %in% result_conda)
 
-  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "snowflakeR")
+  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "skiPatrol")
   result_nonconda <- suppressMessages(.pin_r_versions(character(0), "r-base==4.5.3"))
   expect_equal(sum(grepl("^r-base", result_nonconda)), 1L)
   expect_true("r-base==4.5.3" %in% result_nonconda)
@@ -79,12 +79,12 @@ test_that("the recent-release staleness warning only fires when r-base was actua
   # Regression for DB-9's other half: the warning must not fire on the
   # non-conda path, where r-base is deliberately left unpinned and release
   # age is irrelevant to what the solver will pick.
-  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "snowflakeR")
+  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "skiPatrol")
   expect_no_warning(suppressMessages(.pin_r_versions(character(0), NULL)))
 })
 
 test_that("pin_versions = FALSE still allows explicit conda_deps through untouched", {
-  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "snowflakeR")
+  local_mocked_bindings(.r_is_conda_build = function(...) FALSE, .package = "skiPatrol")
   result <- suppressMessages(.pin_r_versions(character(0), c("numpy<2.0")))
   expect_true("numpy<2.0" %in% result)
   expect_false(any(grepl("^r-base", result)))

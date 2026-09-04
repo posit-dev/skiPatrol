@@ -5,7 +5,7 @@ subtitle: "foreach, Tasks, queue mode, and SPCS R workers"
 
 ## Overview
 
-If you have used R's **`foreach`** package with `%dopar%`, you already know the pattern: express parallel work as a loop, let a backend decide how iterations run. **doSnowflake** is snowflakeR's backend for that interface — it takes the same `foreach` loop you would run on your laptop and dispatches iterations to **Snowflake compute** instead.
+If you have used R's **`foreach`** package with `%dopar%`, you already know the pattern: express parallel work as a loop, let a backend decide how iterations run. **doSnowflake** is skiPatrol's backend for that interface — it takes the same `foreach` loop you would run on your laptop and dispatches iterations to **Snowflake compute** instead.
 
 That matters because many R workloads — many-model forecasting, hyperparameter grids, per-partition feature engineering — are **embarrassingly parallel**: each iteration is independent, but there may be thousands of them. Running them sequentially in a Workspace notebook or on a desktop does not scale. Copying data out of Snowflake to a separate HPC cluster breaks governance. doSnowflake keeps data and execution **in-account** by running R inside **Snowpark Container Services (SPCS)** containers, coordinated either by **Snowflake Tasks** or a **Hybrid Table queue**.
 
@@ -147,7 +147,7 @@ Use local mode to:
 The cluster is **cached** across successive `%dopar%` calls until you call `stopDoSnowflake()`. Worker count defaults to `"auto"` (detected CPU cores minus one for the master thread).
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 library(foreach)
 
 conn <- sfr_connect()
@@ -196,7 +196,7 @@ sfr_dosnowflake_build_image(
 SPCS runs **linux/amd64** only. On Apple Silicon, build with `--platform linux/amd64`. Wrong architecture produces `exec format error` at container start — often reported as job `395030` with empty logs. After rebuilding, **cycle the compute pool** (suspend/resume) so nodes pull the new image.
 :::
 
-Reference Dockerfiles ship with snowflakeR under [`inst/workers/`](https://github.com/Snowflake-Labs/snowflakeR/tree/main/inst/workers) (see `?sfr_dosnowflake_build_image`).
+Reference Dockerfiles ship with skiPatrol under [`inst/workers/`](https://github.com/posit-dev/skiPatrol/tree/main/inst/workers) (see `?sfr_dosnowflake_build_image`).
 
 ---
 
@@ -408,7 +408,7 @@ When a worker **claims** a row, it reads `CHUNK_ID` and `STAGE_PATH`, loads `tas
 
 ### Who creates `task_XXX.rds`? {#sec-serialize}
 
-**You do not create these files.** When your master session runs `%dopar%`, doSnowflake's serializer (`.serialize_job_to_stage()` in snowflakeR) automatically:
+**You do not create these files.** When your master session runs `%dopar%`, doSnowflake's serializer (`.serialize_job_to_stage()` in skiPatrol) automatically:
 
 1. Expands your `foreach` iterator into a list of per-iteration argument lists (e.g. `list(unit_id = "SKU_001")`, …).
 2. Groups them into chunks according to `chunks_per_job`.
@@ -469,7 +469,7 @@ foreach(unit_id = sku_ids, .combine = rbind, .packages = "forecast") %dopar% {
 
 **Warehouse sizing:** each **active chunk** can run one bulk read while its SPCS container processes iterations. With Tasks mode, many chunks may start together; with queue mode, concurrency is roughly `n_workers` × chunks in flight. If hundreds of workers hit Snowflake at once, use a **multi-cluster warehouse** (or cap `n_workers` / pool size) so the read layer does not queue excessively. The warehouse in `data_query` is for **data reads**; a separate warehouse often handles Task orchestration and queue polling SQL (see `registerDoSnowflake(..., warehouse = ...)`).
 
-Workers use **RSnowflake inside SPCS** for this read — keep queries bounded with the `IN (...)` list for keys in the chunk only, not full table scans per iteration.
+Workers use **skiLift inside SPCS** for this read — keep queries bounded with the `IN (...)` list for keys in the chunk only, not full table scans per iteration.
 
 ### Pattern B — Input files on stage {#sec-data-stage}
 
@@ -560,7 +560,7 @@ See [Many-Model Patterns](../21_many_model/index.qmd) for the full forecasting p
 
 All remote modes move **serialized R objects** and **result files** through an internal **stage**. Workers access the stage via **volume mounts** mapped into the container filesystem — not via SQL `GET`/`PUT`.
 
-RSnowflake connects through the **SQL REST API**, which does not support client-side `GET`/`PUT`. SPCS workers therefore **must** use mounted paths:
+skiLift connects through the **SQL REST API**, which does not support client-side `GET`/`PUT`. SPCS workers therefore **must** use mounted paths:
 
 ```yaml
 # Job spec (conceptual)
@@ -579,7 +579,7 @@ stage_mount <- Sys.getenv("STAGE_MOUNT", "")
 payload <- readRDS(file.path(stage_mount, "job_abc", "tasks", "chunk_001.rds"))
 ```
 
-Package worker templates (`inst/workers/worker_queue.R`) implement a **dual-path** pattern: prefer volume mount, fall back to `GET`/`PUT` only when a JDBC-capable driver is present (not RSnowflake in SPCS).
+Package worker templates (`inst/workers/worker_queue.R`) implement a **dual-path** pattern: prefer volume mount, fall back to `GET`/`PUT` only when a JDBC-capable driver is present (not skiLift in SPCS).
 
 The master session collects results by listing and reading the same stage paths after workers finish — with optional `result_sync_wait_sec` because volume writes can lag Task status flips.
 
@@ -587,7 +587,7 @@ The master session collects results by listing and reading the same stage paths 
 
 ## Generic R executor (without foreach) {#sec-executor}
 
-Not every batch job fits the `%dopar%` loop shape. For **single scripts** or fixed pipelines, snowflakeR provides a lighter **executor** path:
+Not every batch job fits the `%dopar%` loop shape. For **single scripts** or fixed pipelines, skiPatrol provides a lighter **executor** path:
 
 1. Upload an R script to a stage (`sfr_upload_r_script()`)
 2. Launch an SPCS job service that runs the script (`sfr_execute_r_script()`)
@@ -617,13 +617,13 @@ Use **foreach/doSnowflake** when iterations share structure and you want `.combi
 
 ## crew + mirai (advanced) {#sec-crew}
 
-For teams already using the [**crew**](https://github.com/A2Ai/crew) orchestration ecosystem, snowflakeR exposes **`crew_controller_spcs()`** — a long-lived controller that launches SPCS workers speaking **mirai** over the network.
+For teams already using the [**crew**](https://github.com/A2Ai/crew) orchestration ecosystem, skiPatrol exposes **`crew_controller_spcs()`** — a long-lived controller that launches SPCS workers speaking **mirai** over the network.
 
 This path suits **DAG-shaped** workflows, custom task queues, and controllers that outlive a single `%dopar%` call. It requires suggested packages **crew** and **mirai**, plus **EAI/network rules** so workers can reach the controller.
 
 ```r
 library(crew)
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 ctl <- crew_controller_spcs(
@@ -679,7 +679,7 @@ flowchart TD
 | Master progress | R console messages from doSnowflake (job ID, chunk count) |
 | Empty SPCS logs + job 395030 | Wrong Docker CPU arch — rebuild `linux/amd64` |
 
-Runnable monitors: `workspace_parallel_spcs_demo.ipynb` and `streamlit_parallel_demo_monitor.py` in [snowflakeR/inst/notebooks](https://github.com/Snowflake-Labs/snowflakeR/tree/main/inst/notebooks). See [Appendix C: Troubleshooting](../appendices/C_troubleshooting/index.qmd).
+Runnable monitors: `workspace_parallel_spcs_demo.ipynb` and `streamlit_parallel_demo_monitor.py` in [skiPatrol/inst/notebooks](https://github.com/posit-dev/skiPatrol/tree/main/inst/notebooks). See [Appendix C: Troubleshooting](../appendices/C_troubleshooting/index.qmd).
 
 ---
 
@@ -691,7 +691,7 @@ Runnable monitors: `workspace_parallel_spcs_demo.ipynb` and `streamlit_parallel_
 | Vignette `many-model-howto` | End-to-end forecasting with Tasks vs Queue |
 | `workspace_parallel_spcs_setup.ipynb` | One-time infrastructure setup |
 | `workspace_parallel_spcs_demo.ipynb` | Runnable demo loop |
-| `snowflaker_parallel_spcs_config.yaml` | Environment config template |
+| `skipatrol_parallel_spcs_config.yaml` | Environment config template |
 | `many-model-howto` vignette | End-to-end many-model walkthrough |
 
 ---

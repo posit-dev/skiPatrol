@@ -173,7 +173,7 @@
   switch(item,
     workers = as.integer(data$options$n_workers %||% 4),
     name    = "doSnowflake",
-    version = as.character(utils::packageVersion("snowflakeR")),
+    version = as.character(utils::packageVersion("skiPatrol")),
     NULL
   )
 }

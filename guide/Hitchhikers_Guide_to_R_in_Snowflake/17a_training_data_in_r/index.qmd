@@ -7,17 +7,17 @@ subtitle: "Reading Feature Store exports — semi-structured types and ADBC path
 
 This chapter covers **getting Feature Store training data into R** for modeling — not authoring Feature Views (see [Authoring Feature Views](../17b_authoring_feature_views/index.qmd)). It is organized in three layers:
 
-1. **Materialize** — Feature Store joins (`save_as`, Datasets) and RSnowflake read transport (ADBC vs SQL API).
+1. **Materialize** — Feature Store joins (`save_as`, Datasets) and skiLift read transport (ADBC vs SQL API).
 2. **Read techniques** — flatten in Snowflake, unpack Arrow list columns in R, or parse JSON as a fallback; plus VECTOR layout reference.
 3. **End-to-end pipelines (A–E)** — recipes that combine materialization + read technique for each feature shape (scalar, wide scalar, ARRAY, OBJECT, Python decode).
 
 Start with [Feature Store training data in R](#sec-feature-store-read) if you are new to exports. Author features first in [Authoring Feature Views](../17b_authoring_feature_views/index.qmd); jump to [Choose a pipeline](#sec-e2e-pipelines) if views are already registered.
 
-It complements [Feature Store](../17_feature_store/index.qmd) (catalog and training APIs), [Authoring Feature Views](../17b_authoring_feature_views/index.qmd) (warehouse SQL/dbplyr for `feature_df`), and [RSnowflake: Query](../13_rsnowflake_query/index.qmd) (dbplyr push-down, `compute()`, bulk I/O).
+It complements [Feature Store](../17_feature_store/index.qmd) (catalog and training APIs), [Authoring Feature Views](../17b_authoring_feature_views/index.qmd) (warehouse SQL/dbplyr for `feature_df`), and [skiLift: Query](../13_skilift_query/index.qmd) (dbplyr push-down, `compute()`, bulk I/O).
 
 ### Scalars first, semi-structured when you need them {#sec-scalar-vs-semi}
 
-**Use scalar columns:** Most Feature Views and training data sets use ordinary scalar columns, one Snowflake column per feature, point-in-time join via `sfr_generate_training_data()`, read with RSnowflake + ADBC as native R types ([Pipeline A](#sec-pipeline-a)). That is the default and works well for **up to a few hundred columns** after multi–Feature View joins.
+**Use scalar columns:** Most Feature Views and training data sets use ordinary scalar columns, one Snowflake column per feature, point-in-time join via `sfr_generate_training_data()`, read with skiLift + ADBC as native R types ([Pipeline A](#sec-pipeline-a)). That is the default and works well for **up to a few hundred columns** after multi–Feature View joins.
 
 **Use OBJECT, ARRAY, or VECTOR when:**
 
@@ -32,13 +32,13 @@ For **authoring** features (SQL/dbplyr `feature_df`, simple through wide/tempora
 
 ### SQL and dbplyr tabs {#sec-sql-dplyr-tabs}
 
-Warehouse logic appears as **SQL** or **dbplyr** (RSnowflake lazy tables) wherever both are practical — the same idea as the [RSnowflake: Query §dbplyr](../13_rsnowflake_query/index.qmd#sec-dbplyr) (`group="query-sql-dplyr"`). Examples here use **tabs** where your tab choice persists while you read this chapter. Use **dbplyr** when you already work in R with `tbl()`; use **SQL** when you share DDL with other teams or generate views from a feature manifest.
+Warehouse logic appears as **SQL** or **dbplyr** (skiLift lazy tables) wherever both are practical — the same idea as the [skiLift: Query §dbplyr](../13_skilift_query/index.qmd#sec-dbplyr) (`group="query-sql-dplyr"`). Examples here use **tabs** where your tab choice persists while you read this chapter. Use **dbplyr** when you already work in R with `tbl()`; use **SQL** when you share DDL with other teams or generate views from a feature manifest.
 
 ## Learning Objectives
 
 - Navigate the chapter layers: materialize → read technique → pipeline workflow
 - Decide when scalar columns suffice vs OBJECT/ARRAY/VECTOR exports
-- Materialize Feature Store training data (`save_as`, Datasets) before large RSnowflake reads
+- Materialize Feature Store training data (`save_as`, Datasets) before large skiLift reads
 - Flatten OBJECT/ARRAY/VECTOR in SQL when possible; use ADBC decode or JSON parse when not
 - Choose pipeline A–E by how features are stored in Snowflake
 
@@ -61,12 +61,12 @@ The **pipelines** are not a separate topic from extract/export — they are **co
 
 ## Semi-structured columns in R {#sec-semi-structured-read}
 
-How semi-structured columns appear in R depends on **which RSnowflake transport** you use:
+How semi-structured columns appear in R depends on **which skiLift transport** you use:
 
 | Transport | When | Semi-structured in R (typical) |
 |-----------|------|--------------------------------|
-| **SQL API** (default) | `RSnowflake.backend = "auto"` and ADBC not installed, or ADBC failed | VARIANT, OBJECT, ARRAY, VECTOR → **character** (JSON text per cell) |
-| **ADBC** | `adbcsnowflake` installed + `options(RSnowflake.backend = "adbc")` | Scalars native; **VECTOR** often **list** columns of numbers; typed ARRAY / structured OBJECT may be native **if** account flag is on (below) |
+| **SQL API** (default) | `skiLift.backend = "auto"` and ADBC not installed, or ADBC failed | VARIANT, OBJECT, ARRAY, VECTOR → **character** (JSON text per cell) |
+| **ADBC** | `adbcsnowflake` installed + `options(skiLift.backend = "adbc")` | Scalars native; **VECTOR** often **list** columns of numbers; typed ARRAY / structured OBJECT may be native **if** account flag is on (below) |
 
 Scalar columns (`DOUBLE`, `NUMBER`, timestamps, …) are native in both paths. Feature Store training tables that are mostly scalars still benefit from ADBC for **volume** (columnar transfer, less parsing overhead on numerics).
 
@@ -75,7 +75,7 @@ Scalar columns (`DOUBLE`, `NUMBER`, timestamps, …) are native in both paths. F
 For **retrieving training data into R** when views use OBJECT, ARRAY, or VECTOR:
 
 1. **Materialize in Snowflake** — `sfr_generate_training_data(..., save_as = "MY_TRAINING")` or a managed table / export view ([Feature Store training data](#sec-feature-store-read)).
-2. **Read with RSnowflake + ADBC** — install `adbcsnowflake` (CRE or bootstrap), then:
+2. **Read with skiLift + ADBC** — install `adbcsnowflake` (CRE or bootstrap), then:
 
 ::: {.panel-tabset group="fe-sql-dplyr"}
 
@@ -90,7 +90,7 @@ LIMIT 100000;
 ##### dbplyr
 
 ```r
-options(RSnowflake.backend = "adbc")   # force Arrow path for reads
+options(skiLift.backend = "adbc")   # force Arrow path for reads
 
 library(dplyr)
 training <- tbl(con, in_schema("ML", "MY_TRAINING")) |>
@@ -103,7 +103,7 @@ training <- tbl(con, in_schema("ML", "MY_TRAINING")) |>
 3. **Prefer unpacking in SQL or dbplyr** when you can — see [Extract in Snowflake](#sec-sql-extract) — so `collect()` returns scalars even on the SQL API path.
 4. **Reserve client-side JSON parsing** for VARIANT/OBJECT bundles you cannot flatten in SQL, or for validation samples (`LIMIT`).
 
-`sfr_generate_training_data()` without `save_as` still goes through **snowflakeR → pandas → R**; it does not use RSnowflake ADBC. Use `save_as` + RSnowflake when semi-structured or wide training pulls are the bottleneck.
+`sfr_generate_training_data()` without `save_as` still goes through **skiPatrol → pandas → R**; it does not use skiLift ADBC. Use `save_as` + skiLift when semi-structured or wide training pulls are the bottleneck.
 
 ### Why Feature Store users care
 
@@ -116,7 +116,7 @@ Snowflake recommends **OBJECT** or **ARRAY** columns for very wide feature sets 
 | Typed ARRAY / structured OBJECT | Declared element types | JSON **character** | Native list/struct **if** account flag enabled |
 | VECTOR packs | Fixed-length numerics | JSON **character** | Often **list** column → `matrix` (no account flag required) |
 
-RSnowflake helps you **build** bundles on the warehouse (`object_agg`, `array_agg`, `::VECTOR`); **how** you read them is a separate choice between SQL flattening, ADBC, and client-side decode.
+skiLift helps you **build** bundles on the warehouse (`object_agg`, `array_agg`, `::VECTOR`); **how** you read them is a separate choice between SQL flattening, ADBC, and client-side decode.
 
 Use [How this chapter is organized](#sec-chapter-map) to navigate; [Choose a pipeline](#sec-e2e-pipelines) comes after the read techniques.
 
@@ -124,7 +124,7 @@ Use [How this chapter is organized](#sec-chapter-map) to navigate; [Choose a pip
 
 ## Feature Store training data in R {#sec-feature-store-read}
 
-Feature Store training flows through **snowflakeR**, not RSnowflake alone — but the data types you get in R depend on **which read path** you choose.
+Feature Store training flows through **skiPatrol**, not skiLift alone — but the data types you get in R depend on **which read path** you choose.
 
 ### Path 1 — `sfr_generate_training_data()` (transient join)
 
@@ -140,7 +140,7 @@ training <- sfr_generate_training_data(
 )
 ```
 
-**What happens under the hood:** the Python Feature Store SDK runs the join in Snowflake, materializes a Snowpark result, converts it to **pandas**, then snowflakeR transfers columns into R (today via a JSON round-trip for compatibility with Workspace). Scalar feature columns arrive as normal R types. Any OBJECT/ARRAY/VECTOR columns in the join result follow the pandas/JSON path — treat them like SQL API character columns if they appear as strings.
+**What happens under the hood:** the Python Feature Store SDK runs the join in Snowflake, materializes a Snowpark result, converts it to **pandas**, then skiPatrol transfers columns into R (today via a JSON round-trip for compatibility with Workspace). Scalar feature columns arrive as normal R types. Any OBJECT/ARRAY/VECTOR columns in the join result follow the pandas/JSON path — treat them like SQL API character columns if they appear as strings.
 
 **Materialize without pulling everything to R:**
 
@@ -154,13 +154,13 @@ sfr_generate_training_data(
   spine_label_cols    = "label"
 )
 
-# Inspect or model from Snowflake with RSnowflake
+# Inspect or model from Snowflake with skiLift
 library(dplyr)
 training_tbl <- tbl(con, in_schema("FEATURE_STORE", "CHURN_TRAINING_V1"))
 sample       <- training_tbl |> head(10000) |> collect()
 ```
 
-Use `save_as` for wide or large training sets: validate joins in Snowflake, then read with RSnowflake + **ADBC** ([ADBC setup](#sec-adbc-semistructured)):
+Use `save_as` for wide or large training sets: validate joins in Snowflake, then read with skiLift + **ADBC** ([ADBC setup](#sec-adbc-semistructured)):
 
 ::: {.panel-tabset group="fe-sql-dplyr"}
 
@@ -175,7 +175,7 @@ LIMIT 100000;
 ##### dbplyr
 
 ```r
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 training_tbl <- tbl(con, in_schema("FEATURE_STORE", "CHURN_TRAINING_V1"))
 sample       <- training_tbl |> head(100000) |> collect()
 ```
@@ -205,7 +205,7 @@ attr(training, "dataset_version")
 **What Python does at scale:** after `generate_dataset()`, the SDK exposes Parquet files on internal storage:
 
 ```python
-# Python (snowflake-ml) — not wrapped in snowflakeR yet
+# Python (snowflake-ml) — not wrapped in skiPatrol yet
 ds = session.dataset.load("MY_DB.ML.CHURN_TRAINING").select_version("v1")
 files = ds.read.files()          # fsspec-compatible paths
 # pd.read_parquet(files) or pyarrow.dataset
@@ -216,16 +216,16 @@ See [Snowflake ML Dataset — direct file access](https://docs.snowflake.com/en/
 **R options for large Datasets today:**
 
 1. **`sfr_read_dataset(conn, name, version)`** — same pandas → R path as `sfr_generate_dataset()`; suitable when the Dataset already exists.
-2. **`save_as` table + RSnowflake + ADBC** — recommended for wide/scalar-heavy training frames at scale ([ADBC setup](#sec-adbc-semistructured)). Dataset Parquet still stores VARIANT as JSON strings on disk — same limitation as Python unless columns are typed ARRAY / scalars.
+2. **`save_as` table + skiLift + ADBC** — recommended for wide/scalar-heavy training frames at scale ([ADBC setup](#sec-adbc-semistructured)). Dataset Parquet still stores VARIANT as JSON strings on disk — same limitation as Python unless columns are typed ARRAY / scalars.
 3. **Python decode + reticulate** — [Pipeline E](#sec-pipeline-e) for three-VECTOR export at maximum throughput.
 
-A future snowflakeR release may add **`format = "parquet"`** on dataset reads (fsspec → `arrow::read_parquet()`). Until then, assume Dataset APIs in R are **lineage- and moderate-scale-friendly**, not a substitute for a full Parquet export pipeline.
+A future skiPatrol release may add **`format = "parquet"`** on dataset reads (fsspec → `arrow::read_parquet()`). Until then, assume Dataset APIs in R are **lineage- and moderate-scale-friendly**, not a substitute for a full Parquet export pipeline.
 
 **Full export workflows:** [Reading materialized training data](#sec-read-strategies), then [Choose a pipeline](#sec-e2e-pipelines) (A–E). **Define features first?** [Authoring Feature Views](../17b_authoring_feature_views/index.qmd).
 
-### Path 3 — RSnowflake only (custom SQL / dbplyr)
+### Path 3 — skiLift only (custom SQL / dbplyr)
 
-When you own the SQL (external Feature View table, export view, or `save_as` output), use RSnowflake directly:
+When you own the SQL (external Feature View table, export view, or `save_as` output), use skiLift directly:
 
 ::: {.panel-tabset group="fe-sql-dplyr"}
 
@@ -239,7 +239,7 @@ FROM MY_DB.ML.CHURN_TRAINING_V1;
 ##### dbplyr
 
 ```r
-options(RSnowflake.backend = "adbc")   # recommended for materialized training reads
+options(skiLift.backend = "adbc")   # recommended for materialized training reads
 
 training_tbl <- tbl(con, in_schema("ML", "CHURN_TRAINING_V1"))
 training     <- training_tbl |> collect()
@@ -262,9 +262,9 @@ ADBC (`adbcsnowflake`) uses Snowflake's **Arrow** result path. That is the recom
 |------|--------|
 | Packages | `adbcsnowflake`, `adbcdrivermanager` (CRE image or bootstrap `languages.r.addons.adbc: true`) |
 | Connection | Same `dbConnect(Snowflake())` — backend is lazy-initialised |
-| Reads | `options(RSnowflake.backend = "adbc")` or leave `"auto"` when ADBC is installed |
+| Reads | `options(skiLift.backend = "adbc")` or leave `"auto"` when ADBC is installed |
 
-See [RSnowflake in Workspace](../14_rsnowflake_workspace/index.qmd#sec-adbc) and [WORKSPACE_ADBC.md](https://github.com/Snowflake-Labs/RSnowflake/blob/main/WORKSPACE_ADBC.md).
+See [skiLift in Workspace](../14_skilift_workspace/index.qmd#sec-adbc) and [WORKSPACE_ADBC.md](https://github.com/posit-dev/skiLift/blob/main/WORKSPACE_ADBC.md).
 
 ### Account parameter for native structured types
 
@@ -288,7 +288,7 @@ Ask your account team whether the flag is already enabled before relying on nati
 ::: {.callout-warning}
 **SQL API has no server-side Arrow.** `dbGetQuery()` on the REST path always uses JSON. `dbGetQueryArrow()` on the SQL API path builds Arrow **client-side** from JSON — interface compatibility only, not the same as ADBC transport.
 
-For Feature Store exports you install **`adbcsnowflake` in the Workspace R environment** (CRE or bootstrap), materialize training with `save_as`, then read that table through RSnowflake with `options(RSnowflake.backend = "adbc")`. That is a **client-side ADBC driver** talking Arrow to Snowflake — not `dbGetQueryArrow()` on the REST API.
+For Feature Store exports you install **`adbcsnowflake` in the Workspace R environment** (CRE or bootstrap), materialize training with `save_as`, then read that table through skiLift with `options(skiLift.backend = "adbc")`. That is a **client-side ADBC driver** talking Arrow to Snowflake — not `dbGetQueryArrow()` on the REST API.
 :::
 
 ### Inspect what you received
@@ -306,7 +306,7 @@ SELECT * FROM MY_DB.ML.MY_TRAINING LIMIT 100;
 ##### R (inspect)
 
 ```r
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 sample <- dbGetQuery(con, "SELECT * FROM MY_DB.ML.MY_TRAINING LIMIT 100")
 str(sample, max.level = 1)
 # PACKED_FLOATS   : List of 100  | num [1:128]  ...  → VECTOR over ADBC
@@ -425,7 +425,7 @@ LIMIT 50000;
 ##### R (ADBC decode)
 
 ```r
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 
 pack <- dbGetQuery(con, "
   SELECT entity_id,
@@ -640,7 +640,7 @@ Snowflake **VECTOR** types store a fixed-length sequence of numbers (up to **4,0
 
 This section documents the **three-column VECTOR layout** referenced by [Pipeline B](#sec-pipeline-b) step 3 and [Pipeline E](#sec-pipeline-e). For the full repack story (wide ASOF → ARRAY → VECTOR → decode), follow Pipeline B; this section is the **reference** for cast dimensions and client decode snippets.
 
-RSnowflake runs SQL that references `VECTOR(FLOAT, n)` and `VECTOR(INT, n)` without restriction. There are no dplyr helpers yet for `VECTOR_AVG` / `VECTOR_SUM`; write those in SQL with `sql()` or `dbGetQuery()`.
+skiLift runs SQL that references `VECTOR(FLOAT, n)` and `VECTOR(INT, n)` without restriction. There are no dplyr helpers yet for `VECTOR_AVG` / `VECTOR_SUM`; write those in SQL with `sql()` or `dbGetQuery()`.
 
 After `collect()` on the **SQL API** path, VECTOR columns are **character** (JSON) — use [JSON parse](#sec-parse-json). With **ADBC**, VECTOR is often a **list** column — use [ADBC decode](#sec-parse-adbc).
 
@@ -676,7 +676,7 @@ LIMIT 10000;
 ```r
 library(dplyr)
 
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 
 export <- tbl(con, in_schema("ML", "TRAINING_EXPORT_VIEW")) |>
   filter(sql("train_date = '2026-01-01'")) |>
@@ -750,7 +750,7 @@ Each pipeline is a **composed workflow** — not a new read technique. Before di
 - [Feature Store materialization](#sec-feature-store-read) (`save_as`, Datasets)
 - [Read strategies](#sec-read-strategies) ([Extract in Snowflake](#sec-sql-extract), [ADBC decode](#sec-parse-adbc), [JSON parse](#sec-parse-json))
 
-Pipeline steps **link to those sections** for extract/decode details rather than repeating them. Steps assume a **multilang Workspace notebook**: snowflakeR for Feature Store APIs, RSnowflake for reads, optional **ADBC** in R ([ADBC setup](#sec-adbc-semistructured)).
+Pipeline steps **link to those sections** for extract/decode details rather than repeating them. Steps assume a **multilang Workspace notebook**: skiPatrol for Feature Store APIs, skiLift for reads, optional **ADBC** in R ([ADBC setup](#sec-adbc-semistructured)).
 
 ### Choose a pipeline
 
@@ -782,7 +782,7 @@ flowchart TB
   end
 
   subgraph client [Workspace client]
-    ADBC[RSnowflake ADBC collect]
+    ADBC[skiLift ADBC collect]
     R[R data.frame / matrix]
     PY[Python Arrow decode]
     RET[reticulate py_to_r]
@@ -802,7 +802,7 @@ flowchart TB
 
 ### Pipeline A — Scalar features, moderate width {#sec-pipeline-a}
 
-**When:** Each feature is its own column; total width after the ASOF join stays in a **moderate** range (rough guide: up to a few hundred — ~300 — scalar feature columns with RSnowflake + ADBC).
+**When:** Each feature is its own column; total width after the ASOF join stays in a **moderate** range (rough guide: up to a few hundred — ~300 — scalar feature columns with skiLift + ADBC).
 
 ```{mermaid}
 flowchart LR
@@ -810,15 +810,15 @@ flowchart LR
   A2 --> A3{Row count?}
   A3 -->|Demo / small| A4[Return R data.frame]
   A3 -->|Large or reuse| A5[save_as table]
-  A5 --> A6[RSnowflake ADBC collect]
+  A5 --> A6[skiLift ADBC collect]
   A6 --> A7[Model in R]
   A4 --> A7
 ```
 
-**1 — Register and join (R, snowflakeR)**
+**1 — Register and join (R, skiPatrol)**
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 fs   <- sfr_feature_store(conn, database = "MY_DB", schema = "ML")
 
@@ -874,10 +874,10 @@ FROM MY_DB.ML.CHURN_TRAINING_SCALAR;
 ```r
 %%R
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 library(dplyr)
 
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 con <- dbConnect(Snowflake())
 
 training <- tbl(con, in_schema("ML", "CHURN_TRAINING_SCALAR")) |>
@@ -904,7 +904,7 @@ flowchart LR
   B2 --> B3
 ```
 
-**1 — Wide ASOF materialization (R, snowflakeR)**
+**1 — Wide ASOF materialization (R, skiPatrol)**
 
 ```r
 sfr_generate_training_data(
@@ -1004,9 +1004,9 @@ packed |>
 
 :::
 
-`ARRAY_CONSTRUCT` and `IFF` are expressed with `sql()` inside dplyr — RSnowflake does not wrap every semi-structured builder yet ([RSnowflake: Query §dbplyr](../13_rsnowflake_query/index.qmd#sec-snowflake-dbplyr)).
+`ARRAY_CONSTRUCT` and `IFF` are expressed with `sql()` inside dplyr — skiLift does not wrap every semi-structured builder yet ([skiLift: Query §dbplyr](../13_skilift_query/index.qmd#sec-snowflake-dbplyr)).
 
-**3 — Read with VECTOR cast + ADBC (R, RSnowflake)**
+**3 — Read with VECTOR cast + ADBC (R, skiLift)**
 
 Cast at **read time** so the stored table stays ARRAY (Parquet-friendly); the planner sees three expressions regardless of feature count.
 
@@ -1028,7 +1028,7 @@ FROM MY_DB.ML.CHURN_TRAINING_EXPORT;
 ##### dbplyr
 
 ```r
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 
 export <- tbl(con, in_schema("ML", "CHURN_TRAINING_EXPORT")) |>
   mutate(
@@ -1118,7 +1118,7 @@ SELECT
 FROM analytics.customer_rollup;
 ```
 
-##### snowflakeR
+##### skiPatrol
 
 ```r
 fv_arrays <- sfr_create_feature_view(
@@ -1172,7 +1172,7 @@ LIMIT 100000;
 ##### dbplyr
 
 ```r
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 
 rows <- tbl(con, in_schema("ML", "CHURN_TRAINING_ARRAY")) |>
   mutate(
@@ -1227,7 +1227,7 @@ FROM orders
 GROUP BY customer_id;
 ```
 
-##### snowflakeR
+##### skiPatrol
 
 ```r
 fv_obj <- sfr_create_feature_view(
@@ -1266,7 +1266,7 @@ bundled <- tbl(con, in_schema("ANALYTICS", "ORDERS")) |>
 
 :::
 
-Or build with dplyr + `object_agg()` ([RSnowflake Query §dbplyr](../13_rsnowflake_query/index.qmd#sec-snowflake-dbplyr)) before registration.
+Or build with dplyr + `object_agg()` ([skiLift Query §dbplyr](../13_skilift_query/index.qmd#sec-snowflake-dbplyr)) before registration.
 
 **2 — ASOF join**
 
@@ -1317,7 +1317,7 @@ training <- tbl(con, in_schema("ML", "CHURN_TRAINING_OBJECT")) |>
 :::
 
 ```r
-options(RSnowflake.backend = "adbc")
+options(skiLift.backend = "adbc")
 training <- tbl(con, in_schema("ML", "CHURN_TRAINING_OBJECT_FLAT")) |> collect()
 # or: training <- <dbplyr pipeline above> |> collect()
 ```
@@ -1376,7 +1376,7 @@ Dimensions in the `::VECTOR(type, n)` casts must match your export VIEW (product
 ```python
 import numpy as np
 
-# Python cell — same Snowpark session as snowflakeR
+# Python cell — same Snowpark session as skiPatrol
 df = session.sql("""
   SELECT customer_id, label,
          features_float_arr::VECTOR(FLOAT, 2) AS features_float,
@@ -1423,7 +1423,7 @@ X <- py_to_r(py$X)
 
 | Requirement | Pipelines |
 |-------------|-----------|
-| snowflakeR + `sfr_connect()` | A–E |
+| skiPatrol + `sfr_connect()` | A–E |
 | `sfr_generate_training_data(..., save_as = ...)` | A–E (materialize) |
 | `adbcsnowflake` in R (CRE/bootstrap) | A–D (ADBC reads) |
 | `ENABLE_STRUCTURED_TYPES_IN_CLIENT_RESPONSE` (account) | C (typed ARRAY as native Arrow) |
@@ -1437,8 +1437,8 @@ X <- py_to_r(py$X)
 
 - [Feature Store](../17_feature_store/index.qmd) — entities, views, `sfr_generate_training_data()`, Datasets  
 - [Authoring Feature Views](../17b_authoring_feature_views/index.qmd) — SQL/dbplyr for `feature_df` (simple → wide/temporal)  
-- [RSnowflake: Query](../13_rsnowflake_query/index.qmd) — dbplyr, `compute()`, bulk writes  
+- [skiLift: Query](../13_skilift_query/index.qmd) — dbplyr, `compute()`, bulk writes  
 - [Feature Store — Wide & sparse](../17_feature_store/index.qmd#sec-wide-sparse) — OBJECT/ARRAY in views  
-- [RSnowflake in Workspace](../14_rsnowflake_workspace/index.qmd) — install and enable ADBC  
+- [skiLift in Workspace](../14_skilift_workspace/index.qmd) — install and enable ADBC  
 - [Model Registry](../18_model_registry/index.qmd) — `training_dataset` lineage from `sfr_generate_dataset()`
 :::

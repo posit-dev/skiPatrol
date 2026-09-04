@@ -7,7 +7,7 @@ subtitle: "Run tracking, metrics, and tuning integration"
 
 **Experiment tracking** on Snowflake captures training exploration — parameters, metrics, artifacts, and optionally logged models — alongside the governed **Model Registry** used for deployment.
 
-snowflakeR exposes experiments via a small R API on top of `snowflake-ml-python`. Use experiments for hyperparameter search and model comparison; promote winners to the Registry with `sfr_log_model()`.
+skiPatrol exposes experiments via a small R API on top of `snowflake-ml-python`. Use experiments for hyperparameter search and model comparison; promote winners to the Registry with `sfr_log_model()`.
 
 Requires a recent **`snowflake-ml-python`** build (see `?sfr_experiment` for version checks in your session).
 
@@ -23,7 +23,7 @@ Requires a recent **`snowflake-ml-python`** build (see `?sfr_experiment` for ver
 ## Basic workflow {#sec-basic}
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 
 exp <- sfr_experiment(conn, name = "FORECAST_TUNING")

@@ -5,17 +5,17 @@
 # that need to run SQL through the Snowpark session.
 #
 # For standard DBI-compliant database access (dbGetQuery, dbWriteTable, dbplyr,
-# Connections Pane, etc.), use the RSnowflake package directly:
+# Connections Pane, etc.), use the skiLift package directly:
 #
-#   con <- DBI::dbConnect(RSnowflake::Snowflake(), name = "my_profile")
+#   con <- DBI::dbConnect(skiLift::Snowflake(), name = "my_profile")
 #
-# Or obtain an RSnowflake connection from an existing sfr_connection:
+# Or obtain an skiLift connection from an existing sfr_connection:
 #
 #   dbi_con <- sfr_dbi_connection(sfr_conn)
 
 #' Disconnect a Snowflake connection
 #'
-#' Closes the underlying Snowpark session. If an RSnowflake DBI connection
+#' Closes the underlying Snowpark session. If an skiLift DBI connection
 #' is also attached, it is disconnected too.
 #'
 #' @param conn An `sfr_connection` object.
@@ -190,13 +190,13 @@ sfr_read_table <- function(conn, table_name, limit = NULL) {
 #'   (default), appends or creates.
 #' @param .uppercase_cols Logical. If `TRUE` (default), column names are
 #'   uppercased before writing. Set to `FALSE` to preserve original casing.
-#'   Default respects `getOption("snowflakeR.preserve_write_case")`.
+#'   Default respects `getOption("skiPatrol.preserve_write_case")`.
 #'
 #' @returns Invisibly returns `TRUE`.
 #'
 #' @export
 sfr_write_table <- function(conn, table_name, value, overwrite = FALSE,
-                            .uppercase_cols = !getOption("snowflakeR.preserve_write_case", FALSE)) {
+                            .uppercase_cols = !getOption("skiPatrol.preserve_write_case", FALSE)) {
   validate_connection(conn)
   stopifnot(is.data.frame(value))
 

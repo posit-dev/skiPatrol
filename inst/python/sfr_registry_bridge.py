@@ -2,11 +2,11 @@
 Snowflake Model Registry Bridge for R Models
 =============================================
 
-Python backend for snowflakeR::R/registry.R.
+Python backend for skiPatrol::R/registry.R.
 
 Architecture:
     R user code
-        -> snowflakeR::R/registry.R  (user-facing R functions)
+        -> skiPatrol::R/registry.R  (user-facing R functions)
         -> reticulate bridge
         -> sfr_registry_bridge.py  (this file - Python plumbing)
         -> snowflake.ml.registry  (Snowflake ML Python SDK)
@@ -278,7 +278,7 @@ def _build_generic_predict_r_code(
     so the fallback always fires for tidymodels workflows.
 
     Column names are preserved as-is from the inference server.  Since
-    snowflakeR now preserves Snowflake's native UPPER-case column names
+    skiPatrol now preserves Snowflake's native UPPER-case column names
     throughout the pipeline (training data, model signature, inference
     input), no case conversion is needed here.
     """
@@ -549,10 +549,10 @@ def registry_log_model(
     if training_dataset_ref:
         ds_name = training_dataset_ref.get("name")
         ds_version = training_dataset_ref.get("version")
-        print(f"[snowflakeR] Dataset ref: name={ds_name}, version={ds_version}")
+        print(f"[skiPatrol] Dataset ref: name={ds_name}, version={ds_version}")
         if ds_name and ds_version:
             from sfr_features_bridge import get_cached_dataset, _DATASET_CACHE
-            print(f"[snowflakeR] Dataset cache keys: {list(_DATASET_CACHE.keys())}")
+            print(f"[skiPatrol] Dataset cache keys: {list(_DATASET_CACHE.keys())}")
             ds = get_cached_dataset(ds_name, ds_version)
             if ds is not None:
                 lineage_sample = ds.read.to_snowpark_dataframe()
@@ -575,16 +575,16 @@ def registry_log_model(
                         ]
                         if safe:
                             lineage_sample = lineage_sample.select(safe)
-                print(f"[snowflakeR] Lineage sample_input_data: "
+                print(f"[skiPatrol] Lineage sample_input_data: "
                       f"{type(lineage_sample).__name__} "
                       f"({len(lineage_sample.columns)} cols)")
             else:
                 print(
-                    f"[snowflakeR] Dataset '{ds_name}:{ds_version}' not in "
+                    f"[skiPatrol] Dataset '{ds_name}:{ds_version}' not in "
                     "cache; falling back to pandas sample_input_data."
                 )
     else:
-        print("[snowflakeR] No training_dataset_ref provided")
+        print("[skiPatrol] No training_dataset_ref provided")
 
     log_kwargs = {
         "model": model_wrapper,

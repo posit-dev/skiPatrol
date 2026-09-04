@@ -12,7 +12,7 @@ Machine learning features — customer aggregates, rolling transaction sums, pro
 - **No reuse** — each team re-implements the same `AVG(order_total)` logic
 - **Weak lineage** — auditors cannot trace which feature definition trained which model
 
-The Snowflake **Feature Store** is a **governed catalog** of feature definitions: entities (join keys), versioned **feature views** (SQL transformations), and APIs for **point-in-time-correct** training joins and consistent inference retrieval. **`snowflakeR`** exposes the full Python Feature Store API from R — objects you create in R appear identically in Snowsight and in Python notebooks.
+The Snowflake **Feature Store** is a **governed catalog** of feature definitions: entities (join keys), versioned **feature views** (SQL transformations), and APIs for **point-in-time-correct** training joins and consistent inference retrieval. **`skiPatrol`** exposes the full Python Feature Store API from R — objects you create in R appear identically in Snowsight and in Python notebooks.
 
 ::: {.callout-tip}
 ## Platform deep dive (recommended)
@@ -165,7 +165,7 @@ sequenceDiagram
 Connect to (or create) a Feature Store in a dedicated schema:
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 conn <- sfr_load_notebook_config(conn)
 
@@ -230,7 +230,7 @@ Multi-key entities (e.g. store + SKU) pass multiple columns — see vignette `fe
 A feature view is a **versioned transformation** tied to one or more entities. The `feature_df` argument accepts:
 
 - **SQL string** — any `SELECT` over tabular sources (table, view, Dynamic Table, …)
-- **dbplyr lazy table** — dplyr pipeline translated to SQL ([RSnowflake](../13_rsnowflake_query/index.qmd))
+- **dbplyr lazy table** — dplyr pipeline translated to SQL ([skiLift](../13_skilift_query/index.qmd))
 
 The backing query may **pass through** an externally maintained table, **compute** features entirely in SQL/dbplyr, or combine both (hybrid). See [Architecture — Sources and definitions](#sec-architecture) and [Authoring Feature Views](../17b_authoring_feature_views/index.qmd).
 
@@ -315,7 +315,7 @@ fv <- sfr_create_feature_view(
 )
 ```
 
-snowflakeR translates the lazy table to SQL — no `collect()` before registration.
+skiPatrol translates the lazy table to SQL — no `collect()` before registration.
 
 ### Wide and sparse feature sets {#sec-wide-sparse}
 
@@ -329,7 +329,7 @@ When a feature view would need **hundreds of scalar columns**, prefer **OBJECT**
 
 Snowflake documents platform patterns in [Implementation Guide §12.10 — Wide & sparse](https://snowflake-labs.github.io/snowflake-featurestore-imp-guide/12_advanced_patterns/#sec-wide-sparse). Authoring detail: [Authoring Feature Views — Wide and sparse bundles](../17b_authoring_feature_views/index.qmd#sec-wide-bundles).
 
-From R, build bundles on the warehouse with RSnowflake-only dplyr helpers such as `object_agg()` and `array_agg()` — see [RSnowflake Query — dbplyr](../13_rsnowflake_query/index.qmd#sec-snowflake-dbplyr) and [Authoring Feature Views](../17b_authoring_feature_views/index.qmd#sec-wide-bundles).
+From R, build bundles on the warehouse with skiLift-only dplyr helpers such as `object_agg()` and `array_agg()` — see [skiLift Query — dbplyr](../13_skilift_query/index.qmd#sec-snowflake-dbplyr) and [Authoring Feature Views](../17b_authoring_feature_views/index.qmd#sec-wide-bundles).
 
 For **end-to-end training export** (scalar-wide ASOF → three ARRAY/VECTOR packs, ARRAY-native views, OBJECT flattening, Python decode), use the pipeline table in [Training Data in R — End-to-end pipelines](../17a_training_data_in_r/index.qmd#sec-e2e-pipelines) (Pipelines A–E).
 
@@ -353,7 +353,7 @@ Required for correct point-in-time joins — the store uses timestamps to pick f
 
 ### Rollup and tiled aggregates
 
-For **rollup Feature Views** over event streams (platform-managed tiles and lookback windows — e.g. sum of amount over 1 day), declare aggregates with `sfr_feature()` and set `feature_granularity` instead of writing every window in SQL. See [Authoring Feature Views — Rollup and tiled Feature Views](../17b_authoring_feature_views/index.qmd#sec-rollup-tiles) and the [`feature-store` vignette](https://snowflake-labs.github.io/snowflakeR/articles/feature-store.html).
+For **rollup Feature Views** over event streams (platform-managed tiles and lookback windows — e.g. sum of amount over 1 day), declare aggregates with `sfr_feature()` and set `feature_granularity` instead of writing every window in SQL. See [Authoring Feature Views — Rollup and tiled Feature Views](../17b_authoring_feature_views/index.qmd#sec-rollup-tiles) and the [`feature-store` vignette](https://snowflake-labs.github.io/skiPatrol/articles/feature-store.html).
 
 ---
 
@@ -521,7 +521,7 @@ sfr_update_feature_view(
 
 Snowflake creates the OFT (Hybrid Table + sync Task). `target_lag` on the online config is **independent** of offline `refresh_freq` — end-to-end staleness is roughly both paths combined.
 
-### Retrieve values — snowflakeR → snowflake-ml-python
+### Retrieve values — skiPatrol → snowflake-ml-python
 
 Use **`sfr_read_feature_view()`** with `store_type = "ONLINE"` (wraps `fs.read_feature_view(..., StoreType.ONLINE)`). Pass entity **keys** and optional **feature column** names; batch keys in one call when scoring many entities.
 
@@ -570,7 +570,7 @@ The OFT is a queryable **Hybrid Table** in your Feature Store schema (naming is 
 ::: {.callout-warning}
 ## Prefer the Feature Store API for serving
 
-For low-latency key lookup, **`sfr_read_feature_view(..., store_type = "ONLINE")`** is the supported path (batch keys in one call). Direct SQL or dbplyr against the OFT is useful for **warehouse-side joins**, debugging, or services that already speak RSnowflake — not as a substitute for the online API in high-QPS serving tiers.
+For low-latency key lookup, **`sfr_read_feature_view(..., store_type = "ONLINE")`** is the supported path (batch keys in one call). Direct SQL or dbplyr against the OFT is useful for **warehouse-side joins**, debugging, or services that already speak skiLift — not as a substitute for the online API in high-QPS serving tiers.
 :::
 
 ::: {.panel-tabset group="fs-oft-read"}
@@ -600,7 +600,7 @@ features <- oft |> collect()
 
 ```r
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 
 con <- dbConnect(Snowflake())
 features <- dbGetQuery(con, "
@@ -643,7 +643,7 @@ Use **bind parameters** (`?`) for repeated lookups so Snowflake can reuse plans 
 | Resource | Content |
 |----------|---------|
 | Vignette `feature-store` | Full API, tile aggregation, advanced options |
-| [`workspace_feature_store.ipynb`](https://github.com/Snowflake-Labs/snowflakeR/blob/main/inst/notebooks/workspace_feature_store.ipynb) | Runnable Workspace walkthrough |
+| [`workspace_feature_store.ipynb`](https://github.com/posit-dev/skiPatrol/blob/main/inst/notebooks/workspace_feature_store.ipynb) | Runnable Workspace walkthrough |
 | [FS Implementation Guide](https://snowflake-labs.github.io/snowflake-featurestore-imp-guide/) | Platform authority |
 
 ---

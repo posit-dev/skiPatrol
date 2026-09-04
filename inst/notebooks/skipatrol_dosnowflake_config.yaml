@@ -1,12 +1,12 @@
 # =============================================================================
-# snowflakeR -- Credit Risk Demo Config
+# skiPatrol -- doSnowflake Demo Config
 # =============================================================================
-# R environment for credit risk scoring notebooks. Includes the full
-# tidymodels stack plus XGBoost and ranger -- all pre-compiled from conda-forge.
+# Extends the base skiPatrol config with r-foreach and r-iterators from
+# conda-forge for parallel processing via the doSnowflake backend.
 #
 # Usage (single cell):
 #   from sfnb_setup import setup_notebook
-#   setup_notebook(config="snowflaker_credit_risk_config.yaml")
+#   setup_notebook(config="skipatrol_dosnowflake_config.yaml", packages=["skiPatrol"])
 #
 # All sections below are OPTIONAL -- sensible defaults are used when omitted.
 # =============================================================================
@@ -39,29 +39,17 @@ languages:
       - r-lazyeval
       - r-dbi>=1.2.0
       - r-jsonlite
-      - r-nanoarrow
-      - r-dplyr>=1.1.0
-      - r-tidymodels
-      - r-xgboost
-      - r-ranger
+      - r-foreach
+      - r-iterators
     cran_packages: []
     addons:
       adbc: false
       duckdb: false
     tarballs:
-      snowflakeR: "https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.2.0/snowflakeR_0.2.0.tar.gz"
-      RSnowflake: "https://github.com/Snowflake-Labs/RSnowflake/releases/download/v0.2.0/RSnowflake_0.2.0.tar.gz"
+      skiPatrol: "https://github.com/posit-dev/skiPatrol/releases/download/v0.2.0/skiPatrol_0.2.0.tar.gz"
 
   scala:
     enabled: false
 
   julia:
     enabled: false
-
-# -- Credit risk specific settings (read by sfr_load_notebook_config) -----
-# credit_risk:
-#   database: "CREDIT_RISK_ML"
-#   source_schema: "RAW_DATA"
-#   feature_store_schema: "FEATURES"
-#   training_schema: "TRAINING"
-#   registry_schema: "MODELS"

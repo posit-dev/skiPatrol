@@ -13,26 +13,26 @@ source(file.path(.pl_this_dir, "parallel_spcs_workflow.R"))
 source(file.path(.pl_this_dir, "parallel_spcs_monitor_r.R"))
 
 pl_connect <- function(
-    config_path = "snowflaker_parallel_spcs_config.yaml",
+    config_path = "skipatrol_parallel_spcs_config.yaml",
     connection_name = NULL,
     private_key_file = NULL
 ) {
-  if (!requireNamespace("snowflakeR", quietly = TRUE)) {
-    stop("Package 'snowflakeR' is required.", call. = FALSE)
+  if (!requireNamespace("skiPatrol", quietly = TRUE)) {
+    stop("Package 'skiPatrol' is required.", call. = FALSE)
   }
 
   cfg <- parallel_lab_load_config(config_path)
   parallel_lab_validate_clean_room(cfg)
 
-  conn <- snowflakeR::sfr_connect(
+  conn <- skiPatrol::sfr_connect(
     name = connection_name,
     private_key_file = private_key_file
   )
 
   if (nzchar(cfg$warehouse %||% "")) {
-    snowflakeR::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
+    skiPatrol::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
   }
-  conn <- snowflakeR::sfr_use(
+  conn <- skiPatrol::sfr_use(
     conn,
     database = cfg$database,
     schema = cfg$schemas$source_data
@@ -41,12 +41,12 @@ pl_connect <- function(
   dbi_con <- NULL
   if (
     requireNamespace("DBI", quietly = TRUE) &&
-    requireNamespace("RSnowflake", quietly = TRUE) &&
+    requireNamespace("skiLift", quietly = TRUE) &&
     nzchar(private_key_file %||% "")
   ) {
     dbi_con <- tryCatch(
       DBI::dbConnect(
-        RSnowflake::Snowflake(),
+        skiLift::Snowflake(),
         account = conn$account,
         user = conn$user,
         authenticator = "SNOWFLAKE_JWT",
@@ -112,7 +112,7 @@ pl_monitor_plots <- function(snapshot) {
 
 # Minimal demo flow (copy/paste in RStudio):
 # env <- pl_connect(
-#   config_path = "snowflaker_parallel_spcs_config.yaml",
+#   config_path = "skipatrol_parallel_spcs_config.yaml",
 #   connection_name = "<your_connections.toml_profile>",
 #   private_key_file = "~/.snowflake/keys/<your_rsa_key>.p8"
 # )

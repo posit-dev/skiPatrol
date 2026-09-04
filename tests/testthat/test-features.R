@@ -229,7 +229,7 @@ test_that("sfr_feature_view accepts features and feature_granularity", {
 
   local_mocked_bindings(
     sfr_requires_ml = function(min, feature) invisible(TRUE),
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   fv <- sfr_feature_view(
@@ -248,7 +248,7 @@ test_that("sfr_feature_view requires features when feature_granularity is set", 
   )
   local_mocked_bindings(
     sfr_requires_ml = function(min, feature) invisible(TRUE),
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   expect_error(

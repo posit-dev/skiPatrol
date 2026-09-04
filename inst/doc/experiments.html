@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<p><code>snowflakeR</code> exposes <strong>ML experiment
+<p><code>skiPatrol</code> exposes <strong>ML experiment
 tracking</strong> on Snowflake (runs, parameters, metrics, artifacts,
 and logged models) through a small R API on top of the
 <code>snowflake-ml-python</code> SDK. Experiment tracking requires a
@@ -353,7 +353,7 @@ Experiments complement the registry by capturing training exploration
 and <strong>tidymodels <code>tune</code></strong> grids.</p>
 <div id="basic-workflow" class="section level2">
 <h2>Basic workflow</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(snowflakeR)</span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(skiPatrol)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>conn <span class="ot">&lt;-</span> <span class="fu">sfr_connect</span>()</span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>exp <span class="ot">&lt;-</span> <span class="fu">sfr_experiment</span>(conn, <span class="at">name =</span> <span class="st">&quot;MY_EXPERIMENT&quot;</span>)</span>

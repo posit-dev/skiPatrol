@@ -1,4 +1,4 @@
-# Test helpers for snowflakeR
+# Test helpers for skiPatrol
 # =============================================================================
 # Loaded automatically by testthat before every test file.
 

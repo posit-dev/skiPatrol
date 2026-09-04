@@ -2,7 +2,7 @@
 Snowflake Connection Bridge
 ============================
 
-Python backend for snowflakeR::R/connect.R.
+Python backend for skiPatrol::R/connect.R.
 
 Handles Snowpark session creation, active session detection
 for Workspace Notebooks, and robust pandas → R data conversion.

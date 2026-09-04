@@ -9,7 +9,7 @@ Before R packages can run, Snowflake roles need appropriate grants. Requirements
 
 | Feature | Typical grants |
 |---------|----------------|
-| SQL / RSnowflake | `USAGE` on warehouse, database, schema; `SELECT` on tables |
+| SQL / skiLift | `USAGE` on warehouse, database, schema; `SELECT` on tables |
 | Workspace Notebooks | Notebook execution, compute pool for ML Container Runtime |
 | Feature Store / Registry | ML object privileges per [Snowflake ML RBAC](https://docs.snowflake.com/en/developer-guide/snowflake-ml/feature-store/rbac) |
 | SPCS / doSnowflake | `USAGE` on compute pool; `CREATE SERVICE`; image repository access |
@@ -24,21 +24,21 @@ Work with your Snowflake admin to provision a **development role** with ML privi
 Full detail: [Local R Setup](../../03_local_r_setup/index.qmd), [RStudio, Posit & VS Code](../../04_rstudio_posit_vscode/index.qmd).
 
 ```r
-pak::pak(c("Snowflake-Labs/RSnowflake", "Snowflake-Labs/snowflakeR"))
+pak::pak(c("posit-dev/skiLift", "posit-dev/skiPatrol"))
 ```
 
-**RSnowflake only** — no Python step required.
+**skiLift only** — no Python step required.
 
-**snowflakeR** — configure Python:
+**skiPatrol** — configure Python:
 
 ```r
-snowflakeR::sfr_install_python_deps()   # or pip/venv per chapter 03
-snowflakeR::sfr_check_environment()
+skiPatrol::sfr_install_python_deps()   # or pip/venv per chapter 03
+skiPatrol::sfr_check_environment()
 ```
 
 ### connections.toml
 
-Create `~/.snowflake/connections.toml` with at least one profile. Shared by CLI, Python, RSnowflake, and snowflakeR — see [authentication options](../../03_local_r_setup/index.qmd#sec-auth-options).
+Create `~/.snowflake/connections.toml` with at least one profile. Shared by CLI, Python, skiLift, and skiPatrol — see [authentication options](../../03_local_r_setup/index.qmd#sec-auth-options).
 
 ```toml
 [default]
@@ -54,7 +54,7 @@ role = "ANALYST"
 Verify:
 
 ```r
-library(RSnowflake)
+library(skiLift)
 con <- DBI::dbConnect(Snowflake(), name = "default")
 DBI::dbGetQuery(con, "SELECT CURRENT_USER()")
 ```
@@ -66,7 +66,7 @@ DBI::dbGetQuery(con, "SELECT CURRENT_USER()")
 | Step | Action |
 |------|--------|
 | 1 | Create Workspace project; connect Git repo (optional) |
-| 2 | Add `snowflaker_config.yaml` and reference `sfnb_setup.py` |
+| 2 | Add `skipatrol_config.yaml` and reference `sfnb_setup.py` |
 | 3 | Run Python bootstrap cell (`setup_notebook`) |
 | 4 | Enable **External Access** in Snowsight if prompted |
 | 5 | Run `%%R` smoke test (`sfr_connect()`, `dbConnect(Snowflake())`) |

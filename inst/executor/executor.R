@@ -171,7 +171,7 @@ if (output_mode == "stage") {
 } else if (output_mode == "table") {
   if (is.data.frame(result)) {
     con <- tryCatch(
-      DBI::dbConnect(RSnowflake::Snowflake()),
+      DBI::dbConnect(skiLift::Snowflake()),
       error = function(e) {
         log_msg("Cannot connect to Snowflake for table write: ", conditionMessage(e))
         NULL

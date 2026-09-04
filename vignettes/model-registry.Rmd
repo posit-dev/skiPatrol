@@ -8,13 +8,13 @@ vignette: >
 ---
 
 The Snowflake Model Registry lets you version, manage, and deploy ML models
-directly in Snowflake. `snowflakeR` makes this accessible from R -- you
+directly in Snowflake. `skiPatrol` makes this accessible from R -- you
 train models in R, and the package handles the Python bridging behind the
 scenes.
 
 ## How it works
 
-When you call `sfr_log_model()`, snowflakeR:
+When you call `sfr_log_model()`, skiPatrol:
 
 1. Saves your R model to an `.rds` file
 2. Auto-generates a Python `CustomModel` wrapper that uses `rpy2` to load
@@ -28,7 +28,7 @@ You never write Python -- the package handles everything.
 ## Setup
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 
@@ -493,7 +493,7 @@ numpy, pandas, and Python itself get installed.
 - Pinning `numpy<2.0` also causes the solver to select **Python 3.11**
   (the same version used by pure-Python containers), which completely
   avoids the bug. Our testing confirmed: Python 3.11.14 + numpy 1.26.4.
-- `snowflakeR` includes `numpy<2.0` in the default `conda_deps`. If you
+- `skiPatrol` includes `numpy<2.0` in the default `conda_deps`. If you
   override `conda_deps`, **make sure to include `numpy<2.0`**.
 
 ```r

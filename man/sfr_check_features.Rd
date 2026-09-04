@@ -2,7 +2,7 @@
 % Please edit documentation in R/version.R
 \name{sfr_check_features}
 \alias{sfr_check_features}
-\title{Check which snowflakeR features are available}
+\title{Check which skiPatrol features are available}
 \usage{
 sfr_check_features(conn = NULL)
 }

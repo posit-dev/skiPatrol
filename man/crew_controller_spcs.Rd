@@ -51,7 +51,7 @@ via TCP.
 \examples{
 \dontrun{
 library(crew)
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 controller <- crew_controller_spcs(

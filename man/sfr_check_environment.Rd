@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{sfr_check_environment}
 \alias{sfr_check_environment}
-\title{Check the snowflakeR environment}
+\title{Check the skiPatrol environment}
 \usage{
 sfr_check_environment()
 }

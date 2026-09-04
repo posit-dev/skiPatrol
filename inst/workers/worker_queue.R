@@ -17,7 +17,7 @@
 #   LEASE_MINUTES  -- Lease duration for claimed chunks (default 10)
 
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 library(parallel)
 
 `%||%` <- function(x, y) if (is.null(x) || (is.character(x) && !nzchar(x))) y else x
@@ -284,7 +284,7 @@ main <- function() {
               worker_id, WORKER_MODE, JOB_ID))
 
   con <- tryCatch(
-    DBI::dbConnect(RSnowflake::Snowflake()),
+    DBI::dbConnect(skiLift::Snowflake()),
     error = function(e) {
       cat(sprintf("[worker] Connection failed: %s\n", conditionMessage(e)))
       stop("Cannot connect to Snowflake")

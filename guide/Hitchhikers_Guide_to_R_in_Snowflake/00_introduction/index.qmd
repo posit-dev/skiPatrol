@@ -44,8 +44,8 @@ Workspace-specific setup (bootstrap cells, org runtime images) is in Part II —
 | [**03–04**](../03_local_r_setup/index.qmd) | R from your IDE | Local setup, RStudio, Posit, VS Code |
 | [**05–09**](../05_workspaces_overview/index.qmd) | Workspace | Notebooks, bootstrap, EAI, `%%R`, CRE |
 | [**10**](../10_multilang_beyond_r/index.qmd) | Beyond R | Julia, Scala, Java (optional) |
-| [**11–14**](../11_rsnowflake_sql_api/index.qmd) | RSnowflake | SQL API, DBI, dbplyr |
-| [**15–23**](../15_mlops_on_snowflake/index.qmd) | snowflakeR | MLOps, Feature Store, Registry, scale-out |
+| [**11–14**](../11_skilift_sql_api/index.qmd) | skiLift | SQL API, DBI, dbplyr |
+| [**15–23**](../15_mlops_on_snowflake/index.qmd) | skiPatrol | MLOps, Feature Store, Registry, scale-out |
 | [**F**](../appendices/F_glossary/index.qmd) | Glossary | Terms and acronyms |
 
 ## Learning Objectives
@@ -68,16 +68,16 @@ These open-source packages are developed to help customers use R in Workspaces a
 | Package | Role |
 |---------|------|
 | **snowflake-notebook-multilang** | Bootstrap R/`%%R`, EAI helpers, CRE tooling in Workspace |
-| **RSnowflake** | DBI over the SQL REST API (+ optional ADBC) |
-| **snowflakeR** | R interface to `snowflake-ml-python` (Feature Store, Registry, SPCS, …) |
+| **skiLift** | DBI over the SQL REST API (+ optional ADBC) |
+| **skiPatrol** | R interface to `snowflake-ml-python` (Feature Store, Registry, SPCS, …) |
 
-snowflakeR depends on Snowflake's **supported** `snowflake-ml-python` SDK on the Python side; the R wrapper itself remains community-maintained.
+skiPatrol depends on Snowflake's **supported** `snowflake-ml-python` SDK on the Python side; the R wrapper itself remains community-maintained.
 :::
 
 ::: {.callout-warning}
 ## Pre-built package tarballs in Workspace
 
-Configure **pre-built `.tar.gz`** tarballs for `snowflakeR` and `RSnowflake` in your notebook YAML when you reach [Workspace Bootstrap](../06_workspace_bootstrap/index.qmd). Installing from source inside Workspace is slow (minutes) and brittle. See also [Appendix B](../appendices/B_config_reference/index.qmd).
+Configure **pre-built `.tar.gz`** tarballs for `skiPatrol` and `skiLift` in your notebook YAML when you reach [Workspace Bootstrap](../06_workspace_bootstrap/index.qmd). Installing from source inside Workspace is slow (minutes) and brittle. See also [Appendix B](../appendices/B_config_reference/index.qmd).
 :::
 
 ## Prerequisites {#sec-prerequisites}
@@ -102,13 +102,13 @@ See [Appendix A: Setup](../appendices/A_setup/index.qmd) and [Local R Setup](../
 
 - Comfortable writing R and reading SQL
 - Basic familiarity with notebooks (cells, kernels) if using Workspace
-- ML concepts (features, training, inference) for snowflakeR chapters
+- ML concepts (features, training, inference) for skiPatrol chapters
 
 ## Companion artifacts {#sec-companions}
 
 | Artifact | Location |
 |----------|----------|
-| Workspace notebooks | [snowflakeR `inst/notebooks`](https://github.com/Snowflake-Labs/snowflakeR/tree/main/inst/notebooks) |
+| Workspace notebooks | [skiPatrol `inst/notebooks`](https://github.com/posit-dev/skiPatrol/tree/main/inst/notebooks) |
 | Multilang smoke test | [sfnb `examples/r_smoke_test`](https://github.com/Snowflake-Labs/snowflake-notebook-multilang/tree/main/examples/r_smoke_test) |
 | Feature Store concepts | [Feature Store Implementation Guide](https://snowflake-labs.github.io/snowflake-featurestore-imp-guide/) |
 

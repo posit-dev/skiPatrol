@@ -8,11 +8,11 @@
   # Set default options (user can override)
   op <- options()
   op_sfr <- list(
-    snowflakeR.python_env = "r-snowflakeR",
-    snowflakeR.verbose = FALSE,
-    snowflakeR.print_width = 200L,
-    snowflakeR.lowercase_columns = FALSE,
-    snowflakeR.preserve_write_case = FALSE
+    skiPatrol.python_env = "r-skiPatrol",
+    skiPatrol.verbose = FALSE,
+    skiPatrol.print_width = 200L,
+    skiPatrol.lowercase_columns = FALSE,
+    skiPatrol.preserve_write_case = FALSE
   )
   toset <- !(names(op_sfr) %in% names(op))
   if (any(toset)) options(op_sfr[toset])
@@ -47,7 +47,7 @@
 
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage(
-    "snowflakeR ", utils::packageVersion("snowflakeR"),
+    "skiPatrol ", utils::packageVersion("skiPatrol"),
     " - R interface to the Snowflake ML platform"
   )
 }

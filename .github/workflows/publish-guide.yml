@@ -21,12 +21,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-snowflaker-guide
+  group: pages-skipatrol-guide
   cancel-in-progress: false
 
 jobs:
   build:
-    if: github.repository == 'Snowflake-Labs/snowflakeR'
+    if: github.repository == 'posit-dev/skiPatrol'
     runs-on: ubuntu-latest
 
     steps:
@@ -68,7 +68,7 @@ jobs:
           path: guide/Hitchhikers_Guide_to_R_in_Snowflake/_site
 
   deploy:
-    if: github.repository == 'Snowflake-Labs/snowflakeR'
+    if: github.repository == 'posit-dev/skiPatrol'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 ```
 
 Model **monitoring** (drift, performance, and statistical views) is configured
-through the Model Registry API in `snowflakeR`. Monitoring requires
+through the Model Registry API in `skiPatrol`. Monitoring requires
 **`snowflake-ml-python` >= 1.7.1** in the active Python environment (see
 `?sfr_add_monitor`).
 
@@ -30,7 +30,7 @@ You need:
 ## Configure source and registry settings
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 reg <- sfr_model_registry(conn, database = "ML_DB", schema = "MODELS")

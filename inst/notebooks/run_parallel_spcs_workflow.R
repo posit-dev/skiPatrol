@@ -3,23 +3,23 @@
 # CLI wrapper for parallel_spcs_workflow.R
 #
 # Examples:
-#   Rscript snowflakeR/inst/notebooks/run_parallel_spcs_workflow.R --mode bootstrap_sql
-#   Rscript snowflakeR/inst/notebooks/run_parallel_spcs_workflow.R --mode setup --config snowflakeR/inst/notebooks/snowflaker_parallel_spcs_config.yaml
-#   Rscript snowflakeR/inst/notebooks/run_parallel_spcs_workflow.R --mode tasks --run
-#   Rscript snowflakeR/inst/notebooks/run_parallel_spcs_workflow.R --mode queue --run
+#   Rscript skiPatrol/inst/notebooks/run_parallel_spcs_workflow.R --mode bootstrap_sql
+#   Rscript skiPatrol/inst/notebooks/run_parallel_spcs_workflow.R --mode setup --config skiPatrol/inst/notebooks/skipatrol_parallel_spcs_config.yaml
+#   Rscript skiPatrol/inst/notebooks/run_parallel_spcs_workflow.R --mode tasks --run
+#   Rscript skiPatrol/inst/notebooks/run_parallel_spcs_workflow.R --mode queue --run
 
 args <- commandArgs(trailingOnly = TRUE)
 
 parse_args <- function(argv) {
   out <- list(
     mode = "bootstrap_sql",
-    config = "snowflakeR/inst/notebooks/snowflaker_parallel_spcs_config.yaml",
+    config = "skiPatrol/inst/notebooks/skipatrol_parallel_spcs_config.yaml",
     create_series = TRUE,
     n_units = 120L,
     n_days = 365L,
     run = FALSE,
     load_local = FALSE,
-    package_path = "snowflakeR",
+    package_path = "skiPatrol",
     connection_name = NULL,
     private_key_file = NULL,
     help = FALSE
@@ -105,15 +105,15 @@ print_help <- function() {
     "  --n-units <int>                      synthetic units (default: 120)\n",
     "  --n-days <int>                       synthetic days (default: 365)\n",
     "  --run                                execute tasks/queue demo\n",
-    "  --load-local                         load snowflakeR from local source via pkgload\n",
-    "  --package-path <path>                local package path (default: snowflakeR)\n",
+    "  --load-local                         load skiPatrol from local source via pkgload\n",
+    "  --package-path <path>                local package path (default: skiPatrol)\n",
     "  --connection-name <name>             sfr_connect(name=...)\n",
     "  --private-key-file <path>            explicit key path for key-pair auth\n",
     "  --help, -h                           show this help\n",
     "\n",
     "Notes:\n",
     "  - tasks/queue modes are dry-run unless --run is provided.\n",
-    "  - setup/tasks/queue use snowflakeR::sfr_connect() and your current\n",
+    "  - setup/tasks/queue use skiPatrol::sfr_connect() and your current\n",
     "    Snowflake auth environment/profile.\n",
     sep = ""
   )
@@ -154,20 +154,20 @@ if (isTRUE(opts$load_local)) {
   pkgload::load_all(opts$package_path, quiet = TRUE)
 }
 
-if (!"snowflakeR" %in% loadedNamespaces() && !requireNamespace("snowflakeR", quietly = TRUE)) {
+if (!"skiPatrol" %in% loadedNamespaces() && !requireNamespace("skiPatrol", quietly = TRUE)) {
   stop(
-    "Package 'snowflakeR' is required for mode: ", opts$mode,
+    "Package 'skiPatrol' is required for mode: ", opts$mode,
     " (or pass --load-local).",
     call. = FALSE
   )
 }
-conn <- snowflakeR::sfr_connect(
+conn <- skiPatrol::sfr_connect(
   name = opts$connection_name,
   private_key_file = opts$private_key_file
 )
 
 if (nzchar(cfg$warehouse %||% "")) {
-  snowflakeR::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
+  skiPatrol::sfr_execute(conn, sprintf("USE WAREHOUSE %s", cfg$warehouse))
 }
 
 if (identical(opts$mode, "setup")) {

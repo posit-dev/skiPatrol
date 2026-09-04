@@ -9,7 +9,7 @@ sfr_write_table(
   table_name,
   value,
   overwrite = FALSE,
-  .uppercase_cols = !getOption("snowflakeR.preserve_write_case", FALSE)
+  .uppercase_cols = !getOption("skiPatrol.preserve_write_case", FALSE)
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ sfr_write_table(
 
 \item{.uppercase_cols}{Logical. If \code{TRUE} (default), column names are
 uppercased before writing. Set to \code{FALSE} to preserve original casing.
-Default respects \code{getOption("snowflakeR.preserve_write_case")}.}
+Default respects \code{getOption("skiPatrol.preserve_write_case")}.}
 }
 \value{
 Invisibly returns \code{TRUE}.

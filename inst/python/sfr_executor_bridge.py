@@ -6,7 +6,7 @@ Python bridge for launching generic R executor containers on SPCS via
 EXECUTE JOB SERVICE. The executor loads R scripts from a mounted Snowflake
 stage, eliminating Docker image rebuilds when R code changes.
 
-Called from R via reticulate (snowflakeR::sfr_execute_r_script).
+Called from R via reticulate (skiPatrol::sfr_execute_r_script).
 """
 
 import json

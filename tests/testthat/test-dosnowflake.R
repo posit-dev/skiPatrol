@@ -66,20 +66,20 @@ test_that("registerDoSnowflake errors without foreach installed", {
 # ---------------------------------------------------------------------------
 
 test_that(".resolve_snowflake_workers handles 'auto'", {
-  n <- snowflakeR:::.resolve_snowflake_workers("auto")
+  n <- skiPatrol:::.resolve_snowflake_workers("auto")
   expect_true(is.integer(n) || is.numeric(n))
   expect_true(n >= 1L)
 })
 
 test_that(".resolve_snowflake_workers handles explicit integer", {
-  expect_equal(snowflakeR:::.resolve_snowflake_workers(4L), 4L)
-  expect_equal(snowflakeR:::.resolve_snowflake_workers(1L), 1L)
+  expect_equal(skiPatrol:::.resolve_snowflake_workers(4L), 4L)
+  expect_equal(skiPatrol:::.resolve_snowflake_workers(1L), 1L)
 })
 
 test_that(".resolve_snowflake_workers floors invalid values to 1", {
-  expect_equal(snowflakeR:::.resolve_snowflake_workers(0L), 1L)
-  expect_equal(snowflakeR:::.resolve_snowflake_workers(-5L), 1L)
-  expect_equal(snowflakeR:::.resolve_snowflake_workers(NA), 1L)
+  expect_equal(skiPatrol:::.resolve_snowflake_workers(0L), 1L)
+  expect_equal(skiPatrol:::.resolve_snowflake_workers(-5L), 1L)
+  expect_equal(skiPatrol:::.resolve_snowflake_workers(NA), 1L)
 })
 
 # ---------------------------------------------------------------------------

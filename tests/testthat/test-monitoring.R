@@ -66,7 +66,7 @@ test_that("sfr_monitor_drift builds expected SQL", {
       sql_seen <<- sql
       data.frame()
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   sfr_monitor_drift(
@@ -94,7 +94,7 @@ test_that("sfr_monitor_performance builds expected SQL", {
       sql_seen <<- sql
       data.frame()
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   sfr_monitor_performance(
@@ -119,7 +119,7 @@ test_that("sfr_monitor_stats builds MODEL_MONITOR_STAT_METRIC SQL", {
       sql_seen <<- sql
       data.frame()
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   sfr_monitor_stats(
@@ -144,7 +144,7 @@ test_that("sfr_monitor_drift includes segment JSON when segment is set", {
       sql_seen <<- sql
       data.frame()
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   sfr_monitor_drift(
@@ -172,7 +172,7 @@ test_that("sfr_suspend_monitor and sfr_resume_monitor build ALTER SQL", {
       ex_sql <<- c(ex_sql, sql)
       invisible(TRUE)
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   sfr_suspend_monitor(mock_conn(), "MY_MON")
@@ -221,7 +221,7 @@ test_that("sfr_add_monitor calls sfr_requires_ml and bridge", {
         }
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   src <- sfr_monitor_source("T", "TS", "P")
@@ -247,7 +247,7 @@ test_that("sfr_monitor_to_vetiver drift dispatch returns vetiver-like columns", 
         stringsAsFactors = FALSE
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   out <- sfr_monitor_to_vetiver(
@@ -275,7 +275,7 @@ test_that("sfr_monitor_to_vetiver performance dispatch returns vetiver-like colu
         stringsAsFactors = FALSE
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   out <- sfr_monitor_to_vetiver(
@@ -301,7 +301,7 @@ test_that("sfr_monitor_to_vetiver stats dispatch returns vetiver-like columns", 
         stringsAsFactors = FALSE
       )
     },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   out <- sfr_monitor_to_vetiver(
@@ -352,7 +352,7 @@ test_that("sfr_vetiver_to_metrics calls sfr_set_model_metric for each row", {
   call_count <- 0L
   local_mocked_bindings(
     sfr_set_model_metric = function(...) { call_count <<- call_count + 1L },
-    .package = "snowflakeR"
+    .package = "skiPatrol"
   )
 
   n <- sfr_vetiver_to_metrics(mock_conn, "M", "v1", metrics_df)

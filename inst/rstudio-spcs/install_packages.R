@@ -1,4 +1,4 @@
-# Install RSnowflake + snowflakeR from tarballs (preferred) or GitHub fallback.
+# Install skiLift + skiPatrol from tarballs (preferred) or GitHub fallback.
 options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest"))
 
 cran_deps <- c(
@@ -20,19 +20,19 @@ install_tarball <- function(pattern) {
   TRUE
 }
 
-if (!install_tarball("^RSnowflake")) {
-  message("No RSnowflake tarball — installing from GitHub...")
-  remotes::install_github("Snowflake-Labs/RSnowflake", upgrade = "never", quiet = TRUE)
+if (!install_tarball("^skiLift")) {
+  message("No skiLift tarball — installing from GitHub...")
+  remotes::install_github("posit-dev/skiLift", upgrade = "never", quiet = TRUE)
 }
 
-if (!install_tarball("^snowflakeR")) {
-  message("No snowflakeR tarball — installing from GitHub...")
-  remotes::install_github("Snowflake-Labs/snowflakeR", upgrade = "never", quiet = TRUE)
+if (!install_tarball("^skiPatrol")) {
+  message("No skiPatrol tarball — installing from GitHub...")
+  remotes::install_github("posit-dev/skiPatrol", upgrade = "never", quiet = TRUE)
 }
 
 message("Verifying packages...")
 stopifnot(
-  requireNamespace("RSnowflake", quietly = TRUE),
-  requireNamespace("snowflakeR", quietly = TRUE)
+  requireNamespace("skiLift", quietly = TRUE),
+  requireNamespace("skiPatrol", quietly = TRUE)
 )
 message("Package install OK")

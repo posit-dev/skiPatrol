@@ -1,11 +1,11 @@
 ---
-title: "snowflakeR: Connect"
+title: "skiPatrol: Connect"
 subtitle: "Sessions, queries, tables, Tasks, and containers"
 ---
 
 ## Overview
 
-**snowflakeR** is your R entry point to the Snowflake **ML platform** — Feature Store, Model Registry, experiments, monitoring, and parallel execution. Under the hood it uses **reticulate** to call `snowflake-ml-python`; you write R, not Python.
+**skiPatrol** is your R entry point to the Snowflake **ML platform** — Feature Store, Model Registry, experiments, monitoring, and parallel execution. Under the hood it uses **reticulate** to call `snowflake-ml-python`; you write R, not Python.
 
 This chapter covers **connection**, **session context**, and **data access** — the foundation for every later chapter. It also introduces **operational** platform pieces (Tasks, SPCS, stages) that turn interactive notebooks into production pipelines.
 
@@ -20,7 +20,7 @@ See [Introduction](../00_introduction/index.qmd#sec-disclaimers) for the communi
 - Connect locally and in Workspace with the right auth mode
 - Set warehouse/database/schema context reliably
 - Move data with SQL and table helpers
-- Understand how snowflakeR relates to RSnowflake and SPCS operational APIs
+- Understand how skiPatrol relates to skiLift and SPCS operational APIs
 
 ---
 
@@ -41,7 +41,7 @@ flowchart LR
   R --> RET --> PY --> SF
 ```
 
-RSnowflake can share the same credentials via `sfr_dbi_connection()` — one login, two API styles ([RSnowflake in Workspace](../14_rsnowflake_workspace/index.qmd)).
+skiLift can share the same credentials via `sfr_dbi_connection()` — one login, two API styles ([skiLift in Workspace](../14_skilift_workspace/index.qmd)).
 
 ---
 
@@ -50,12 +50,12 @@ RSnowflake can share the same credentials via `sfr_dbi_connection()` — one log
 ### Local — connections.toml (recommended)
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()                       # [default] profile
 conn <- sfr_connect(name = "production")  # named profile
 ```
 
-Profiles live in `~/.snowflake/connections.toml` — shared with RSnowflake, Python connector, and CLI. See [Local R Setup](../03_local_r_setup/index.qmd#sec-toml).
+Profiles live in `~/.snowflake/connections.toml` — shared with skiLift, Python connector, and CLI. See [Local R Setup](../03_local_r_setup/index.qmd#sec-toml).
 
 ### Explicit parameters
 
@@ -92,7 +92,7 @@ After bootstrap, the notebook runtime injects session OAuth:
 conn <- sfr_connect()   # no PAT or TOML in cells
 ```
 
-Bootstrap exports `SNOWFLAKE_*` environment variables consumed by snowflakeR and RSnowflake.
+Bootstrap exports `SNOWFLAKE_*` environment variables consumed by skiPatrol and skiLift.
 
 ---
 
@@ -107,7 +107,7 @@ Symptom: `object does not exist` for tables you know are there. Cause: wrong or 
 **Option A — YAML config (notebooks):**
 
 ```r
-conn <- sfr_load_notebook_config(conn)  # reads snowflaker_*.yaml context section
+conn <- sfr_load_notebook_config(conn)  # reads skipatrol_*.yaml context section
 ```
 
 **Option B — `sfr_use()` (must reassign):**
@@ -140,7 +140,7 @@ Use FQN helpers in shared notebooks so cells work regardless of session defaults
 sfr_query(conn, "SELECT CURRENT_WAREHOUSE(), CURRENT_USER(), CURRENT_ROLE()")
 ```
 
-Returns a data frame with **lowercase** column names (snowflakeR bridge convention).
+Returns a data frame with **lowercase** column names (skiPatrol bridge convention).
 
 ### Read / write tables
 
@@ -150,20 +150,20 @@ df <- sfr_read_table(conn, "MY_DB.MY_SCHEMA.MY_TABLE")
 sfr_write_table(conn, df, "MY_DB.MY_SCHEMA.OUT_TABLE", mode = "overwrite")
 ```
 
-These use Snowpark table APIs — efficient for moderate-sized frames. For large analytics, prefer **SQL aggregation** or **dbplyr** via RSnowflake rather than pulling everything into R.
+These use Snowpark table APIs — efficient for moderate-sized frames. For large analytics, prefer **SQL aggregation** or **dbplyr** via skiLift rather than pulling everything into R.
 
 ### Column naming
 
 | API | Default column case |
 |-----|---------------------|
 | `sfr_query()` / `sfr_read_table()` | lowercase |
-| RSnowflake / dbplyr | UPPERCASE (Snowflake default) |
+| skiLift / dbplyr | UPPERCASE (Snowflake default) |
 
 Pick one convention per pipeline. Mixing causes join bugs.
 
 ---
 
-## DBI bridge to RSnowflake {#sec-dbi}
+## DBI bridge to skiLift {#sec-dbi}
 
 When you need **dplyr** or the Connections Pane alongside ML APIs:
 
@@ -215,7 +215,7 @@ flowchart TB
   SPCS --> STG
 ```
 
-| Capability | Role in ML ops | snowflakeR entry |
+| Capability | Role in ML ops | skiPatrol entry |
 |------------|----------------|------------------|
 | **Tasks** | Schedule SQL, trigger pipelines, orchestrate doSnowflake chunks | `registerDoSnowflake(..., mode = "tasks")` |
 | **SPCS** | Inference services, parallel R workers | `sfr_deploy_model()`, doSnowflake, executor |
@@ -257,7 +257,7 @@ sfr_executor_status(conn, job$job_name)
 sfr_collect_executor_results(conn, job, stage = "ML_STAGE")
 ```
 
-Define `main(config)` in the script. Workers use **stage volume mounts** — not SQL `GET`/`PUT` ([SQL API limits](../11_rsnowflake_sql_api/index.qmd#sec-limits)).
+Define `main(config)` in the script. Workers use **stage volume mounts** — not SQL `GET`/`PUT` ([SQL API limits](../11_skilift_sql_api/index.qmd#sec-limits)).
 
 ### Tasks in a typical ML lifecycle
 

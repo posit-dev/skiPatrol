@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Copy pre-built package vignette HTML into the Quarto book _site/ for GitHub Pages.
-# snowflakeR: inst/doc/*.html (monorepo or public repo root)
-# RSnowflake: monorepo RSnowflake/inst/doc, or vignettes-source/rsnowflake/ on public clone
+# skiPatrol: inst/doc/*.html (monorepo or public repo root)
+# skiLift: monorepo skiLift/inst/doc, or vignettes-source/skilift/ on public clone
 #
 # Called via project.post-render in the book _quarto.yml.
 
@@ -48,10 +48,10 @@ _copy_package_vignettes() {
   fi
 }
 
-# --- snowflakeR ---
+# --- skiPatrol ---
 SF_DOC=""
 for candidate in \
-  "${REPO_ROOT}/snowflakeR/inst/doc" \
+  "${REPO_ROOT}/skiPatrol/inst/doc" \
   "${REPO_ROOT}/inst/doc"; do
   if [[ -d "$candidate" ]] && [[ -f "$candidate/getting-started.html" ]]; then
     SF_DOC="$candidate"
@@ -60,16 +60,16 @@ for candidate in \
 done
 
 if [[ -n "$SF_DOC" ]]; then
-  _copy_package_vignettes "$SF_DOC" "snowflakeR" "snowflakeR-reference.html"
+  _copy_package_vignettes "$SF_DOC" "skiPatrol" "skiPatrol-reference.html"
 else
-  echo "copy_vignette_html_to_site: snowflakeR inst/doc not found (skip)" >&2
+  echo "copy_vignette_html_to_site: skiPatrol inst/doc not found (skip)" >&2
 fi
 
-# --- RSnowflake (rendered on same Pages host — do not use github.com/raw URLs) ---
+# --- skiLift (rendered on same Pages host — do not use github.com/raw URLs) ---
 RS_DOC=""
 for candidate in \
-  "${REPO_ROOT}/RSnowflake/inst/doc" \
-  "${BOOK_DIR}/vignettes-source/rsnowflake"; do
+  "${REPO_ROOT}/skiLift/inst/doc" \
+  "${BOOK_DIR}/vignettes-source/skilift"; do
   if [[ -d "$candidate" ]] && [[ -f "$candidate/getting-started.html" ]]; then
     RS_DOC="$candidate"
     break
@@ -77,7 +77,7 @@ for candidate in \
 done
 
 if [[ -n "$RS_DOC" ]]; then
-  _copy_package_vignettes "$RS_DOC" "RSnowflake" ""
+  _copy_package_vignettes "$RS_DOC" "skiLift" ""
 else
-  echo "copy_vignette_html_to_site: RSnowflake HTML not found (skip)" >&2
+  echo "copy_vignette_html_to_site: skiLift HTML not found (skip)" >&2
 fi

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SNOWFLAKER_PKG_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+SKIPATROL_PKG_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 MONOREPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 CTX="${SCRIPT_DIR}/build-ctx"
 PKG_CACHE="${SCRIPT_DIR}/pkg"
@@ -31,7 +31,7 @@ copy_tarball() {
   local dest="$2"
   local hit=""
 
-  for root in "${MONOREPO_ROOT}" "${PKG_CACHE}" "$(dirname "${SNOWFLAKER_PKG_ROOT}")"; do
+  for root in "${MONOREPO_ROOT}" "${PKG_CACHE}" "$(dirname "${SKIPATROL_PKG_ROOT}")"; do
     hit="$(ls "${root}/${pkg_name}"_*.tar.gz 2>/dev/null | head -1 || true)"
     if [[ -n "${hit}" ]]; then
       cp "${hit}" "${dest}/"
@@ -42,15 +42,15 @@ copy_tarball() {
   return 1
 }
 
-ensure_tarball "${SNOWFLAKER_PKG_ROOT}" "snowflakeR" "$(dirname "${SNOWFLAKER_PKG_ROOT}")"
-ensure_tarball "${MONOREPO_ROOT}/RSnowflake" "RSnowflake" "${MONOREPO_ROOT}" || true
+ensure_tarball "${SKIPATROL_PKG_ROOT}" "skiPatrol" "$(dirname "${SKIPATROL_PKG_ROOT}")"
+ensure_tarball "${MONOREPO_ROOT}/skiLift" "skiLift" "${MONOREPO_ROOT}" || true
 
-if ! copy_tarball "snowflakeR" "${CTX}"; then
-  echo "ERROR: snowflakeR tarball required for Image Builder (COPY *.tar.gz)."
-  echo "  Run from snowflakeR source tree or place snowflakeR_*.tar.gz in pkg/"
+if ! copy_tarball "skiPatrol" "${CTX}"; then
+  echo "ERROR: skiPatrol tarball required for Image Builder (COPY *.tar.gz)."
+  echo "  Run from skiPatrol source tree or place skiPatrol_*.tar.gz in pkg/"
   exit 1
 fi
-copy_tarball "RSnowflake" "${CTX}" || echo "WARN: no RSnowflake tarball — install_packages.R will use GitHub"
+copy_tarball "skiLift" "${CTX}" || echo "WARN: no skiLift tarball — install_packages.R will use GitHub"
 
 cp "${SCRIPT_DIR}/Dockerfile.imagebuilder" "${CTX}/Dockerfile"
 cp "${SCRIPT_DIR}/install_packages.R" "${CTX}/install_packages.R"

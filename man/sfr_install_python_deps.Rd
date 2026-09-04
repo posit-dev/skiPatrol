@@ -2,11 +2,11 @@
 % Please edit documentation in R/python_deps.R
 \name{sfr_install_python_deps}
 \alias{sfr_install_python_deps}
-\title{Install Python dependencies for snowflakeR}
+\title{Install Python dependencies for skiPatrol}
 \usage{
 sfr_install_python_deps(
   method = "conda",
-  envname = "r-snowflakeR",
+  envname = "r-skiPatrol",
   python_version = "3.11"
 )
 }
@@ -15,7 +15,7 @@ sfr_install_python_deps(
 \code{"pip"}, or \code{"auto"}. Default: \code{"conda"}.}
 
 \item{envname}{Character. Name of the conda/virtual environment.
-Default: \code{"r-snowflakeR"}.}
+Default: \code{"r-skiPatrol"}.}
 
 \item{python_version}{Character. Python version to use. Default: \code{"3.11"}.}
 }
@@ -24,7 +24,7 @@ Invisibly returns \code{TRUE} on success.
 }
 \description{
 Creates a conda environment with all required Python packages for
-\code{snowflakeR} to function. This environment is shared between \code{reticulate}
+\code{skiPatrol} to function. This environment is shared between \code{reticulate}
 and \code{rpy2}, avoiding duplicate installations.
 }
 \details{

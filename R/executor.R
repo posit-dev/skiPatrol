@@ -257,6 +257,6 @@ sfr_collect_executor_results <- function(conn, job, stage = "DOSNOWFLAKE_STAGE")
 # =============================================================================
 
 .get_executor_bridge <- function() {
-  pkg_python <- system.file("python", package = "snowflakeR")
+  pkg_python <- system.file("python", package = "skiPatrol")
   reticulate::import_from_path("sfr_executor_bridge", path = pkg_python)
 }

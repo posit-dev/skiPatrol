@@ -2,7 +2,7 @@
 Many-Model Registry Bridge for R Models
 ========================================
 
-Python backend for snowflakeR many-model aggregator pattern.
+Python backend for skiPatrol many-model aggregator pattern.
 
 Registers a SINGLE CustomModel that dispatches inference to per-partition
 .rds files stored on an internal stage. Supports arbitrary partition keys
@@ -10,7 +10,7 @@ Registers a SINGLE CustomModel that dispatches inference to per-partition
 
 Architecture:
     R user code
-        -> snowflakeR::R/many_model.R  (user-facing R functions)
+        -> skiPatrol::R/many_model.R  (user-facing R functions)
         -> reticulate bridge
         -> sfr_many_model_bridge.py  (this file)
         -> snowflake.ml.registry + snowflake.ml.model.custom_model

@@ -56,7 +56,7 @@ sfr_requires_ml <- function(min, feature) {
 }
 
 
-#' Check which snowflakeR features are available
+#' Check which skiPatrol features are available
 #'
 #' Reports which optional features are available based on the installed
 #' version of `snowflake-ml-python`.

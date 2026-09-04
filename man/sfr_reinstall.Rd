@@ -2,20 +2,20 @@
 % Please edit documentation in R/connect.R
 \name{sfr_reinstall}
 \alias{sfr_reinstall}
-\title{Reinstall and reload snowflakeR (and RSnowflake) from source}
+\title{Reinstall and reload skiPatrol (and skiLift) from source}
 \usage{
 sfr_reinstall(
-  path = Sys.getenv("SNOWFLAKER_PATH"),
-  rsnowflake_path = Sys.getenv("RSNOWFLAKE_PATH")
+  path = Sys.getenv("SKIPATROL_PATH"),
+  skilift_path = Sys.getenv("SKILIFT_PATH")
 )
 }
 \arguments{
-\item{path}{Path to the snowflakeR source directory.
-Defaults to the \code{SNOWFLAKER_PATH} environment variable.}
+\item{path}{Path to the skiPatrol source directory.
+Defaults to the \code{SKIPATROL_PATH} environment variable.}
 
-\item{rsnowflake_path}{Path to the RSnowflake source directory.
-Defaults to the \code{RSNOWFLAKE_PATH} environment variable.
-Set to \code{""} to skip RSnowflake reinstallation.}
+\item{skilift_path}{Path to the skiLift source directory.
+Defaults to the \code{SKILIFT_PATH} environment variable.
+Set to \code{""} to skip skiLift reinstallation.}
 }
 \value{
 Invisibly returns \code{TRUE}.

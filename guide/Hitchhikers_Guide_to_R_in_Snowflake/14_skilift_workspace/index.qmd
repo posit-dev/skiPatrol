@@ -1,11 +1,11 @@
 ---
-title: "RSnowflake in Workspace"
+title: "skiLift in Workspace"
 subtitle: "Bootstrap order, EAI, ADBC, and sfr_dbi_connection()"
 ---
 
 ## Overview
 
-RSnowflake in Workspace follows the same **Python kernel + `%%R`** model as snowflakeR. This chapter covers bootstrap order, optional **ADBC** acceleration, the internal **SPCS gateway**, and bridging to snowflakeR via `sfr_dbi_connection()`.
+skiLift in Workspace follows the same **Python kernel + `%%R`** model as skiPatrol. This chapter covers bootstrap order, optional **ADBC** acceleration, the internal **SPCS gateway**, and bridging to skiPatrol via `sfr_dbi_connection()`.
 
 Prerequisites: [Workspace Bootstrap](../06_workspace_bootstrap/index.qmd), [Network & EAI](../07_network_and_eai/index.qmd).
 
@@ -21,11 +21,11 @@ Prerequisites: [Workspace Bootstrap](../06_workspace_bootstrap/index.qmd), [Netw
 ## Execution model {#sec-model}
 
 1. **Python kernel** holds the Snowpark session Workspace creates.
-2. **`%%R` cells** run R via rpy2; RSnowflake in R speaks HTTPS to Snowflake (SQL API).
+2. **`%%R` cells** run R via rpy2; skiLift in R speaks HTTPS to Snowflake (SQL API).
 3. **`dbConnect(Snowflake())`** succeeds when bootstrap exports `SNOWFLAKE_*` env vars.
 
 ::: {.callout-note title="What is rpy2?"}
-RSnowflake runs **inside** the embedded R session that rpy2 creates in the Python process. There is no separate RSnowflake "Workspace mode" — it is the same DBI driver with Workspace OAuth from environment variables.
+skiLift runs **inside** the embedded R session that rpy2 creates in the Python process. There is no separate skiLift "Workspace mode" — it is the same DBI driver with Workspace OAuth from environment variables.
 :::
 
 ---
@@ -38,20 +38,20 @@ Two paths: **bootstrap** (default without CRE) and **CRE** (packages pre-baked i
 
 | Step | Cell | Action |
 |------|------|--------|
-| 1 | Python | `setup_notebook(config=..., packages=["RSnowflake", "snowflakeR"])` |
+| 1 | Python | `setup_notebook(config=..., packages=["skiLift", "skiPatrol"])` |
 | 2 | Python (optional) | Verify **EAI** enabled in Snowsight (needed for downloads during bootstrap) |
-| 3 | R (`%%R`) | `library(RSnowflake)` or `library(snowflakeR)` |
+| 3 | R (`%%R`) | `library(skiLift)` or `library(skiPatrol)` |
 | 4 | R (`%%R`) | `dbConnect(Snowflake())` or `sfr_connect()` |
 
 ```python
 from sfnb_setup import setup_notebook
-setup_notebook(config="snowflaker_config.yaml", packages=["RSnowflake", "snowflakeR"])
+setup_notebook(config="skipatrol_config.yaml", packages=["skiLift", "skiPatrol"])
 ```
 
 ```r
 %%R
 library(DBI)
-library(RSnowflake)
+library(skiLift)
 con <- dbConnect(Snowflake())
 dbGetQuery(con, "SELECT CURRENT_USER(), CURRENT_WAREHOUSE()")
 ```
@@ -60,23 +60,23 @@ If `dbConnect()` fails: re-run Python bootstrap; confirm External Access is togg
 
 ### With CRE — steps 1 and 2 often unnecessary
 
-When the notebook uses a **[Custom Runtime Environment](../09_custom_runtime_and_ml_jobs/index.qmd)** that already includes R, `%%R`, snowflakeR, RSnowflake, and (optionally) **ADBC**, analysts can usually **skip step 1** (`setup_notebook`) and **step 2** (runtime EAI for package downloads):
+When the notebook uses a **[Custom Runtime Environment](../09_custom_runtime_and_ml_jobs/index.qmd)** that already includes R, `%%R`, skiPatrol, skiLift, and (optionally) **ADBC**, analysts can usually **skip step 1** (`setup_notebook`) and **step 2** (runtime EAI for package downloads):
 
 | Step | Cell | Action |
 |------|------|--------|
 | ~~1~~ | — | **Skipped** — tarballs and micromamba env are in the image |
 | ~~2~~ | — | **Skipped** for cold install — no public download chain unless you add new hosts at runtime |
-| 3 | R (`%%R`) | `library(RSnowflake)` / `library(snowflakeR)` |
+| 3 | R (`%%R`) | `library(skiLift)` / `library(skiPatrol)` |
 | 4 | R (`%%R`) | `dbConnect(Snowflake())` / `sfr_connect()` |
 
 Attach the CRE in notebook settings (`cre@<org_name>`). Platform teams rebuild the image when package versions change — same reproducibility model as pinning versions in a CRE profile.
 
 ::: {.callout-important}
-## Why RSnowflake (SQL API) in Workspace — not ODBC via bootstrap
+## Why skiLift (SQL API) in Workspace — not ODBC via bootstrap
 
-Before CRE, installing the **Snowflake ODBC driver** and configuring **unixODBC** inside a notebook session was **impractical** — admin-heavy and a poor fit for `setup_notebook()`. **RSnowflake** (SQL REST API) avoided that entirely. **ADBC** (`adbcsnowflake`) was installable via bootstrap (with Go + EAI) and is Snowflake's **Arrow-native, optimized** bulk path going forward.
+Before CRE, installing the **Snowflake ODBC driver** and configuring **unixODBC** inside a notebook session was **impractical** — admin-heavy and a poor fit for `setup_notebook()`. **skiLift** (SQL REST API) avoided that entirely. **ADBC** (`adbcsnowflake`) was installable via bootstrap (with Go + EAI) and is Snowflake's **Arrow-native, optimized** bulk path going forward.
 
-With **CRE**, you *could* bake the ODBC driver and `odbc` package into an image if you standardize on `odbc::snowflake()` — but that is a **platform image** decision, not something bootstrap is designed to do. This guide still recommends **RSnowflake + optional ADBC in CRE** for Workspace notebooks.
+With **CRE**, you *could* bake the ODBC driver and `odbc` package into an image if you standardize on `odbc::snowflake()` — but that is a **platform image** decision, not something bootstrap is designed to do. This guide still recommends **skiLift + optional ADBC in CRE** for Workspace notebooks.
 :::
 
 ---
@@ -85,7 +85,7 @@ With **CRE**, you *could* bake the ODBC driver and `odbc` package into an image 
 
 Workspace containers route Snowflake API traffic through an **internal SPCS gateway** — not always the public `*.snowflakecomputing.com` URL.
 
-RSnowflake detects `SNOWFLAKE_HOST` and uses the container **OAuth token** automatically. Same behaviour for optional ADBC when installed.
+skiLift detects `SNOWFLAKE_HOST` and uses the container **OAuth token** automatically. Same behaviour for optional ADBC when installed.
 
 ---
 
@@ -98,29 +98,29 @@ RSnowflake detects `SNOWFLAKE_HOST` and uses the container **OAuth token** autom
 | Install | Enable `languages.r.addons.adbc: true` in YAML or bootstrap preset |
 | **CRE** | Pre-install `adbcsnowflake` in the runtime image — same startup win as baking R/`%%R` (see [CRE chapter](../09_custom_runtime_and_ml_jobs/index.qmd)) |
 | Build time | Requires **Go compiler** + EAI for module downloads (~2 min cold without CRE) |
-| Bulk writes | `"auto"` prefers **ADBC** when installed (internal gateway); **Snowpark** `write_pandas` is fallback (~2–3 s vs ~7 s vs ~45 s literal for ~50k rows in RSnowflake tests) |
+| Bulk writes | `"auto"` prefers **ADBC** when installed (internal gateway); **Snowpark** `write_pandas` is fallback (~2–3 s vs ~7 s vs ~45 s literal for ~50k rows in skiLift tests) |
 | Reads | ADBC can use internal gateway with OAuth; preferred for large training pulls and VECTOR/typed ARRAY columns |
 | Semi-structured | VARIANT stays JSON in Arrow; typed ARRAY/struct need account `ENABLE_STRUCTURED_TYPES_IN_CLIENT_RESPONSE` — see [Training Data in R — ADBC](../17a_training_data_in_r/index.qmd#sec-adbc-semistructured) |
 
 ```r
 %%R
-options(RSnowflake.upload_method = "auto")
-options(RSnowflake.bulk_write_threshold = 50000L)
-options(RSnowflake.backend = "adbc")   # Feature Store materialized reads
+options(skiLift.upload_method = "auto")
+options(skiLift.bulk_write_threshold = 50000L)
+options(skiLift.backend = "adbc")   # Feature Store materialized reads
 dbWriteTable(con, "BIG_COPY", large_df)
 ```
 
-Engineering deep dive: [WORKSPACE_ADBC.md](https://github.com/Snowflake-Labs/RSnowflake/blob/main/WORKSPACE_ADBC.md)
+Engineering deep dive: [WORKSPACE_ADBC.md](https://github.com/posit-dev/skiLift/blob/main/WORKSPACE_ADBC.md)
 
 ---
 
-## Interop with snowflakeR {#sec-interop}
+## Interop with skiPatrol {#sec-interop}
 
 Use one Snowpark session for ML APIs and dplyr:
 
 ```r
 %%R
-library(snowflakeR)
+library(skiPatrol)
 conn <- sfr_connect()
 dbi <- sfr_dbi_connection(conn)
 
@@ -131,19 +131,19 @@ tbl(dbi, in_schema("ANALYTICS", "ORDERS")) |>
   collect()
 ```
 
-`sfr_dbi_connection()` lazily wraps the snowflakeR session — no second login.
+`sfr_dbi_connection()` lazily wraps the skiPatrol session — no second login.
 
 ---
 
-## RSnowflake-only vs snowflakeR-only {#sec-choose}
+## skiLift-only vs skiPatrol-only {#sec-choose}
 
 | Need | Package |
 |------|---------|
-| SQL, dbplyr, Connections Pane (local IDE) | RSnowflake alone |
-| Feature Store, Registry, doSnowflake | snowflakeR |
+| SQL, dbplyr, Connections Pane (local IDE) | skiLift alone |
+| Feature Store, Registry, doSnowflake | skiPatrol |
 | Mixed notebook | Both via bootstrap `packages=` |
 
-RSnowflake does not require Python ML stack. snowflakeR does — bootstrap installs both when listed.
+skiLift does not require Python ML stack. skiPatrol does — bootstrap installs both when listed.
 
 ---
 
@@ -151,12 +151,12 @@ RSnowflake does not require Python ML stack. snowflakeR does — bootstrap insta
 
 | Artifact | Location |
 |----------|----------|
-| Test notebook | `RSnowflake/inst/notebooks/workspace_rsnowflake_test.ipynb` |
-| Vignette | `workspace-rsnowflake` |
-| ML notebook patterns | `snowflakeR` vignette `workspace-notebooks` |
+| Test notebook | `skiLift/inst/notebooks/workspace_skilift_test.ipynb` |
+| Vignette | `workspace-skilift` |
+| ML notebook patterns | `skiPatrol` vignette `workspace-notebooks` |
 
 ---
 
 ## Next steps
 
-[MLOps on Snowflake](../15_mlops_on_snowflake/index.qmd) → [snowflakeR: Connect](../16_snowflaker_connect/index.qmd)
+[MLOps on Snowflake](../15_mlops_on_snowflake/index.qmd) → [skiPatrol: Connect](../16_skipatrol_connect/index.qmd)

@@ -2,7 +2,7 @@
 Embarrassingly parallel lab: live monitoring (Streamlit in Snowflake).
 
 FQNs are built from the same `parallel_lab` section as the notebooks
-(`snowflaker_parallel_spcs_config.yaml` via `parallel_lab_config.py`).
+(`skipatrol_parallel_spcs_config.yaml` via `parallel_lab_config.py`).
 """
 
 from __future__ import annotations

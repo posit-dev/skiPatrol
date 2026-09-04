@@ -3,7 +3,7 @@ title: "Appendix D: Production Checklist"
 subtitle: "SPCS operations, monitoring, and sizing"
 ---
 
-Use this checklist before promoting R + snowflakeR workloads from development to production.
+Use this checklist before promoting R + skiPatrol workloads from development to production.
 
 ---
 
@@ -22,7 +22,7 @@ Use this checklist before promoting R + snowflakeR workloads from development to
 ## Configuration & packaging {#sec-config}
 
 - [ ] Pre-built **R package tarballs** in bootstrap configs and **CRE build** profile ([Appendix B](../B_config_reference/index.qmd))
-- [ ] `snowflaker_*.yaml` pins warehouse, database, schema, role — not session defaults
+- [ ] `skipatrol_*.yaml` pins warehouse, database, schema, role — not session defaults
 - [ ] **CRE image** built and validated for repeat workloads ([CRE chapter](../../09_custom_runtime_and_ml_jobs/index.qmd))
 - [ ] `reticulate>=1.25` and compatible `rpy2` pinned in conda packages
 - [ ] Python `snowflake-ml-python` version meets feature requirements (`sfr_check_environment()`)
@@ -72,7 +72,7 @@ Use this checklist before promoting R + snowflakeR workloads from development to
 - [ ] Runbook for failed bootstrap (EAI toggle, admin SQL)
 - [ ] Runbook for CRE attach / `%%R` unknown (wrong runtime or image tag, [Appendix G](../G_workspace_container_internals/index.qmd))
 - [ ] Runbook for `exec format error` / job 395030 (wrong CPU arch)
-- [ ] Ownership and escalation for community packages (snowflakeR, RSnowflake)
+- [ ] Ownership and escalation for community packages (skiPatrol, skiLift)
 - [ ] Compliance sign-off for community-project disclaimer ([Introduction](../../00_introduction/index.qmd))
 
 ---

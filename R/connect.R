@@ -23,10 +23,10 @@ get_bridge_module <- function(module_name) {
     return(.pkg_env[[cache_key]])
   }
 
-  python_dir <- system.file("python", package = "snowflakeR")
+  python_dir <- system.file("python", package = "skiPatrol")
   if (!nzchar(python_dir)) {
     cli::cli_abort(c(
-      "Cannot find {.path inst/python/} directory in {.pkg snowflakeR}.",
+      "Cannot find {.path inst/python/} directory in {.pkg skiPatrol}.",
       "i" = "This suggests the package is not installed correctly."
     ))
   }
@@ -34,7 +34,7 @@ get_bridge_module <- function(module_name) {
   # Evict any stale version from Python's sys.modules so that
 
   # import_from_path reads the file from disk rather than returning
-  # a cached module from a previous snowflakeR install.
+  # a cached module from a previous skiPatrol install.
   tryCatch(
     {
       py_sys <- reticulate::import("sys", convert = FALSE)
@@ -72,7 +72,7 @@ sfr_reload_bridges <- function() {
       error = function(e) NULL
     )
 
-    python_dir <- system.file("python", package = "snowflakeR")
+    python_dir <- system.file("python", package = "skiPatrol")
     new_mod <- reticulate::import_from_path(mod_name, path = python_dir)
     .pkg_env[[key]] <- new_mod
   }
@@ -82,7 +82,7 @@ sfr_reload_bridges <- function() {
 }
 
 
-#' Reinstall and reload snowflakeR (and RSnowflake) from source
+#' Reinstall and reload skiPatrol (and skiLift) from source
 #'
 #' Convenience wrapper for the full reload sequence needed when developing
 #' inside a Workspace Notebook.  Detaches loaded packages, reinstalls from
@@ -92,22 +92,22 @@ sfr_reload_bridges <- function() {
 #' edits) this is sufficient.  See the package dev standards (Section 13.5)
 #' for cases that require a kernel or container restart instead.
 #'
-#' @param path Path to the snowflakeR source directory.
-#'   Defaults to the `SNOWFLAKER_PATH` environment variable.
-#' @param rsnowflake_path Path to the RSnowflake source directory.
-#'   Defaults to the `RSNOWFLAKE_PATH` environment variable.
-#'   Set to `""` to skip RSnowflake reinstallation.
+#' @param path Path to the skiPatrol source directory.
+#'   Defaults to the `SKIPATROL_PATH` environment variable.
+#' @param skilift_path Path to the skiLift source directory.
+#'   Defaults to the `SKILIFT_PATH` environment variable.
+#'   Set to `""` to skip skiLift reinstallation.
 #'
 #' @returns Invisibly returns `TRUE`.
 #'
 #' @export
-sfr_reinstall <- function(path = Sys.getenv("SNOWFLAKER_PATH"),
-                          rsnowflake_path = Sys.getenv("RSNOWFLAKE_PATH")) {
+sfr_reinstall <- function(path = Sys.getenv("SKIPATROL_PATH"),
+                          skilift_path = Sys.getenv("SKILIFT_PATH")) {
   if (!nzchar(path)) {
-    cli::cli_abort("{.arg path} is empty. Set {.envvar SNOWFLAKER_PATH} or pass explicitly.")
+    cli::cli_abort("{.arg path} is empty. Set {.envvar SKIPATROL_PATH} or pass explicitly.")
   }
 
-  for (pkg in c("snowflakeR", "RSnowflake")) {
+  for (pkg in c("skiPatrol", "skiLift")) {
     if (paste0("package:", pkg) %in% search()) {
       detach(paste0("package:", pkg), unload = TRUE, character.only = TRUE)
     }
@@ -115,16 +115,16 @@ sfr_reinstall <- function(path = Sys.getenv("SNOWFLAKER_PATH"),
 
   options(repos = c(CRAN = "https://cloud.r-project.org"))
 
-  if (nzchar(rsnowflake_path)) {
-    utils::install.packages(rsnowflake_path, repos = NULL, type = "source", quiet = TRUE)
-    library(RSnowflake)
+  if (nzchar(skilift_path)) {
+    utils::install.packages(skilift_path, repos = NULL, type = "source", quiet = TRUE)
+    library(skiLift)
   }
 
   utils::install.packages(path, repos = NULL, type = "source", quiet = TRUE)
-  library(snowflakeR)
+  library(skiPatrol)
 
   sfr_reload_bridges()
-  cli::cli_inform(c("v" = "snowflakeR reinstalled and reloaded."))
+  cli::cli_inform(c("v" = "skiPatrol reinstalled and reloaded."))
   invisible(TRUE)
 }
 
@@ -697,17 +697,17 @@ sfr_has_connection <- function(...) {
 }
 
 
-#' Get an RSnowflake DBI connection from an sfr_connection
+#' Get an skiLift DBI connection from an sfr_connection
 #'
-#' Returns an `RSnowflake::SnowflakeConnection` that can be used with
+#' Returns an `skiLift::SnowflakeConnection` that can be used with
 #' standard DBI methods (`dbGetQuery`, `dbWriteTable`, etc.) and dbplyr.
 #' The connection is created lazily on first call and cached on the
 #' `sfr_connection` object.
 #'
-#' Requires the `RSnowflake` package to be installed.
+#' Requires the `skiLift` package to be installed.
 #'
 #' @param conn An `sfr_connection` object from [sfr_connect()].
-#' @returns An `RSnowflake::SnowflakeConnection` object.
+#' @returns An `skiLift::SnowflakeConnection` object.
 #'
 #' @examples
 #' \dontrun{
@@ -724,16 +724,16 @@ sfr_dbi_connection <- function(conn) {
     return(conn$dbi_con)
   }
 
-  rlang::check_installed("RSnowflake",
+  rlang::check_installed("skiLift",
     reason = "for DBI database connectivity")
   rlang::check_installed("DBI",
     reason = "for DBI database connectivity")
 
   if (identical(conn$environment, "workspace")) {
-    dbi_con <- DBI::dbConnect(RSnowflake::Snowflake())
+    dbi_con <- DBI::dbConnect(skiLift::Snowflake())
   } else {
     dbi_con <- DBI::dbConnect(
-      RSnowflake::Snowflake(),
+      skiLift::Snowflake(),
       name      = .subset2(conn, ".connect_name"),
       account   = conn$account,
       user      = conn$user,

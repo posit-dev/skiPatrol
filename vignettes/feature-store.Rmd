@@ -9,7 +9,7 @@ vignette: >
 
 The Snowflake Feature Store provides a centralised repository for feature
 engineering pipelines, enabling consistent feature reuse across training and
-inference. `snowflakeR` wraps the full Feature Store Python API, giving you
+inference. `skiPatrol` wraps the full Feature Store Python API, giving you
 an R-native interface.
 
 ## Concepts
@@ -25,7 +25,7 @@ an R-native interface.
 ## Setup
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 conn <- sfr_connect()
 
@@ -138,7 +138,7 @@ fv <- sfr_create_feature_view(
 
 You can define feature transformations using dplyr pipelines instead of raw
 SQL. The `feature_df` argument accepts dbplyr lazy tables. This requires the
-[RSnowflake](https://github.com/Snowflake-Labs/RSnowflake) package for
+[skiLift](https://github.com/posit-dev/skiLift) package for
 DBI/dbplyr connectivity:
 
 ```r
@@ -536,7 +536,7 @@ sfr_delete_entity(fs, "CUSTOMER")
 Here's a complete example tying everything together:
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 
 # 1. Connect
 conn <- sfr_connect()

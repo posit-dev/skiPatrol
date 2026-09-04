@@ -110,7 +110,7 @@ Safe shell R test:
 
 ```bash
 cd /tmp
-$(cat ~/.workspace_env_prefix)/bin/R --vanilla -q -e 'packageVersion("snowflakeR")'
+$(cat ~/.workspace_env_prefix)/bin/R --vanilla -q -e 'packageVersion("skiPatrol")'
 ```
 
 ---
@@ -217,7 +217,7 @@ That registers a **kernelspec** on disk. For it to matter, **all** of the follow
 
 1. **nbctl / jupyter-server** must **list and launch** non-default kernels (not only the uvenv Python spec).
 2. Snowsight would need a **kernel picker** wired to that discovery path.
-3. A **second kernel** means a **second R process** — no shared session with Python/SQL cells or snowflakeR’s reticulate bridge to the active Snowpark session in the Python kernel.
+3. A **second kernel** means a **second R process** — no shared session with Python/SQL cells or skiPatrol’s reticulate bridge to the active Snowpark session in the Python kernel.
 
 Snowflake Labs community docs describe **Jupyter kernel registration** as a desirable future extension point (see [snowflake-notebook-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang) README and issue discussions) — medium effort on Snowflake’s side, high value for partners.
 
@@ -225,7 +225,7 @@ Snowflake Labs community docs describe **Jupyter kernel registration** as a desi
 
 | Factor | `%%R` + rpy2 (current) | Native IRkernel (hypothetical) |
 |--------|-------------------------|--------------------------------|
-| **snowflakeR session** | reticulate → active Snowpark session in **same** Python kernel | Separate R process — must re-auth or bridge manually |
+| **skiPatrol session** | reticulate → active Snowpark session in **same** Python kernel | Separate R process — must re-auth or bridge manually |
 | **SQL cells** | Same notebook — warehouse SQL unchanged | Still need Python kernel for SQL/Snowpark or duplicate workflows |
 | **Multi-language** | One kernel + magics (`%%R`, `%%scala`, …) | Multiple kernels — context switching, no shared variables |
 | **CRE bootstrap** | IPython `startup/` hook (reference v1) | kernelspec install + UI integration |
@@ -250,7 +250,7 @@ That is the practical “custom container” win **without** waiting for a kerne
 | **Posit Workbench / JupyterHub on SPCS** | Full control of kernelspecs and UI — self-hosted JupyterHub on SPCS, not Workspace Snowsight |
 | **Future Workspace** | If Snowflake documents `jupyter kernelspec` discovery + UI |
 
-For **Snowflake ML + snowflakeR + mixed SQL/Python/R notebooks**, stay on **`%%R`** until the platform ships first-class kernel registration.
+For **Snowflake ML + skiPatrol + mixed SQL/Python/R notebooks**, stay on **`%%R`** until the platform ships first-class kernel registration.
 
 ### Practical experiments (advanced)
 
@@ -260,7 +260,7 @@ If you control the entire image **and** a Jupyter front-end that lists kernels (
 2. Verify `jupyter kernelspec list` inside the container.
 3. Confirm whether nbctl overrides kernel choice to the uvenv Python spec.
 
-Even then, plan separate notebooks or accept that **snowflakeR’s in-notebook OAuth path** is validated on the Python-kernel + `%%R` model.
+Even then, plan separate notebooks or accept that **skiPatrol’s in-notebook OAuth path** is validated on the Python-kernel + `%%R` model.
 
 ---
 
@@ -374,7 +374,7 @@ print(torch.cuda.is_available(), torch.cuda.device_count())
 
 | Goal | Path |
 |------|------|
-| **snowflakeR + `%%R` + occasional GPU R** | GPU snowbooks CRE + bake `torch`/friends into `workspace_env`; align CUDA with runtime 2.5 |
+| **skiPatrol + `%%R` + occasional GPU R** | GPU snowbooks CRE + bake `torch`/friends into `workspace_env`; align CUDA with runtime 2.5 |
 | **Heavy Python GPU + some R** | Managed **GPU Container Runtime** + bootstrap R, or CRE extending GPU snowbooks |
 | **R-only, RStudio-like, full GPU control** | Custom SPCS / JupyterHub image (not Workspace CRE) — separate from Snowsight notebooks |
 

@@ -1,6 +1,6 @@
 # The Hitchhiker's Guide to R in Snowflake
 
-Quarto book source. Published at [snowflake-labs.github.io/snowflakeR](https://snowflake-labs.github.io/snowflakeR/) via [Snowflake-Labs/snowflakeR](https://github.com/Snowflake-Labs/snowflakeR) (`guide/` on `main`). Develop in the monorepo under `guide/Hitchhikers_Guide_to_R_in_Snowflake/`.
+Quarto book source. Published at [snowflake-labs.github.io/skiPatrol](https://snowflake-labs.github.io/skiPatrol/) via [posit-dev/skiPatrol](https://github.com/posit-dev/skiPatrol) (`guide/` on `main`). Develop in the monorepo under `guide/Hitchhikers_Guide_to_R_in_Snowflake/`.
 
 ## Local build
 

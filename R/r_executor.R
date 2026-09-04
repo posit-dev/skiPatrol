@@ -316,7 +316,7 @@ sfr_update_executor <- function(reg,
 # =============================================================================
 
 .get_r_executor_bridge <- function() {
-  pkg_python <- system.file("python", package = "snowflakeR")
+  pkg_python <- system.file("python", package = "skiPatrol")
   reticulate::import_from_path("sfr_r_executor_bridge", path = pkg_python)
 }
 

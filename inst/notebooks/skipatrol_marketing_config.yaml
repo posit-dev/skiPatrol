@@ -1,5 +1,5 @@
 # =============================================================================
-# snowflakeR -- Marketing Analytics Demo Config
+# skiPatrol -- Marketing Analytics Demo Config
 # =============================================================================
 # R environment for Marketing Mix Modeling (Robyn) and Causal Inference
 # (CausalImpact) demonstrations. Includes both conda-forge packages
@@ -7,7 +7,7 @@
 #
 # Usage (single cell):
 #   from sfnb_setup import setup_notebook
-#   setup_notebook(config="snowflaker_marketing_config.yaml")
+#   setup_notebook(config="skipatrol_marketing_config.yaml")
 #
 # All sections below are OPTIONAL -- sensible defaults are used when omitted.
 # =============================================================================
@@ -46,7 +46,7 @@ languages:
     enabled: true
     r_version: "4.5.2"
     conda_packages:
-      # Base snowflakeR dependencies
+      # Base skiPatrol dependencies
       - r-cli
       - r-rlang>=1.0.0
       - r-reticulate>=1.25
@@ -83,8 +83,8 @@ languages:
       adbc: false
       duckdb: false
     tarballs:
-      snowflakeR: "https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.2.0/snowflakeR_0.2.0.tar.gz"
-      RSnowflake: "https://github.com/Snowflake-Labs/RSnowflake/releases/download/v0.2.0/RSnowflake_0.2.0.tar.gz"
+      skiPatrol: "https://github.com/posit-dev/skiPatrol/releases/download/v0.2.0/skiPatrol_0.2.0.tar.gz"
+      skiLift: "https://github.com/posit-dev/skiLift/releases/download/v0.2.0/skiLift_0.2.0.tar.gz"
 
   scala:
     enabled: false

@@ -342,7 +342,7 @@ Snowflake</h1>
 
 
 <p>This vignette outlines <strong>parallel and distributed R</strong>
-options in <code>snowflakeR</code>: the
+options in <code>skiPatrol</code>: the
 <strong><code>foreach</code></strong> backend
 <strong>doSnowflake</strong>, the <strong>generic SPCS R
 executor</strong>, and optional <strong><code>crew</code></strong> /
@@ -351,16 +351,16 @@ with <code>sfr_connect()</code> and have the right Snowflake
 entitlements (SPCS compute pools, image repositories, and where
 applicable Hybrid Tables or Tasks).</p>
 <p>For runnable Workspace examples, use the notebooks shipped under
-<code>system.file(&quot;notebooks&quot;, package = &quot;snowflakeR&quot;)</code>,
+<code>system.file(&quot;notebooks&quot;, package = &quot;skiPatrol&quot;)</code>,
 especially <code>workspace_parallel_spcs_setup.ipynb</code>,
 <code>workspace_parallel_spcs_demo.ipynb</code>,
-<code>snowflaker_parallel_spcs_config.yaml</code>, and
+<code>skipatrol_parallel_spcs_config.yaml</code>, and
 <code>PARALLEL_SPCS_DEMO.md</code>.</p>
 <div id="dosnowflake-foreach" class="section level2">
 <h2>doSnowflake (<code>foreach</code>)</h2>
 <p>Install the <strong>Suggests</strong> packages <code>foreach</code>
 and <code>iterators</code>, then register a backend:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(snowflakeR)</span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(skiPatrol)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(foreach)</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>conn <span class="ot">&lt;-</span> <span class="fu">sfr_connect</span>()</span>
@@ -436,7 +436,7 @@ controller. This path requires suggested packages <strong>crew</strong>
 and <strong>mirai</strong> (and network/EAI setup appropriate for your
 account).</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(crew)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">library</span>(snowflakeR)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">library</span>(skiPatrol)</span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>conn <span class="ot">&lt;-</span> <span class="fu">sfr_connect</span>()</span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>ctl <span class="ot">&lt;-</span> <span class="fu">crew_controller_spcs</span>(</span>

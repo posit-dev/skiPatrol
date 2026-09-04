@@ -1,5 +1,5 @@
 # =============================================================================
-# snowflakeR -- Embarrassingly parallel SPCS demo (Workspace)
+# skiPatrol -- Embarrassingly parallel SPCS demo (Workspace)
 # =============================================================================
 # R + forecast + foreach/iterators for doSnowflake (tasks + queue modes).
 # Companion notebooks: workspace_parallel_spcs_setup.ipynb,
@@ -8,8 +8,8 @@
 # Usage:
 #   from sfnb_setup import setup_notebook
 #   setup_notebook(
-#       config="snowflaker_parallel_spcs_config.yaml",
-#       packages=["snowflakeR", "RSnowflake"]
+#       config="skipatrol_parallel_spcs_config.yaml",
+#       packages=["skiPatrol", "skiLift"]
 #   )
 #
 # Runtime identifiers for the parallel lab (all three notebooks + Streamlit)
@@ -78,8 +78,8 @@ languages:
       adbc: false
       duckdb: false
     tarballs:
-      snowflakeR: "https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.2.0/snowflakeR_0.2.0.tar.gz"
-      RSnowflake: "https://github.com/Snowflake-Labs/RSnowflake/releases/download/v0.2.0/RSnowflake_0.2.0.tar.gz"
+      skiPatrol: "https://github.com/posit-dev/skiPatrol/releases/download/v0.2.0/skiPatrol_0.2.0.tar.gz"
+      skiLift: "https://github.com/posit-dev/skiLift/releases/download/v0.2.0/skiLift_0.2.0.tar.gz"
 
   scala:
     enabled: false

@@ -9,7 +9,7 @@ sfr_result_scan(
   query_id = NULL,
   cell = NULL,
   dataframe = NULL,
-  .keep_case = !getOption("snowflakeR.lowercase_columns", FALSE)
+  .keep_case = !getOption("skiPatrol.lowercase_columns", FALSE)
 )
 }
 \arguments{

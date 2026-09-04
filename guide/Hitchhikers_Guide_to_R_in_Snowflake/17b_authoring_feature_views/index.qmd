@@ -7,7 +7,7 @@ subtitle: "SQL and dbplyr patterns from simple aggregates to wide and temporal f
 
 This chapter covers **defining features on the Snowflake warehouse** and registering them as Feature Views from R — the step *before* materializing training data or reading into R.
 
-The snowflakeR Feature Store trilogy in this guide:
+The skiPatrol Feature Store trilogy in this guide:
 
 | Chapter | Question |
 |---------|----------|
@@ -21,7 +21,7 @@ Platform background on hybrid OBJECT payloads, compile cost, and sparse arrays: 
 
 ### SQL and dbplyr tabs {#sec-sql-dplyr-tabs}
 
-Examples use **SQL** and **dbplyr** tabs (`group="fe-sql-dplyr"`) — the same pattern as [RSnowflake: Query](../13_rsnowflake_query/index.qmd#sec-dbplyr) and [Training Data in R](../17a_training_data_in_r/index.qmd#sec-sql-dplyr-tabs). Use **dbplyr** when you already work in R with `tbl()`; use **SQL** when you share DDL with other teams or generate views from a manifest.
+Examples use **SQL** and **dbplyr** tabs (`group="fe-sql-dplyr"`) — the same pattern as [skiLift: Query](../13_skilift_query/index.qmd#sec-dbplyr) and [Training Data in R](../17a_training_data_in_r/index.qmd#sec-sql-dplyr-tabs). Use **dbplyr** when you already work in R with `tbl()`; use **SQL** when you share DDL with other teams or generate views from a manifest.
 
 ## Learning Objectives
 
@@ -36,20 +36,20 @@ Examples use **SQL** and **dbplyr** tabs (`group="fe-sql-dplyr"`) — the same p
 ## Prerequisites
 
 - [Feature Store — Setup](../17_feature_store/index.qmd#sec-setup) and at least one [entity](../17_feature_store/index.qmd#sec-entities)
-- RSnowflake + dbplyr ([RSnowflake: Query](../13_rsnowflake_query/index.qmd))
-- Optional: [`workspace_feature_store.ipynb`](https://github.com/Snowflake-Labs/snowflakeR/blob/main/inst/notebooks/workspace_feature_store.ipynb)
+- skiLift + dbplyr ([skiLift: Query](../13_skilift_query/index.qmd))
+- Optional: [`workspace_feature_store.ipynb`](https://github.com/posit-dev/skiPatrol/blob/main/inst/notebooks/workspace_feature_store.ipynb)
 
 ### Shared setup
 
 ```r
-library(snowflakeR)
+library(skiPatrol)
 library(dplyr)
 
 conn <- sfr_connect()
 fs   <- sfr_feature_store(conn, database = "MY_DB", schema = "ML", warehouse = "ML_WH")
 
 customer <- sfr_create_entity(fs, "CUSTOMER", "CUSTOMER_ID", desc = "Customer entity")
-con      <- sfr_dbi_connection(conn)   # RSnowflake DBI handle for dbplyr
+con      <- sfr_dbi_connection(conn)   # skiLift DBI handle for dbplyr
 ```
 
 ---
@@ -106,7 +106,7 @@ FROM analytics.orders
 GROUP BY customer_id;
 ```
 
-##### snowflakeR (one-step)
+##### skiPatrol (one-step)
 
 ```r
 fv <- sfr_create_feature_view(
@@ -191,7 +191,7 @@ SELECT customer_id, age_band, region, updated_at
 FROM analytics.customer_demographics;
 ```
 
-##### snowflakeR
+##### skiPatrol
 
 ```r
 fv_demo <- sfr_create_feature_view(
@@ -265,7 +265,7 @@ SELECT
 FROM analytics.customer_activity;
 ```
 
-##### snowflakeR
+##### skiPatrol
 
 ```r
 fv_activity <- sfr_create_feature_view(
@@ -374,7 +374,7 @@ fv_txn_rollup <- sfr_create_feature_view(
 | Approach | Best for |
 |----------|----------|
 | **Rollup Feature View** (`sfr_feature` + `feature_granularity`) | Standard rolling agg/count over fixed windows on event streams |
-| **SQL `OVER (...)` / dbplyr windows** | Custom frame bounds, `ROW_NUMBER`, joins, non-standard logic — [Multi-step pipelines](#sec-multi-step), [RSnowflake Query — windows](../13_rsnowflake_query/index.qmd#sec-windows) |
+| **SQL `OVER (...)` / dbplyr windows** | Custom frame bounds, `ROW_NUMBER`, joins, non-standard logic — [Multi-step pipelines](#sec-multi-step), [skiLift Query — windows](../13_skilift_query/index.qmd#sec-windows) |
 | **Entity-level `GROUP BY`** | Lifetime aggregates with no time dimension — [Entity aggregates](#sec-entity-aggregates) |
 
 ---
@@ -449,7 +449,7 @@ fv_90d <- sfr_create_feature_view(
 
 :::
 
-For production, prefer **permanent** tables or views (`temporary = FALSE`, fully qualified names) when the intermediate must survive beyond the session. See [RSnowflake Query — Multi-step ETL](../13_rsnowflake_query/index.qmd#sec-etl-temp).
+For production, prefer **permanent** tables or views (`temporary = FALSE`, fully qualified names) when the intermediate must survive beyond the session. See [skiLift Query — Multi-step ETL](../13_skilift_query/index.qmd#sec-etl-temp).
 
 ---
 
@@ -488,7 +488,7 @@ FROM analytics.orders
 GROUP BY customer_id;
 ```
 
-##### snowflakeR
+##### skiPatrol
 
 ```r
 fv_obj <- sfr_create_feature_view(
@@ -563,7 +563,7 @@ bundled <- tbl(con, in_schema("FEATURE_STORE", "ENTITY_FEATURES_LONG")) |>
 
 :::
 
-See [RSnowflake Query — OBJECT bundles](../13_rsnowflake_query/index.qmd#sec-snowflake-dbplyr) for `object_agg()` / `array_agg()` details.
+See [skiLift Query — OBJECT bundles](../13_skilift_query/index.qmd#sec-snowflake-dbplyr) for `object_agg()` / `array_agg()` details.
 
 ### Hybrid: scalar keys + OBJECT payload
 
@@ -597,7 +597,7 @@ SELECT
 FROM analytics.product_embeddings;
 ```
 
-##### snowflakeR
+##### skiPatrol
 
 ```r
 fv_emb <- sfr_create_feature_view(
@@ -678,6 +678,6 @@ When several views join into one training set, enable **`auto_prefix = TRUE`** i
 
 - [Feature Store](../17_feature_store/index.qmd) — entities, training generation, inference, online serving  
 - [Training Data in R](../17a_training_data_in_r/index.qmd) — read materialized training into R (ADBC, VECTOR, pipelines)  
-- [RSnowflake: Query](../13_rsnowflake_query/index.qmd) — dbplyr push-down, windows, `compute()`  
+- [skiLift: Query](../13_skilift_query/index.qmd) — dbplyr push-down, windows, `compute()`  
 - [Model Registry](../18_model_registry/index.qmd) — lineage from `sfr_generate_dataset()`  
-- Vignette [`feature-store`](https://snowflake-labs.github.io/snowflakeR/articles/feature-store.html) — full API reference including advanced registration options
+- Vignette [`feature-store`](https://snowflake-labs.github.io/skiPatrol/articles/feature-store.html) — full API reference including advanced registration options

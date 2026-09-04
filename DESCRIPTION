@@ -1,4 +1,4 @@
-Package: snowflakeR
+Package: skiPatrol
 Title: R Interface to the Snowflake ML Platform
 Version: 0.2.0
 Authors@R: c(
@@ -14,14 +14,14 @@ Description: Provides native R functions for working with the Snowflake ML
     ('foreach' via doSnowflake, SPCS job execution, and 'crew' integration).
     Uses 'reticulate' to bridge to the 'snowflake-ml-python' SDK for ML
     operations. Standard database connectivity (DBI, dbplyr) is provided by
-    the 'RSnowflake' package. Supports both Snowflake Workspace Notebooks and
+    the 'skiLift' package. Supports both Snowflake Workspace Notebooks and
     local R environments.
 License: Apache License 2.0 | file LICENSE
-URL: https://github.com/Snowflake-Labs/snowflakeR
-BugReports: https://github.com/Snowflake-Labs/snowflakeR/issues
+URL: https://github.com/posit-dev/skiPatrol
+BugReports: https://github.com/posit-dev/skiPatrol/issues
 Encoding: UTF-8
 Collate:
-    'snowflakeR-package.R'
+    'skiPatrol-package.R'
     'python_deps.R'
     'connect.R'
     'helpers.R'
@@ -58,7 +58,7 @@ Imports:
     rlang,
     jsonlite
 Suggests:
-    RSnowflake,
+    skiLift,
     DBI,
     snowflakeauth,
     RcppTOML,

@@ -123,13 +123,13 @@
 \maketitle
 
 Deploy \textbf{RStudio Server} as a custom \textbf{SPCS service} with
-\textbf{snowflakeR} and \textbf{RSnowflake} pre-installed. This vignette
+\textbf{skiPatrol} and \textbf{skiLift} pre-installed. This vignette
 is the \textbf{technical reference} for the deploy kit shipped in this
 package:
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{kit }\OtherTok{\textless{}{-}} \FunctionTok{system.file}\NormalTok{(}\StringTok{"rstudio{-}spcs"}\NormalTok{, }\AttributeTok{package =} \StringTok{"snowflakeR"}\NormalTok{)}
+\NormalTok{kit }\OtherTok{\textless{}{-}} \FunctionTok{system.file}\NormalTok{(}\StringTok{"rstudio{-}spcs"}\NormalTok{, }\AttributeTok{package =} \StringTok{"skiPatrol"}\NormalTok{)}
 \FunctionTok{list.files}\NormalTok{(kit)}
 \end{Highlighting}
 \end{Shaded}
@@ -142,8 +142,8 @@ through the same flow at a higher level.
 \begin{verbatim}
 Browser ──HTTPS ingress──► SPCS service (RStudio :8787)
                               ├── Native R session
-                              ├── RSnowflake (SQL API / DBI)
-                              ├── snowflakeR + reticulate
+                              ├── skiLift (SQL API / DBI)
+                              ├── skiPatrol + reticulate
                               ├── Miniconda snowflake_ml (Snowpark Python)
                               └── /snowflake/session/token + SNOWFLAKE_HOST
 \end{verbatim}
@@ -180,15 +180,15 @@ Deploy service & \texttt{deploy\_service.sh} +
 Validate & \texttt{smoke\_test.R}, \texttt{smoke\_test.py} \\
 \end{longtable}
 
-All paths are under \texttt{inst/rstudio-spcs/} in the snowflakeR
+All paths are under \texttt{inst/rstudio-spcs/} in the skiPatrol
 repository.
 
-\subsection{RSnowflake in RStudio}\label{rsnowflake-in-rstudio}
+\subsection{skiLift in RStudio}\label{skilift-in-rstudio}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(DBI)}
-\FunctionTok{library}\NormalTok{(RSnowflake)}
+\FunctionTok{library}\NormalTok{(skiLift)}
 
 \NormalTok{con }\OtherTok{\textless{}{-}} \FunctionTok{dbConnect}\NormalTok{(}\FunctionTok{Snowflake}\NormalTok{())}
 \FunctionTok{dbGetQuery}\NormalTok{(con, }\StringTok{"SELECT CURRENT\_USER(), CURRENT\_WAREHOUSE()"}\NormalTok{)}
@@ -198,12 +198,12 @@ repository.
 Set \texttt{SNOWFLAKE\_WAREHOUSE}, \texttt{SNOWFLAKE\_DATABASE},
 \texttt{SNOWFLAKE\_SCHEMA}, and \texttt{SNOWFLAKE\_ROLE} in the service
 spec. See
-\textbf{\texttt{vignette("spcs-custom-services",\ package\ =\ "RSnowflake")}}
+\textbf{\texttt{vignette("spcs-custom-services",\ package\ =\ "skiLift")}}
 for REST API limits (\texttt{USE\ WAREHOUSE},
 \texttt{GET}/\texttt{PUT}).
 
-\subsection{\texorpdfstring{snowflakeR:
-\texttt{sfr\_connect\_spcs()}}{snowflakeR: sfr\_connect\_spcs()}}\label{snowflaker-sfr_connect_spcs}
+\subsection{\texorpdfstring{skiPatrol:
+\texttt{sfr\_connect\_spcs()}}{skiPatrol: sfr\_connect\_spcs()}}\label{skipatrol-sfr_connect_spcs}
 
 \textbf{\texttt{sfr\_connect()}} auto-detects \textbf{Workspace
 Notebook} sessions only. Custom SPCS services need explicit host + OAuth
@@ -228,7 +228,7 @@ The helper:
   Sets \texttt{LD\_LIBRARY\_PATH} for Conda OpenSSL (avoids
   \texttt{OPENSSL\_3.3.0} mismatch).
 \item
-  Calls \texttt{snowflakeR}'s Python bridge with
+  Calls \texttt{skiPatrol}'s Python bridge with
   \texttt{authenticator\ =\ "oauth"}.
 \end{enumerate}
 
@@ -284,8 +284,8 @@ password from the Snowflake secret):
 \subsection{Image build: tarballs}\label{image-build-tarballs}
 
 Compiling R packages inside Image Builder is slow. The kit's
-\texttt{prepare\_build\_ctx.sh} builds a \textbf{snowflakeR} tarball
-locally and copies it into the flat build context. \textbf{RSnowflake}
+\texttt{prepare\_build\_ctx.sh} builds a \textbf{skiPatrol} tarball
+locally and copies it into the flat build context. \textbf{skiLift}
 is included when available; otherwise \texttt{install\_packages.R}
 installs from GitHub (requires build EAI).
 
@@ -337,14 +337,14 @@ Snowflake Remote Dev & VS Code / Cursor; no RStudio \\
 \begin{itemize}
 \tightlist
 \item
-  \textbf{\texttt{vignette("spcs-custom-services",\ package\ =\ "RSnowflake")}}
+  \textbf{\texttt{vignette("spcs-custom-services",\ package\ =\ "skiLift")}}
   --- DBI auth and REST API constraints
 \item
   \textbf{\texttt{vignette("workspace-notebooks")}} --- \texttt{\%\%R} /
   bootstrap path
 \item
   Kit README:
-  \texttt{system.file("rstudio-spcs/README.md",\ package\ =\ "snowflakeR")}
+  \texttt{system.file("rstudio-spcs/README.md",\ package\ =\ "skiPatrol")}
 \end{itemize}
 
 \end{document}

@@ -16,7 +16,7 @@ Invisibly returns \code{TRUE} on success.
 }
 \description{
 Runs DDL, DML, or other SQL that doesn't return a result set.
-When an \code{RSnowflake} DBI connection is available, the statement
+When an \code{skiLift} DBI connection is available, the statement
 is executed via the pure-R REST API path. Otherwise falls back to
 the Python Snowpark bridge.
 }

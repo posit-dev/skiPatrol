@@ -348,7 +348,7 @@ them to a stage, register them in Model Registry as a single model
 version, and run server-side batch inference via
 <code>run_batch</code>.</p>
 <p>The accompanying <strong>reference notebooks</strong> ship in
-snowflakeR:
+skiPatrol:
 <code>inst/notebooks/workspace_parallel_spcs_setup.ipynb</code> and
 <code>workspace_parallel_spcs_demo.ipynb</code>. The code snippets below
 follow that pattern. Lines marked <code>## ADAPT</code> are the parts
@@ -426,7 +426,7 @@ SQL).</li>
 </div>
 <div id="local-r-environment" class="section level3">
 <h3>Local R environment</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;snowflakeR&quot;</span>, <span class="st">&quot;foreach&quot;</span>, <span class="st">&quot;iterators&quot;</span>, <span class="st">&quot;forecast&quot;</span>,</span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;skiPatrol&quot;</span>, <span class="st">&quot;foreach&quot;</span>, <span class="st">&quot;iterators&quot;</span>, <span class="st">&quot;forecast&quot;</span>,</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>                    <span class="st">&quot;ggplot2&quot;</span>, <span class="st">&quot;yaml&quot;</span>))</span></code></pre></div>
 </div>
 <div id="authentication" class="section level3">
@@ -449,7 +449,7 @@ profile using key-pair (JWT) auth:</p>
 <h3>The YAML config file</h3>
 <p>All environment-specific values live in a single YAML file. The
 reference implementation uses
-<code>snowflaker_parallel_spcs_benchmark_ak_small.yaml</code>:</p>
+<code>skipatrol_parallel_spcs_benchmark_ak_small.yaml</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co">## ADAPT: replace every value below with your account&#39;s objects</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">context</span><span class="kw">:</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="at">  </span><span class="fu">warehouse</span><span class="kw">:</span><span class="at"> MY_WAREHOUSE</span></span>
@@ -477,10 +477,10 @@ reference implementation uses
 </div>
 <div id="loading-config-and-connecting" class="section level3">
 <h3>Loading config and connecting</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;snowflakeR/inst/notebooks/parallel_spcs_workflow.R&quot;</span>)</span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;skiPatrol/inst/notebooks/parallel_spcs_workflow.R&quot;</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>cfg  <span class="ot">&lt;-</span> <span class="fu">parallel_lab_load_config</span>(<span class="st">&quot;path/to/my_config.yaml&quot;</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>conn <span class="ot">&lt;-</span> snowflakeR<span class="sc">::</span><span class="fu">sfr_connect</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>conn <span class="ot">&lt;-</span> skiPatrol<span class="sc">::</span><span class="fu">sfr_connect</span>(</span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">&quot;my_demo_jwt&quot;</span>,</span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">private_key_file =</span> <span class="st">&quot;~/.snowflake/keys/rsa_key.p8&quot;</span></span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span></code></pre></div>
@@ -813,11 +813,11 @@ When running in RStudio with explicit <code>name</code> /
 wrapping a stale, expired Python session. If you see
 <code>JWT token is invalid</code> after a timeout, explicitly
 reconnect:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>conn <span class="ot">&lt;-</span> snowflakeR<span class="sc">::</span><span class="fu">sfr_connect</span>(</span>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>conn <span class="ot">&lt;-</span> skiPatrol<span class="sc">::</span><span class="fu">sfr_connect</span>(</span>
 <span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">&quot;my_demo_jwt&quot;</span>,</span>
 <span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  <span class="at">private_key_file =</span> <span class="st">&quot;~/.snowflake/keys/rsa_key.p8&quot;</span></span>
 <span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>)</span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>dbi_con <span class="ot">&lt;-</span> snowflakeR<span class="sc">::</span><span class="fu">sfr_dbi_connection</span>(conn)</span></code></pre></div>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>dbi_con <span class="ot">&lt;-</span> skiPatrol<span class="sc">::</span><span class="fu">sfr_dbi_connection</span>(conn)</span></code></pre></div>
 </div>
 <div id="rstudio-connections-pane" class="section level3">
 <h3>RStudio Connections Pane</h3>

@@ -16,9 +16,9 @@ in_spcs_runtime <- function() {
   trimws(paste(readLines(path, warn = FALSE), collapse = ""))
 }
 
-#' Connect snowflakeR via Snowpark + SPCS OAuth (custom SPCS services)
+#' Connect skiPatrol via Snowpark + SPCS OAuth (custom SPCS services)
 #'
-#' Workspace Notebooks should use [snowflakeR::sfr_connect()] directly.
+#' Workspace Notebooks should use [skiPatrol::sfr_connect()] directly.
 #' RStudio on a custom SPCS service needs host + oauth token explicitly.
 sfr_connect_spcs <- function(account = Sys.getenv("SNOWFLAKE_ACCOUNT", ""),
                              warehouse = Sys.getenv("SNOWFLAKE_WAREHOUSE", ""),
@@ -31,8 +31,8 @@ sfr_connect_spcs <- function(account = Sys.getenv("SNOWFLAKE_ACCOUNT", ""),
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop("Package 'reticulate' is required.", call. = FALSE)
   }
-  if (!requireNamespace("snowflakeR", quietly = TRUE)) {
-    stop("Package 'snowflakeR' is required.", call. = FALSE)
+  if (!requireNamespace("skiPatrol", quietly = TRUE)) {
+    stop("Package 'skiPatrol' is required.", call. = FALSE)
   }
 
   py <- Sys.getenv("RETICULATE_PYTHON", "/opt/conda/envs/snowflake_ml/bin/python")
@@ -47,7 +47,7 @@ sfr_connect_spcs <- function(account = Sys.getenv("SNOWFLAKE_ACCOUNT", ""),
 
   bridge <- reticulate::import_from_path(
     "sfr_connect_bridge",
-    path = system.file("python", package = "snowflakeR")
+    path = system.file("python", package = "skiPatrol")
   )
 
   session <- bridge$create_session(
@@ -79,7 +79,7 @@ sfr_connect_spcs <- function(account = Sys.getenv("SNOWFLAKE_ACCOUNT", ""),
     class = c("sfr_connection", "list")
   )
 
-  conn <- snowflakeR:::refresh_conn_from_session(conn)
+  conn <- skiPatrol:::refresh_conn_from_session(conn)
   message("Connected via SPCS OAuth Snowpark session (", account, ").")
   conn
 }

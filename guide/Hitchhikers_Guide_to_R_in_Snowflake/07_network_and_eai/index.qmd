@@ -81,7 +81,7 @@ Creating SQL objects is **not enough**. Developers routinely miss the Snowsight 
 | `micro.mamba.pm` | micromamba binary |
 | `conda.anaconda.org` / `repo.anaconda.com` | conda-forge packages (`r-base`, `r-tidyverse`, …) |
 | `pypi.org` / `files.pythonhosted.org` | Python packages for rpy2 bridge |
-| `github.com` / `api.github.com` / `objects.githubusercontent.com` | snowflakeR/RSnowflake tarballs, pak resolution |
+| `github.com` / `api.github.com` / `objects.githubusercontent.com` | skiPatrol/skiLift tarballs, pak resolution |
 | `cloud.r-project.org` | CRAN when YAML lists CRAN packages |
 
 ### Optional add-ons
@@ -169,7 +169,7 @@ eai:
 
 ```python
 from sfnb_setup import setup_notebook
-setup_notebook(config="snowflaker_config.yaml", packages=["snowflakeR", "RSnowflake"])
+setup_notebook(config="skipatrol_config.yaml", packages=["skiPatrol", "skiLift"])
 ```
 
 Watch output for:
@@ -214,7 +214,7 @@ When an admin **ALTERs** a network rule, changes apply to **running** notebook s
 
 ## Enterprise mirrors and artifact repositories {#sec-mirrors}
 
-If all package traffic routes through a corporate **artifact repository** (**Artifactory**, **Nexus**, Sonatype, or an internal generic proxy), the EAI allowlist can collapse to **one hostname** instead of dozens of public CDNs. Your platform team must **publish or proxy** the same artifacts bootstrap expects (micromamba, conda-forge R stack, CRAN/pak sources, PyPI, GitHub tarballs for snowflakeR/RSnowflake) — then point `mirrors:` at those URLs.
+If all package traffic routes through a corporate **artifact repository** (**Artifactory**, **Nexus**, Sonatype, or an internal generic proxy), the EAI allowlist can collapse to **one hostname** instead of dozens of public CDNs. Your platform team must **publish or proxy** the same artifacts bootstrap expects (micromamba, conda-forge R stack, CRAN/pak sources, PyPI, GitHub tarballs for skiPatrol/skiLift) — then point `mirrors:` at those URLs.
 
 ```yaml
 mirrors:

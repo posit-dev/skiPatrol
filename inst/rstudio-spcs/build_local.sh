@@ -11,7 +11,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 : "${SNOW_CONNECTION:?Set SNOW_CONNECTION}"
-: "${IMAGE_NAME:=rstudio-rsnowflake}"
+: "${IMAGE_NAME:=rstudio-skilift}"
 : "${IMAGE_TAG:=dev}"
 : "${PLATFORM:=linux/amd64}"
 

@@ -1,12 +1,12 @@
 # =============================================================================
-# snowflakeR -- Base Config
+# skiPatrol -- Base Config
 # =============================================================================
-# R environment for snowflakeR notebooks (quickstart, model registry,
-# doSnowflake). Installs snowflakeR from GitHub Releases for fast setup.
+# R environment for skiPatrol notebooks (quickstart, model registry,
+# doSnowflake). Installs skiPatrol from GitHub Releases for fast setup.
 #
 # Usage (single cell):
 #   from sfnb_setup import setup_notebook
-#   setup_notebook(config="snowflaker_config.yaml", packages=["snowflakeR"])
+#   setup_notebook(config="skipatrol_config.yaml", packages=["skiPatrol"])
 #
 # All sections below are OPTIONAL -- sensible defaults are used when omitted.
 # =============================================================================
@@ -68,7 +68,7 @@ languages:
       adbc: false
       duckdb: false
     tarballs:
-      snowflakeR: "https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.2.0/snowflakeR_0.2.0.tar.gz"
+      skiPatrol: "https://github.com/posit-dev/skiPatrol/releases/download/v0.2.0/skiPatrol_0.2.0.tar.gz"
 
   scala:
     enabled: false

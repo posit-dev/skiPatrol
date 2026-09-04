@@ -8,13 +8,13 @@ Alphabetical reference for readers new to Snowflake or MLOps. See also [Snowflak
 ## A
 
 **ADBC (Arrow Database Connectivity)**  
-Open standard for database access using **Apache Arrow** columnar memory — comparable role to ODBC/JDBC, optimized for analytics bulk transfer. RSnowflake optionally uses the Snowflake ADBC driver (`adbcsnowflake` R package) for large **reads/writes** as Arrow streams; everyday SQL still uses the **SQL REST API** (JSON). Typical install: `options(RSnowflake.backend = "adbc")`. See [Platform Primer — ADBC](../../01_snowflake_platform/index.qmd#sec-map), [SQL API](../../11_rsnowflake_sql_api/index.qmd#sec-arrow), [RSnowflake: Query](../../13_rsnowflake_query/index.qmd#sec-arrow).
+Open standard for database access using **Apache Arrow** columnar memory — comparable role to ODBC/JDBC, optimized for analytics bulk transfer. skiLift optionally uses the Snowflake ADBC driver (`adbcsnowflake` R package) for large **reads/writes** as Arrow streams; everyday SQL still uses the **SQL REST API** (JSON). Typical install: `options(skiLift.backend = "adbc")`. See [Platform Primer — ADBC](../../01_snowflake_platform/index.qmd#sec-map), [SQL API](../../11_skilift_sql_api/index.qmd#sec-arrow), [skiLift: Query](../../13_skilift_query/index.qmd#sec-arrow).
 
 **Account**  
 Your Snowflake tenant identifier (e.g. `xy12345.us-east-1`). Used in connection strings and `connections.toml`.
 
 **Account URL / Host**  
-HTTPS endpoint for API calls. Workspace may use an internal gateway host — RSnowflake detects this automatically.
+HTTPS endpoint for API calls. Workspace may use an internal gateway host — skiLift detects this automatically.
 
 ## C
 
@@ -22,13 +22,13 @@ HTTPS endpoint for API calls. Workspace may use an internal gateway host — RSn
 SPCS resource pool that runs containers (inference services, R workers). Distinct from a SQL **warehouse**.
 
 **connections.toml**  
-Standard Snowflake connection profiles file (`~/.snowflake/connections.toml`). Shared by RSnowflake, snowflakeR, Python connector, and CLI.
+Standard Snowflake connection profiles file (`~/.snowflake/connections.toml`). Shared by skiLift, skiPatrol, Python connector, and CLI.
 
 **CRE (Custom Runtime Image)**  
 Pre-built container image for Workspace/ML Jobs with R and packages baked in — faster than cold bootstrap.
 
 **CustomModel**  
-Python Model Registry wrapper type. snowflakeR registers R models by wrapping them in a `CustomModel` that calls R via rpy2 at inference time.
+Python Model Registry wrapper type. skiPatrol registers R models by wrapping them in a `CustomModel` that calls R via rpy2 at inference time.
 
 ## D
 
@@ -36,10 +36,10 @@ Python Model Registry wrapper type. snowflakeR registers R models by wrapping th
 Immutable, versioned training snapshot in Snowflake ML — often built from Feature Store views.
 
 **DBI**  
-R standard database interface. RSnowflake implements DBI over the SQL API.
+R standard database interface. skiLift implements DBI over the SQL API.
 
 **dbplyr**  
-R package translating dplyr verbs to SQL. Works with RSnowflake connections.
+R package translating dplyr verbs to SQL. Works with skiLift connections.
 
 **Dynamic Table (DT)**  
 Snowflake object that incrementally materializes query results — common backing store for Feature Views.
@@ -98,7 +98,7 @@ Handle to one registered version of a model (`sfr_log_model()` return value).
 ## O
 
 **OAuth / Workspace token**  
-In Workspace, the notebook session token authenticates RSnowflake/snowflakeR without storing passwords in code.
+In Workspace, the notebook session token authenticates skiLift/skiPatrol without storing passwords in code.
 
 ## P
 
@@ -114,10 +114,10 @@ Posit/RStudio IDE deployed as a Snowflake Native Application — in-account R de
 ## R
 
 **REST / SQL API**  
-HTTPS interface for submitting SQL without JDBC/ODBC. RSnowflake's default transport.
+HTTPS interface for submitting SQL without JDBC/ODBC. skiLift's default transport.
 
 **reticulate**  
-R package bridging to Python. snowflakeR uses it to call `snowflake-ml-python`.
+R package bridging to Python. skiPatrol uses it to call `snowflake-ml-python`.
 
 **Role**  
 Snowflake RBAC identity controlling access to warehouses, databases, and integrations.
@@ -125,13 +125,13 @@ Snowflake RBAC identity controlling access to warehouses, databases, and integra
 **rpy2**  
 Python↔R bridge: embeds R in Python process (`%%R` cells) and serves R models in CustomModel.
 
-**RSnowflake**  
+**skiLift**  
 DBI driver for Snowflake using SQL REST API (+ optional ADBC).
 
 ## S
 
 **Snowflake ML**  
-Umbrella for Feature Store, Model Registry, experiments, monitoring (Python SDK + snowflakeR).
+Umbrella for Feature Store, Model Registry, experiments, monitoring (Python SDK + skiPatrol).
 
 **Snowpark**  
 Snowflake's programmatic data framework (Python, Java, Scala). Underlies many ML operations.
@@ -148,11 +148,11 @@ Internal file storage location in Snowflake (`@db.schema.stage/path`).
 **SPCS (Snowpark Container Services)**  
 Run Docker containers inside Snowflake — inference endpoints, custom R servers, parallel workers.
 
-**snowflakeR**  
+**skiPatrol**  
 R API for Snowflake ML platform (Feature Store, Registry, doSnowflake, …).
 
 **SQL API**  
-Snowflake REST endpoints (`/api/v2/statements`) for executing SQL over HTTPS. See [chapter 11](../../11_rsnowflake_sql_api/index.qmd).
+Snowflake REST endpoints (`/api/v2/statements`) for executing SQL over HTTPS. See [chapter 11](../../11_skilift_sql_api/index.qmd).
 
 ## T
 
@@ -160,7 +160,7 @@ Snowflake REST endpoints (`/api/v2/statements`) for executing SQL over HTTPS. Se
 Scheduled or triggered Snowflake job — often SQL — used in pipelines and doSnowflake backends.
 
 **Tarball (R package)**  
-Pre-built `.tar.gz` R package archive. Required for fast Workspace installs of snowflakeR/RSnowflake.
+Pre-built `.tar.gz` R package archive. Required for fast Workspace installs of skiPatrol/skiLift.
 
 ## W
 
@@ -168,7 +168,7 @@ Pre-built `.tar.gz` R package archive. Required for fast Workspace installs of s
 Elastic SQL compute cluster. Used for queries, materializations, and warehouse-side inference — not arbitrary R code.
 
 **WebR**  
-R compiled to WebAssembly for browser execution. Can pair with RSnowflake + SQL API where drivers are unavailable.
+R compiled to WebAssembly for browser execution. Can pair with skiLift + SQL API where drivers are unavailable.
 
 **Workspace**  
 Snowsight development area with notebooks, files, and Git integration.
@@ -184,5 +184,5 @@ FUSE mount where Workspace stages git project files; path includes a content has
 | Name | What it is |
 |------|------------|
 | **snowflake-notebook-multilang** | Bootstrap toolkit (`setup_notebook()`, `sfnb_setup.py`) |
-| **RSnowflake** | DBI driver via SQL API |
-| **snowflakeR** | R API for Snowflake ML platform |
+| **skiLift** | DBI driver via SQL API |
+| **skiPatrol** | R API for Snowflake ML platform |

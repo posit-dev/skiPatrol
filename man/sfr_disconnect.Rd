@@ -13,6 +13,6 @@ sfr_disconnect(conn)
 Invisibly returns \code{TRUE}.
 }
 \description{
-Closes the underlying Snowpark session. If an RSnowflake DBI connection
+Closes the underlying Snowpark session. If an skiLift DBI connection
 is also attached, it is disconnected too.
 }

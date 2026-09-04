@@ -221,10 +221,10 @@ sfr_dosnowflake_build_image <- function(conn,
 .find_docker_context <- function() {
   # Check relative to workspace (development) or installed package
   wd_ctx <- file.path(getwd(), "internal", "doSnowflake", "docker")
-  pkg_root <- system.file(package = "snowflakeR")
+  pkg_root <- system.file(package = "skiPatrol")
   candidates <- c(
-    system.file("docker", package = "snowflakeR"),
-    # Monorepo dev layout: package at <repo>/snowflakeR
+    system.file("docker", package = "skiPatrol"),
+    # Monorepo dev layout: package at <repo>/skiPatrol
     file.path(pkg_root, "..", "internal", "doSnowflake", "docker")
   )
   if (dir.exists(wd_ctx)) {

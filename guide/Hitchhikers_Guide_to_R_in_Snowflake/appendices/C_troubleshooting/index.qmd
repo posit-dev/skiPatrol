@@ -13,7 +13,7 @@ Curated from production Workspace notebooks and common support patterns. See als
 |-------|---------|-----|
 | EAI missing | CRAN/GitHub timeout | Re-run bootstrap; verify EAI attached to notebook runtime ([Network & EAI](../../07_network_and_eai/index.qmd)) |
 | Source compile | 5+ min `R CMD INSTALL` | Use pre-built `.tar.gz` in YAML `tarballs:` ([Appendix B](../B_config_reference/index.qmd)) |
-| reticulate + rpy2 crash | Segfault on `library(snowflakeR)` | Require **reticulate ≥ 1.25** in config |
+| reticulate + rpy2 crash | Segfault on `library(skiPatrol)` | Require **reticulate ≥ 1.25** in config |
 | Low disk | Cryptic install failure | R + tidyverse needs ~2 GB; clean cache or use CRE |
 | First bootstrap slow | ~60s+ per compute restart | Typical for standard config; longer with extra packages — use CRE to avoid repeat installs |
 
@@ -23,11 +23,11 @@ Curated from production Workspace notebooks and common support patterns. See als
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
-| `sfnb_setup` not found | ImportError | Add `/filesystem/<hash>/snowflakeR/inst/notebooks` to `sys.path` ([Bootstrap](../../06_workspace_bootstrap/index.qmd)) |
+| `sfnb_setup` not found | ImportError | Add `/filesystem/<hash>/skiPatrol/inst/notebooks` to `sys.path` ([Bootstrap](../../06_workspace_bootstrap/index.qmd)) |
 | Object does not exist | Table "missing" | Set context: `sfr_load_notebook_config()` or `sfr_use()` — **reassign** return value |
 | `%%R` unknown | Cell fails | Re-run bootstrap; restart kernel |
 | renv hang (Terminal `R`) | Bootstrapping renv under `/filesystem` | Use `%%R`; bare `R` only outside repo path — [Appendix G](../G_workspace_container_internals/index.qmd#sec-ws-filesystem) |
-| Extra line breaks in R output | Unreadable tables | Use `rprint()`, `rview()`, `rglimpse()` from snowflakeR |
+| Extra line breaks in R output | Unreadable tables | Use `rprint()`, `rview()`, `rglimpse()` from skiPatrol |
 | ggplot not showing | Blank cell | `%%R -w 700 -h 450` and **`print(p)`** on ggplot object |
 | Narrow output | Truncated columns | Bootstrap sets `options(width = 200)`; adjust via `set_r_console_width()` |
 
@@ -52,13 +52,13 @@ Curated from production Workspace notebooks and common support patterns. See als
 
 ---
 
-## RSnowflake / SQL API {#sec-sql-api}
+## skiLift / SQL API {#sec-sql-api}
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
 | `GET`/`PUT` error 391911 | HTTP 422 | Use stage volume mounts in SPCS; not supported on REST API |
 | `USE` fails | Context error | Fully qualify names or set context in connection params |
-| Slow bulk write in Workspace | Minutes for INSERT | Set `RSnowflake.upload_method = "snowpark"` or use `"auto"` |
+| Slow bulk write in Workspace | Minutes for INSERT | Set `skiLift.upload_method = "snowpark"` or use `"auto"` |
 
 ---
 
@@ -87,7 +87,7 @@ Curated from production Workspace notebooks and common support patterns. See als
 
 | Issue | Fix |
 |-------|-----|
-| Wrong Python env | Set `RETICULATE_PYTHON` in `~/.Renviron` **before** first snowflakeR call |
+| Wrong Python env | Set `RETICULATE_PYTHON` in `~/.Renviron` **before** first skiPatrol call |
 | Locked interpreter | Restart R session after changing venv |
 | `snowflake-ml-python` too old | `pip install -U snowflake-ml-python`; run `sfr_check_environment()` |
 
@@ -97,6 +97,6 @@ Curated from production Workspace notebooks and common support patterns. See als
 
 | Resource | Link |
 |----------|------|
-| Package issues | [snowflakeR](https://github.com/Snowflake-Labs/snowflakeR/issues), [RSnowflake](https://github.com/Snowflake-Labs/RSnowflake/issues) |
+| Package issues | [skiPatrol](https://github.com/posit-dev/skiPatrol/issues), [skiLift](https://github.com/posit-dev/skiLift/issues) |
 | Snowflake docs | [SQL API](https://docs.snowflake.com/en/developer-guide/sql-api/index), [Workspace](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks) |
 | This guide | [Production checklist](../D_production_checklist/index.qmd) |

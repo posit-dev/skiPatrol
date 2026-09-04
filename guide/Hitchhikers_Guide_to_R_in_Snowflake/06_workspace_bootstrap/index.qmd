@@ -7,16 +7,16 @@ subtitle: "setup_notebook() and configuration YAML"
 
 After [Workspaces & Notebooks](../05_workspaces_overview/index.qmd), enable R in notebooks with **snowflake-notebook-multilang** package. Most enterprises follow **two phases**:
 
-**1. Organisation onboarding (usually IT or platform engineering)** — Your Snowflake team builds a **[Custom Runtime Environment (CRE)](../09_custom_runtime_and_ml_jobs/index.qmd#sec-cre-e2e)**: a versioned container image with R, `%%R`, snowflakeR, RSnowflake, and your approved package set pre-installed. They register it in Snowflake (`cre@<your_org_name>`) and grant notebook roles access. Analysts then open Workspace with **no bootstrap cell** (reference CRE image) and go straight to `%%R` — startup is fast once the notebook container is running. This is the path most production teams adopt after a short pilot.
+**1. Organisation onboarding (usually IT or platform engineering)** — Your Snowflake team builds a **[Custom Runtime Environment (CRE)](../09_custom_runtime_and_ml_jobs/index.qmd#sec-cre-e2e)**: a versioned container image with R, `%%R`, skiPatrol, skiLift, and your approved package set pre-installed. They register it in Snowflake (`cre@<your_org_name>`) and grant notebook roles access. Analysts then open Workspace with **no bootstrap cell** (reference CRE image) and go straight to `%%R` — startup is fast once the notebook container is running. This is the path most production teams adopt after a short pilot.
 
-**2. Self-serve bootstrap (this chapter’s main content)** — While CRE is being set up — or for a solo proof-of-concept — a **single Python cell** runs `setup_notebook()` to install micromamba, R, tarballs, and `%%R` on the default runtime. It works without Docker or admin image builds, but runs **on each notebook compute restart** (after idle recycle). **Typical time for a standard snowflakeR + RSnowflake configuration is ~60 seconds**; more conda/CRAN packages, ADBC, or multilanguage options in your YAML add time (large stacks can reach several minutes).
+**2. Self-serve bootstrap (this chapter’s main content)** — While CRE is being set up — or for a solo proof-of-concept — a **single Python cell** runs `setup_notebook()` to install micromamba, R, tarballs, and `%%R` on the default runtime. It works without Docker or admin image builds, but runs **on each notebook compute restart** (after idle recycle). **Typical time for a standard skiPatrol + skiLift configuration is ~60 seconds**; more conda/CRAN packages, ADBC, or multilanguage options in your YAML add time (large stacks can reach several minutes).
 
 You may use **both**: bootstrap during evaluation, or testing new R versions and packages; CRE once your organisation’s image is live.
 
 ## Learning Objectives
 
 - Run `setup_notebook()` with a project YAML config
-- Structure `snowflaker_*.yaml` for context, EAI, and R tarballs
+- Structure `skipatrol_*.yaml` for context, EAI, and R tarballs
 - Explain who owns CRE setup (platform/IT) vs self-serve bootstrap (analyst PoC)
 
 ---
@@ -40,22 +40,22 @@ You may use **both**: bootstrap during evaluation, or testing new R versions and
 
 ## Recommended: single bootstrap cell {#sec-single-cell}
 
-Use the bootstrap script **`sfnb_setup.py`** from [snowflake-notebook-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang) (same file is also in [snowflakeR/inst/notebooks/](https://github.com/Snowflake-Labs/snowflakeR/tree/main/inst/notebooks)).
+Use the bootstrap script **`sfnb_setup.py`** from [snowflake-notebook-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang) (same file is also in [skiPatrol/inst/notebooks/](https://github.com/posit-dev/skiPatrol/tree/main/inst/notebooks)).
 
 **How you use it depends on your project layout:**
 
 | Layout | What to do |
 |--------|------------|
 | Notebook in the same folder as `sfnb_setup.py` | `from sfnb_setup import setup_notebook` |
-| Git repo cloned into Workspace (typical) | File is under `snowflakeR/inst/notebooks/` — see [filesystem paths](#sec-filesystem) below |
+| Git repo cloned into Workspace (typical) | File is under `skiPatrol/inst/notebooks/` — see [filesystem paths](#sec-filesystem) below |
 | No Git / minimal project | Copy `sfnb_setup.py` next to your notebook, or `pip install sfnb-multilang` and use the package API |
 
 ```python
 from sfnb_setup import setup_notebook
 
 setup_notebook(
-    config="snowflaker_config.yaml",
-    packages=["snowflakeR", "RSnowflake"],
+    config="skipatrol_config.yaml",
+    packages=["skiPatrol", "skiLift"],
 )
 ```
 
@@ -66,16 +66,16 @@ setup_notebook(
 | EAI | Discover/create External Access Integration for package downloads |
 | micromamba | Install or reuse conda-compatible env manager |
 | R runtime | Install R version from YAML |
-| R packages | CRAN/conda packages + **tarballs** for snowflakeR/RSnowflake |
+| R packages | CRAN/conda packages + **tarballs** for skiPatrol/skiLift |
 | Magic | Register `%%R` (and other languages if enabled) on IPython kernel |
-| Context | Export `SNOWFLAKE_*` env vars for RSnowflake / snowflakeR |
+| Context | Export `SNOWFLAKE_*` env vars for skiLift / skiPatrol |
 | Session | Optionally apply warehouse/database/schema from YAML |
 
 `setup_notebook()` is **idempotent** — re-run safely to add packages (edit YAML first). Use `force_reinstall` only when debugging a broken env.
 
 `packages=` loads named R packages after bootstrap. Always list **tarballs** in YAML for production — [Appendix B](../appendices/B_config_reference/index.qmd).
 
-![Python bootstrap cell with setup_notebook() in a connected notebook](../_images/06-bootstrap-cell.png){fig-alt="Workspace notebook Python cell calling setup_notebook with snowflakeR and RSnowflake packages" width=85%}
+![Python bootstrap cell with setup_notebook() in a connected notebook](../_images/06-bootstrap-cell.png){fig-alt="Workspace notebook Python cell calling setup_notebook with skiPatrol and skiLift packages" width=85%}
 
 ## Configuration file essentials {#sec-yaml}
 
@@ -93,12 +93,12 @@ languages:
       - tidyverse
       - arrow
     tarballs:
-      - url: https://github.com/Snowflake-Labs/snowflakeR/releases/download/v0.x.x/snowflakeR_0.x.x.tar.gz
-      - url: https://github.com/Snowflake-Labs/RSnowflake/releases/download/v0.x.x/RSnowflake_0.x.x.tar.gz
+      - url: https://github.com/posit-dev/skiPatrol/releases/download/v0.x.x/skiPatrol_0.x.x.tar.gz
+      - url: https://github.com/posit-dev/skiLift/releases/download/v0.x.x/skiLift_0.x.x.tar.gz
 ```
 
 ::: {.callout-warning}
-Wherever possible, never compile `snowflakeR` / `RSnowflake` from source inside Workspace. Build tarballs with `R CMD build --no-build-vignettes` locally.
+Wherever possible, never compile `skiPatrol` / `skiLift` from source inside Workspace. Build tarballs with `R CMD build --no-build-vignettes` locally.
 :::
 
 ## Notebooks deep in your Git repo {#sec-filesystem}
@@ -109,19 +109,19 @@ If your Workspace project is linked to **Git**, Snowflake mounts the repository 
 
 ```
 /filesystem/<session-hash>/          ← root of your cloned repo (hash changes each session)
-├── snowflakeR/inst/notebooks/
+├── skiPatrol/inst/notebooks/
 │   └── sfnb_setup.py                ← bootstrap script (if you use the Labs repos)
 ├── your_notebooks/                  ← your .ipynb may live elsewhere in the tree
 └── ...
 ```
 
-**Problem 1 — finding `sfnb_setup.py`:** `from sfnb_setup import setup_notebook` only works if that file is on Python’s path. It is **not** automatically next to every notebook — usually it sits in `snowflakeR/inst/notebooks/`.
+**Problem 1 — finding `sfnb_setup.py`:** `from sfnb_setup import setup_notebook` only works if that file is on Python’s path. It is **not** automatically next to every notebook — usually it sits in `skiPatrol/inst/notebooks/`.
 
 **Problem 2 — `os.getcwd()` is unreliable:** Depending on Workspace version and restart state, `os.getcwd()` may return your notebook folder, a parent folder, or something else. **Never** use cwd-relative paths for config YAML or bootstrap imports.
 
-**Problem 3 — config paths:** `setup_notebook(config="snowflaker_config.yaml")` resolves relative to cwd — which may be wrong. Pass an **absolute path** built from the discovered repo root.
+**Problem 3 — config paths:** `setup_notebook(config="skipatrol_config.yaml")` resolves relative to cwd — which may be wrong. Pass an **absolute path** built from the discovered repo root.
 
-### Bootstrap pattern for notebooks outside `snowflakeR/inst/notebooks/`
+### Bootstrap pattern for notebooks outside `skiPatrol/inst/notebooks/`
 
 Use this Python cell **before** `setup_notebook()` when your notebook is **not** in the same directory as `sfnb_setup.py` (for example under `projects/my_analysis/`):
 
@@ -130,49 +130,49 @@ import sys, os
 
 _repo_root = None
 for _h in os.listdir("/filesystem"):
-    _p = os.path.join("/filesystem", _h, "snowflakeR", "inst", "notebooks")
+    _p = os.path.join("/filesystem", _h, "skiPatrol", "inst", "notebooks")
     if os.path.isdir(_p):
         _repo_root = os.path.join("/filesystem", _h)
         sys.path.insert(0, _p)
         break
 
 if _repo_root is None:
-    raise RuntimeError("Could not find snowflakeR/inst/notebooks under /filesystem/")
+    raise RuntimeError("Could not find skiPatrol/inst/notebooks under /filesystem/")
 
 from sfnb_setup import setup_notebook
 
 _config = os.path.join(
     _repo_root,
     "projects", "my_forecast_demo",
-    "snowflaker_config.yaml",
+    "skipatrol_config.yaml",
 )
 
-setup_notebook(config=_config, packages=["snowflakeR", "RSnowflake"])
+setup_notebook(config=_config, packages=["skiPatrol", "skiLift"])
 ```
 
 | Step | What it does |
 |------|--------------|
 | Scan `/filesystem/` | Find the session-specific mount hash |
-| Check for `snowflakeR/inst/notebooks` | Confirm this path exists under `/filesystem/<hash>/` |
+| Check for `skiPatrol/inst/notebooks` | Confirm this path exists under `/filesystem/<hash>/` |
 | `sys.path.insert(0, ...)` | Make `sfnb_setup` importable |
 | Absolute `config=` path | YAML loads regardless of cwd |
 
-**Notebooks already in `snowflakeR/inst/notebooks/`** can import directly — no scan needed:
+**Notebooks already in `skiPatrol/inst/notebooks/`** can import directly — no scan needed:
 
 ```python
 from sfnb_setup import setup_notebook
-setup_notebook(config="snowflaker_config.yaml", packages=["snowflakeR"])
+setup_notebook(config="skipatrol_config.yaml", packages=["skiPatrol"])
 ```
 
 Full patterns: [R Cells & Interop](../08_r_cells_and_interop/index.qmd#sec-filesystem).
 
 ::: {.callout-warning}
-Prefer **one shared copy** of `sfnb_setup.py` in your repo (e.g. under `snowflakeR/inst/notebooks/`) and the path-discovery pattern below — rather than duplicating the file into every demo folder. That way upgrades from snowflake-notebook-multilang apply in one place.
+Prefer **one shared copy** of `sfnb_setup.py` in your repo (e.g. under `skiPatrol/inst/notebooks/`) and the path-discovery pattern below — rather than duplicating the file into every demo folder. That way upgrades from snowflake-notebook-multilang apply in one place.
 :::
 
 ## Custom Runtime Images (for platform / IT teams) {#sec-cre}
 
-If you are **enabling R for an organisation** (not only your own notebook), plan a one-time **CRE onboarding** project: build the **reference v1** image with [snowflake-notebook-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang) (`docker/create_cre.sh` + `cre_profile.yaml` — default tag `sfnb-multilang-r:v1`), push to your Snowflake image repository, register `cre@<org_name>`, and grant `USAGE` to notebook roles. That image registers `%%R` on kernel start (empty git repo is fine), includes **snowflakeR**, **RSnowflake**, and optional **ADBC**. Earlier internal image experiments are not a separate supported release — **v1** is the first production reference.
+If you are **enabling R for an organisation** (not only your own notebook), plan a one-time **CRE onboarding** project: build the **reference v1** image with [snowflake-notebook-multilang](https://github.com/Snowflake-Labs/snowflake-notebook-multilang) (`docker/create_cre.sh` + `cre_profile.yaml` — default tag `sfnb-multilang-r:v1`), push to your Snowflake image repository, register `cre@<org_name>`, and grant `USAGE` to notebook roles. That image registers `%%R` on kernel start (empty git repo is fine), includes **skiPatrol**, **skiLift**, and optional **ADBC**. Earlier internal image experiments are not a separate supported release — **v1** is the first production reference.
 
 **Analysts** only select the CRE in Workspace advanced settings — they do not run Docker. Share the [notebook template](https://github.com/Snowflake-Labs/snowflake-notebook-multilang/blob/main/examples/cre_workspace_notebook_template.md) after go-live.
 
@@ -181,9 +181,9 @@ Quick verify after attaching `cre@<your_cre_name>`:
 ```r
 %%R
 cat(R.version.string, "\n")
-packageVersion("snowflakeR")
+packageVersion("skiPatrol")
 requireNamespace("adbcsnowflake", quietly = TRUE)
-library(snowflakeR)
+library(skiPatrol)
 sfr_connect()
 ```
 
@@ -197,7 +197,7 @@ Git-connected projects with **renv** (`.Rprofile` → `renv/activate.R` at the r
 
 ## Companion notebook
 
-- [`workspace_quickstart.ipynb`](https://github.com/Snowflake-Labs/snowflakeR/blob/main/inst/notebooks/workspace_quickstart.ipynb)
+- [`workspace_quickstart.ipynb`](https://github.com/posit-dev/skiPatrol/blob/main/inst/notebooks/workspace_quickstart.ipynb)
 
 ## Next steps
 

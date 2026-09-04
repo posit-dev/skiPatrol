@@ -91,7 +91,7 @@ jobs. Requires a compute pool, worker image, and stage; see
 SPCS workers (ephemeral or persistent). Requires queue DDL, images, and
 pool configuration; see \code{\link[=sfr_dosnowflake_setup]{sfr_dosnowflake_setup()}} and the shipped notebooks
 under \verb{inst/notebooks/} (\code{workspace_parallel_spcs_*.ipynb},
-\code{snowflaker_parallel_spcs_config.yaml}).
+\code{skipatrol_parallel_spcs_config.yaml}).
 
 \strong{Spcs}: reserved for future stage-only job dispatch; not implemented (an
 error is raised if selected).

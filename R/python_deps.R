@@ -2,16 +2,16 @@
 # =============================================================================
 # Opt-in installation only (CRAN requirement).
 
-#' Install Python dependencies for snowflakeR
+#' Install Python dependencies for skiPatrol
 #'
 #' Creates a conda environment with all required Python packages for
-#' `snowflakeR` to function. This environment is shared between `reticulate`
+#' `skiPatrol` to function. This environment is shared between `reticulate`
 #' and `rpy2`, avoiding duplicate installations.
 #'
 #' @param method Character. Installation method: `"conda"` (recommended),
 #'   `"pip"`, or `"auto"`. Default: `"conda"`.
 #' @param envname Character. Name of the conda/virtual environment.
-#'   Default: `"r-snowflakeR"`.
+#'   Default: `"r-skiPatrol"`.
 #' @param python_version Character. Python version to use. Default: `"3.11"`.
 #'
 #' @details
@@ -28,7 +28,7 @@
 #'
 #' @export
 sfr_install_python_deps <- function(method = "conda",
-                                    envname = "r-snowflakeR",
+                                    envname = "r-skiPatrol",
                                     python_version = "3.11") {
   packages <- c(
     "snowflake-ml-python>=1.5.0",

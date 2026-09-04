@@ -25,9 +25,9 @@ Snowflake is a **cloud data platform** that combines:
 | Layer | What it provides | Typical users |
 |-------|------------------|---------------|
 | **Storage** | Durable tables, stages, governed data | Everyone |
-| **SQL compute** | Virtual-Warehouses — elastic clusters for analytics | Analysts, engineers, R via RSnowflake (SQL, dplyr) |
+| **SQL compute** | Virtual-Warehouses — elastic clusters for analytics | Analysts, engineers, R via skiLift (SQL, dplyr) |
 | **Container compute** | SPCS — Docker workloads running in-account | Inference, custom R, parallel workers |
-| **ML platform** | Feature Store, Model Registry, experiments | Data scientists (Python + R via snowflakeR) |
+| **ML platform** | Feature Store, Model Registry, experiments | Data scientists (Python + R via skiPatrol) |
 | **Apps & BI** | Streamlit, dashboards, partner BI tools | Analysts, business users |
 | **AI** | Cortex (LLM functions, agents) | App builders, analysts |
 
@@ -89,7 +89,7 @@ by_region |>
   collect()   # only the final, small result crosses to R
 ```
 
-`compute()` runs **`CREATE TEMPORARY TABLE … AS SELECT`** (RSnowflake implements this via dbplyr). Use a **pipeline of temp tables** for heavy joins or to break up nested SQL; use **`temporary = FALSE`** and a qualified name when you want a **permanent** table other teams can reuse. **`copy_to()`** is the opposite path — upload a local `data.frame` into Snowflake to start a pipeline. Full patterns: [RSnowflake: Query — dbplyr](../13_rsnowflake_query/index.qmd#sec-materialize).
+`compute()` runs **`CREATE TEMPORARY TABLE … AS SELECT`** (skiLift implements this via dbplyr). Use a **pipeline of temp tables** for heavy joins or to break up nested SQL; use **`temporary = FALSE`** and a qualified name when you want a **permanent** table other teams can reuse. **`copy_to()`** is the opposite path — upload a local `data.frame` into Snowflake to start a pipeline. Full patterns: [skiLift: Query — dbplyr](../13_skilift_query/index.qmd#sec-materialize).
 
 - Feature Store and Model Registry objects **persist in Snowflake** — no separate model server database to maintain.
 
@@ -99,7 +99,7 @@ by_region |>
 
 | Concept | Plain language | R relevance |
 |---------|----------------|-------------|
-| **Account** | Tenant identifier (`orgname-accountname`, region in URL) | Auth target for `sfr_connect()` / RSnowflake |
+| **Account** | Tenant identifier (`orgname-accountname`, region in URL) | Auth target for `sfr_connect()` / skiLift |
 | **Database / Schema** | Namespace hierarchy (`DB.SCHEMA.TABLE`) | Session context; fully qualify when context unset |
 | **Table / View** | Persistent or logical datasets | `sfr_read_table()`, `dbplyr::tbl()` |
 | **Dynamic Table** | Incrementally maintained query result | Often backs Feature Views |
@@ -107,7 +107,7 @@ by_region |>
 | **Role** | RBAC identity with grants | Controls warehouses, ML objects, integrations |
 | **Warehouse** | SQL compute cluster | Queries, data transformations, data materialization, warehouse inference |
 
-Snowflake stores **unquoted identifiers as uppercase**. R and dbplyr code should account for this — see RSnowflake chapters.
+Snowflake stores **unquoted identifiers as uppercase**. R and dbplyr code should account for this — see skiLift chapters.
 
 **Further reading:** [Databases, Tables, & Views](https://docs.snowflake.com/en/guides-overview-db)
 
@@ -124,8 +124,8 @@ A **virtual warehouse** is a cluster of compute nodes that executes **SQL** (and
 
 R uses warehouses when:
 
-- RSnowflake/dbplyr executes SQL (`collect()`, `dbWriteTable()`)
-- snowflakeR runs `sfr_query()` or registers Feature Store objects that materialize on warehouse
+- skiLift/dbplyr executes SQL (`collect()`, `dbWriteTable()`)
+- skiPatrol runs `sfr_query()` or registers Feature Store objects that materialize on warehouse
 - **Tasks** run scheduled SQL steps
 
 Warehouses are charged per minute of compute time, with a minimum of 1 minute, corellated to the T-Shirt size. Most workloads scale linearly with the size increase in the warehouse, so 2x the T-Shirt size will result in half the compute time, and cost
@@ -147,7 +147,7 @@ Warehouses do **not** execute arbitrary R code — only SQL and platform operati
 | **Unit** | **Compute pool** (not a warehouse) |
 | **Images** | Custom Docker or Snowflake-provided ML images |
 | **Use cases** | Model inference services, GPU training, custom R servers, parallel R workers |
-| **I/O** | Stage **volume mounts** for file access (important for RSnowflake — no SQL `GET`/`PUT`) |
+| **I/O** | Stage **volume mounts** for file access (important for skiLift — no SQL `GET`/`PUT`) |
 
 R uses SPCS when:
 
@@ -159,11 +159,11 @@ R uses SPCS when:
 
 ## Workspace & notebooks {#sec-workspace}
 
-**Workspace** is Snowflake's project-oriented development area in **Snowsight** — Jupyter-compatible notebooks with Git integration, files, and in-account compute. **This guide targets Workspace Notebooks only.** Multi-language R support (`%%R`, bootstrap, snowflakeR) requires Workspace; it is not available in older standalone Snowsight notebook experiences.
+**Workspace** is Snowflake's project-oriented development area in **Snowsight** — Jupyter-compatible notebooks with Git integration, files, and in-account compute. **This guide targets Workspace Notebooks only.** Multi-language R support (`%%R`, bootstrap, skiPatrol) requires Workspace; it is not available in older standalone Snowsight notebook experiences.
 
 | Capability | What it provides |
 |------------|------------------|
-| **Project + files** | Notebooks, scripts, configs (`snowflaker_config.yaml`) |
+| **Project + files** | Notebooks, scripts, configs (`skipatrol_config.yaml`) |
 | **Git integration** | Clone, commit, push — team collaboration |
 | **Notebooks** | Python, SQL, Markdown cells — R added via bootstrap |
 | **ML Container Runtime** | Python kernel on a compute pool; SQL on a warehouse |
@@ -195,13 +195,13 @@ Flexible package install (pip/conda/micromamba) is why R bootstrap uses micromam
 
 | Service | Purpose | R access |
 |---------|---------|----------|
-| **Feature Store** | Governed features, point-in-time training data, data pipelines to inference datasets | `snowflakeR` |
-| **Model Registry** | Versioned R or Python models, deployment, lineage | `snowflakeR` |
-| **Datasets** | Immutable training data snapshots, point-in-time inference datasets | `snowflakeR` |
-| **Experiments** | Run model training and tracking metrics | `snowflakeR` |
-| **Model monitoring** | Model and Data drift and performance | `snowflakeR` |
-| **Snowpark ML** | Python SDK underlying snowflakeR | via `reticulate` in snowflakeR |
-| **Cortex** | LLMs, embeddings, agents in SQL | SQL from R; not wrapped by snowflakeR today |
+| **Feature Store** | Governed features, point-in-time training data, data pipelines to inference datasets | `skiPatrol` |
+| **Model Registry** | Versioned R or Python models, deployment, lineage | `skiPatrol` |
+| **Datasets** | Immutable training data snapshots, point-in-time inference datasets | `skiPatrol` |
+| **Experiments** | Run model training and tracking metrics | `skiPatrol` |
+| **Model monitoring** | Model and Data drift and performance | `skiPatrol` |
+| **Snowpark ML** | Python SDK underlying skiPatrol | via `reticulate` in skiPatrol |
+| **Cortex** | LLMs, embeddings, agents in SQL | SQL from R; not wrapped by skiPatrol today |
 
 ::: {.callout-tip}
 ## Feature Store deep dive
@@ -223,7 +223,7 @@ R users often sit alongside teams using:
 | **Snowpipe / connectors** | Ingest streaming datafrom cloud storage or apps |
 | **Data sharing / Marketplace** | Consume shared datasets |
 
-You do not need to master all of these to use snowflakeR — but Feature Views often sit **downstream** of dbt or Dynamic Table pipelines.
+You do not need to master all of these to use skiPatrol — but Feature Views often sit **downstream** of dbt or Dynamic Table pipelines.
 
 ## Orchestration & ops {#sec-ops}
 
@@ -252,11 +252,11 @@ R clients use the same role model as other tools — your `connections.toml` pro
 |------------|------------------|
 | R from your IDE | External client → SQL REST API / ML Python APIs |
 | Workspace Notebooks | In-account kernel + R bootstrap |
-| RSnowflake | SQL over **SQL REST API** (+ optional **ADBC** for bulk I/O) |
-| snowflakeR | ML APIs + SPCS deployment + Tasks/queue backends |
+| skiLift | SQL over **SQL REST API** (+ optional **ADBC** for bulk I/O) |
+| skiPatrol | ML APIs + SPCS deployment + Tasks/queue backends |
 
 ::: {.callout-note title="What is ADBC?"}
-**ADBC** (Arrow Database Connectivity) is a **columnar database access standard** — the Arrow ecosystem's analogue to ODBC/JDBC. RSnowflake can use the Snowflake **ADBC driver** (`adbcsnowflake`) for **large bulk reads and writes** as Apache Arrow streams instead of JSON over the SQL API. You do not need ADBC for everyday queries; enable it when moving wide or million-row result sets. Defined in [Glossary](../appendices/F_glossary/index.qmd); details in [SQL API](../11_rsnowflake_sql_api/index.qmd#sec-arrow) and [RSnowflake: Query](../13_rsnowflake_query/index.qmd#sec-arrow).
+**ADBC** (Arrow Database Connectivity) is a **columnar database access standard** — the Arrow ecosystem's analogue to ODBC/JDBC. skiLift can use the Snowflake **ADBC driver** (`adbcsnowflake`) for **large bulk reads and writes** as Apache Arrow streams instead of JSON over the SQL API. You do not need ADBC for everyday queries; enable it when moving wide or million-row result sets. Defined in [Glossary](../appendices/F_glossary/index.qmd); details in [SQL API](../11_skilift_sql_api/index.qmd#sec-arrow) and [skiLift: Query](../13_skilift_query/index.qmd#sec-arrow).
 :::
 
 ## Quickstart pointers {#sec-quickstarts}

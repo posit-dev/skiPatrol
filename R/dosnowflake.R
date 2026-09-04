@@ -119,7 +119,7 @@ stopDoSnowflake <- function() {
 #' SPCS workers (ephemeral or persistent). Requires queue DDL, images, and
 #' pool configuration; see [sfr_dosnowflake_setup()] and the shipped notebooks
 #' under `inst/notebooks/` (`workspace_parallel_spcs_*.ipynb`,
-#' `snowflaker_parallel_spcs_config.yaml`).
+#' `skipatrol_parallel_spcs_config.yaml`).
 #'
 #' **Spcs**: reserved for future stage-only job dispatch; not implemented (an
 #' error is raised if selected).
@@ -222,7 +222,7 @@ registerDoSnowflake <- function(conn,
   switch(item,
     workers = .resolve_snowflake_workers(data$workers),
     name    = "doSnowflake",
-    version = as.character(utils::packageVersion("snowflakeR")),
+    version = as.character(utils::packageVersion("skiPatrol")),
     NULL
   )
 }

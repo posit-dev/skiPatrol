@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 
 - Describe the role of each of the three packages
 - Explain how `rpy2` connects R cells to Snowpark without R users writing Python
-- Choose between RSnowflake-first vs snowflakeR-first workflows
+- Choose between skiLift-first vs skiPatrol-first workflows
 
 ---
 
@@ -27,15 +27,15 @@ Before these packagesR teams could query Snowflake via ODBC/JDBC and dplyr, but 
 
 **Role:** Bootstrap R (and other languages) inside Workspace via `micromamba`, install packages from YAML, register `%%R` cell magic.
 
-**When you need it:** Every Workspace notebook that runs R cells, before `library(snowflakeR)`.
+**When you need it:** Every Workspace notebook that runs R cells, before `library(skiPatrol)`.
 
-### RSnowflake
+### skiLift
 
 **Role:** DBI-compliant driver (SQL API, ADBC, Workspace OAuth). Powers `dbplyr`, Arrow bulk I/O, Connections Pane.
 
 **When you need it:** SQL-first workflows, lazy dplyr pipelines, or when you want a dedicated driver without the ML Python stack.
 
-### snowflakeR
+### skiPatrol
 
 **Role:** R API over `snowflake-ml-python` — Feature Store, Model Registry, experiments, monitoring, SPCS deployment, `registerDoSnowflake()`.
 
@@ -57,8 +57,8 @@ flowchart TB
     setup["setup_notebook()"]
   end
   subgraph rpkgs [R packages in embedded R]
-    RS[RSnowflake]
-    SFR[snowflakeR]
+    RS[skiLift]
+    SFR[skiPatrol]
   end
   PYcell --> setup
   setup --> magic
@@ -90,8 +90,8 @@ flowchart LR
   end
   subgraph r [R world]
     RSESS[R session]
-    SFR[snowflakeR]
-    RS[RSnowflake]
+    SFR[skiPatrol]
+    RS[skiLift]
   end
   PYK -->|%%R cells| RPY2 --> RSESS
   RSESS --> SFR --> RET --> ML
@@ -102,15 +102,15 @@ flowchart LR
 |-----------|-----------|---------|
 | Python → R | **rpy2** | `%%R` cell magic runs `library(tidymodels)` |
 | R → Python | **reticulate** | `sfr_connect()` calls `snowflake-ml-python` |
-| R → SQL | **RSnowflake** (DBI) or `sfr_query()` | dplyr pipelines, ad hoc SQL |
+| R → SQL | **skiLift** (DBI) or `sfr_query()` | dplyr pipelines, ad hoc SQL |
 
-**Why two bridges?** Snowflake ML APIs (Feature Store, Model Registry, Snowpark session helpers) ship as **Python SDKs**. snowflakeR wraps them from R via reticulate so R users never write Python. rpy2 is the complementary path that lets Workspace run R cells at all.
+**Why two bridges?** Snowflake ML APIs (Feature Store, Model Registry, Snowpark session helpers) ship as **Python SDKs**. skiPatrol wraps them from R via reticulate so R users never write Python. rpy2 is the complementary path that lets Workspace run R cells at all.
 
 ### What happens when you run a `%%R` cell
 
 1. IPython sees the `%%R` magic and hands the cell body to rpy2.
 2. rpy2 passes the text to the embedded R interpreter.
-3. R code runs; if it calls snowflakeR, reticulate invokes Python ML SDK calls.
+3. R code runs; if it calls skiPatrol, reticulate invokes Python ML SDK calls.
 4. Results cross back to the notebook as R or Python objects.
 
 ### Serving: CustomModel + rpy2
@@ -123,9 +123,9 @@ These ideas assume familiarity with [Snowflake basics](../01_snowflake_platform/
 
 | Principle | What it means |
 |-----------|----------------|
-| **Zero-config auth** | In **Workspace**, `sfr_connect()` and RSnowflake use the session **OAuth token** within the Workspace for seamless authentication — no PATs in notebook cells |
+| **Zero-config auth** | In **Workspace**, `sfr_connect()` and skiLift use the session **OAuth token** within the Workspace for seamless authentication — no PATs in notebook cells |
 | **Automatic network setup** | Bootstrap detects/creates **EAI** for CRAN, GitHub, and Python package indexes assuming Role has appropriate privileges |
-| **No Python from the R user** | `snowflakeR` owns the **reticulate** / rpy2 bridge internally |
+| **No Python from the R user** | `skiPatrol` owns the **reticulate** / rpy2 bridge internally |
 | **Snowflake-native objects** | **Feature views**, **datasets**, and registry models created in R appear in Python tooling. Likewise Python models created in the Snowflake ML platform appear in R tooling. Polyglot data-scientist teams can collaborate on the same data and models in using the preferred language and tools. **Data Science team productivity is enhanced.**|
 | **Train in R, serve in Snowflake** | Models wrap as Python **CustomModel** + rpy2 for **SPCS** inference |
 | **ML lineage** | Source table → **Feature View** → **Dataset** → **Model** traceability in Model Registry |
@@ -137,12 +137,12 @@ These ideas assume familiarity with [Snowflake basics](../01_snowflake_platform/
 | New to Snowflake | [Snowflake Platform Primer](../01_snowflake_platform/index.qmd) |
 | RStudio, Posit, or VS Code on your laptop | [Local R Setup](../03_local_r_setup/index.qmd) → [IDE chapter](../04_rstudio_posit_vscode/index.qmd) |
 | Run R in a Workspace notebook | [Workspaces overview](../05_workspaces_overview/index.qmd) → [Bootstrap](../06_workspace_bootstrap/index.qmd) |
-| dplyr/SQL only, no ML SDK | [RSnowflake](../12_rsnowflake_connect/index.qmd) |
-| Feature Store / Registry from R | [MLOps on Snowflake](../15_mlops_on_snowflake/index.qmd) → [snowflakeR Connect](../16_snowflaker_connect/index.qmd) |
+| dplyr/SQL only, no ML SDK | [skiLift](../12_skilift_connect/index.qmd) |
+| Feature Store / Registry from R | [MLOps on Snowflake](../15_mlops_on_snowflake/index.qmd) → [skiPatrol Connect](../16_skipatrol_connect/index.qmd) |
 
 ## Interop: `sfr_dbi_connection()` {#sec-dbi-bridge}
 
-Both packages can coexist. `snowflakeR::sfr_dbi_connection(conn)` lazily wraps a snowflakeR session connection as DBI for RSnowflake/dbplyr when you need ML APIs and dplyr in the same notebook.
+Both packages can coexist. `skiPatrol::sfr_dbi_connection(conn)` lazily wraps a skiPatrol session connection as DBI for skiLift/dbplyr when you need ML APIs and dplyr in the same notebook.
 
 ## Next steps {#sec-next}
 
