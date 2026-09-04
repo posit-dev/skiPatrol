@@ -214,6 +214,37 @@ sfr_input_cols <- function(data, exclude = character(0)) {
   "rsample", "tune", "yardstick", "dials", "butcher"
 )
 
+#' Detect whether the running R was installed via conda/mamba/micromamba
+#'
+#' `r-base` is conda-forge's package name for the R interpreter; it only
+#' means anything inside a conda/mamba environment. Most R installs --
+#' CRAN, Posit's own builds, system packages, what most customers running
+#' this package will have -- are not conda builds and have no `r-base`
+#' identity at all. Workspace Notebooks are the deliberate exception (via
+#' `sfnb_multilang`): conda/micromamba was the only way to install R
+#' packages there without root, and separately the Model Registry's SPCS
+#' inference container is *always* built via conda regardless of what
+#' produced the training R. `.pin_r_versions()` uses this to decide
+#' whether pinning `r-base` to *this* R's exact version is meaningful: it
+#' only is if this R itself came from that channel. See DB-8 and
+#' `posit_native_app_support/native-app-probe-findings.md`'s "Incidental
+#' confirmation of DB-8", which used the same check by hand
+#' (`command -v R` containing "conda"/"mamba") against a live Native App.
+#' @param home `R.home()`, injectable for testing.
+#' @param conda_prefix `Sys.getenv("CONDA_PREFIX")`, injectable for testing.
+#' @returns TRUE/FALSE.
+#' @keywords internal
+.r_is_conda_build <- function(home = R.home(),
+                               conda_prefix = Sys.getenv("CONDA_PREFIX", "")) {
+  if (grepl("conda|mamba", tolower(home))) return(TRUE)
+  if (!nzchar(conda_prefix)) return(FALSE)
+
+  startsWith(
+    normalizePath(home, mustWork = FALSE),
+    normalizePath(conda_prefix, mustWork = FALSE)
+  )
+}
+
 #' Build version-pinned conda_deps from the current R environment
 #'
 #' Snapshots the current R version and the versions of all packages in
@@ -234,23 +265,52 @@ sfr_input_cols <- function(data, exclude = character(0)) {
   # e.g. "r-xgboost" -> "r-xgboost", "numpy<2.0" -> "numpy"
   existing_names <- sub("[=<>!].*", "", conda_deps)
 
-  # Pin r-base to the exact installed R version.  The Workspace R was
-  # installed from conda-forge (via sfnb_multilang), so the exact version
-  # is guaranteed to exist there.  An exact pin prevents the SPCS container
-  # from resolving a newer R release whose packages haven't been rebuilt yet.
-  if (!any(grepl("^r-base", existing_names))) {
+  r_from_conda <- .r_is_conda_build()
+  pinning_r_base <- r_from_conda && !any(grepl("^r-base", existing_names))
+
+  if (pinning_r_base) {
+    # Pin r-base to the exact installed R version. Safe only because this
+    # R itself is a conda-forge build (checked above) -- that guarantees
+    # the exact version exists on the channel. The pin then prevents the
+    # SPCS container from resolving a newer R release whose packages
+    # haven't been rebuilt yet.
     r_ver <- paste0(R.version$major, ".", R.version$minor)
     r_pin <- paste0("r-base==", r_ver)
     conda_deps <- c(r_pin, conda_deps)
+  } else if (!any(grepl("^r-base", existing_names))) {
+    # DB-8: this R is not a conda build -- true of most installs (CRAN,
+    # Posit Workbench's own R, system packages), not just an edge case --
+    # so its version string has no defined relationship to conda-forge's
+    # r-base package at all. It might coincidentally match a real
+    # r-base release; it might not exist there under that version ever.
+    # Pinning it anyway breaks the solver exactly as observed live:
+    # r-base==4.6.0 required a specific icu version, while r-ranger had
+    # no build against 4.6.x at all. Leave r-base unpinned instead: every
+    # conda-forge R package declares its own r-base bounds in its recipe,
+    # so the solver picks a version compatible with whatever *is* pinned
+    # below, rather than us dictating one that may not correspond to
+    # anything on the channel.
+    cli::cli_inform(c(
+      "i" = paste0(
+        "R ", R.version$major, ".", R.version$minor,
+        " does not look like a conda build."
+      ),
+      "i" = "Not pinning {.field r-base} exactly -- this R's version has no defined",
+      " " = "relationship to conda-forge's r-base package. Letting the solver pick",
+      " " = "a version compatible with the packages below instead."
+    ))
   }
 
-  # Warn if the running R version is very recent -- conda-forge typically
-  # needs 2-4 weeks after a new R release to rebuild all R packages.
+  # Warn if pinning to a recently-released R exactly -- conda-forge
+  # typically needs 2-4 weeks after a new R release to rebuild all R
+  # packages. Only relevant when we actually took the exact-pin branch
+  # above: an unpinned r-base has no release-age risk, since the solver
+  # is free to pick whatever conda-forge already has (DB-9).
   r_release <- tryCatch(
     as.Date(paste(R.version$year, R.version$month, R.version$day, sep = "-")),
     error = function(e) NA
   )
-  if (!is.na(r_release)) {
+  if (pinning_r_base && !is.na(r_release)) {
     age_days <- as.numeric(Sys.Date() - r_release)
     if (age_days < 30) {
       cli::cli_warn(c(
@@ -281,6 +341,14 @@ sfr_input_cols <- function(data, exclude = character(0)) {
   # package version here is guaranteed to exist there.  Exact pins ensure
   # the SPCS container gets identical versions, avoiding serialization
   # mismatches (e.g. hardhat blueprint format changes).
+  #
+  # NOTE: this loop makes the same "installed from conda-forge" assumption
+  # that broke r-base above (DB-8), for every predict package instead of
+  # just R itself -- untriggered so far only because the packages actually
+  # exercised happened to have conda-forge builds at their exact installed
+  # version. When r_from_conda is FALSE this is equally unguaranteed. Not
+  # fixed here: it needs the same channel-availability answer as DB-9,
+  # which is P2-09's systematic pre-validation, not this targeted fix.
   for (pkg in pkgs_to_pin) {
     conda_name <- paste0("r-", pkg)
     if (conda_name %in% existing_names) next
