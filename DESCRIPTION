@@ -2,10 +2,11 @@ Package: skiPatrol
 Title: R Interface to the Snowflake ML Platform
 Version: 0.2.0
 Authors@R: c(
-    person("Simon", "Field", email = "simon.field@snowflake.com", role = c("aut", "cre")),
-    person("Snowflake Inc.", role = "cph"))
-Author: Simon Field [aut, cre], Snowflake Inc. [cph]
-Maintainer: Simon Field <simon.field@snowflake.com>
+    person("Simon", "Field", email = "simon@hexfield.ai", role = c("aut", "cre")),
+    person("Snowflake Inc.", role = "cph"),
+    person("Posit Software, PBC", role = c("cph", "fnd")))
+Author: Simon Field [aut, cre], Snowflake Inc. [cph], Posit Software, PBC [cph, fnd]
+Maintainer: Simon Field <simon@hexfield.ai>
 Description: Provides native R functions for working with the Snowflake ML
     platform, including Model Registry (log, deploy, and serve R models),
     Feature Store (create and manage feature views using dplyr/dbplyr or SQL),

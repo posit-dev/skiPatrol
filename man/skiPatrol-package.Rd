@@ -19,11 +19,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Simon Field \email{simon.field@snowflake.com}
+\strong{Maintainer}: Simon Field \email{simon@hexfield.ai}
 
 Other contributors:
 \itemize{
   \item Snowflake Inc. [copyright holder]
+  \item Posit Software, PBC [copyright holder, funder]
 }
 
 }
