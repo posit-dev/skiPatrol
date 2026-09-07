@@ -38,6 +38,42 @@ test_that("sfr_monitor_source has correct class and fields", {
 })
 
 
+test_that("sfr_monitor_source supports classification via class columns", {
+  src <- sfr_monitor_source(
+    "DB.SC.TBL",
+    "TS",
+    prediction_class_columns = "PRED",
+    actual_class_columns = "ACTUAL",
+    id_columns = "ID"
+  )
+  expect_s3_class(src, "sfr_monitor_source")
+  expect_null(src$prediction_score_columns)
+  expect_equal(src$prediction_class_columns, "PRED")
+  expect_equal(src$actual_class_columns, "ACTUAL")
+})
+
+
+test_that("sfr_monitor_source requires score or class prediction columns", {
+  expect_error(
+    sfr_monitor_source("DB.SC.TBL", "TS"),
+    "prediction_score_columns.*prediction_class_columns"
+  )
+})
+
+
+test_that(".monitor_source_to_py_list threads class columns, omits unset score columns", {
+  src <- sfr_monitor_source(
+    "DB.SC.TBL", "TS",
+    prediction_class_columns = "PRED", actual_class_columns = "ACTUAL"
+  )
+  py_list <- .monitor_source_to_py_list(src)
+  expect_equal(py_list$prediction_class_columns, list("PRED"))
+  expect_equal(py_list$actual_class_columns, list("ACTUAL"))
+  expect_null(py_list$prediction_score_columns)
+  expect_null(py_list$actual_score_columns)
+})
+
+
 test_that("sfr_monitor_config has correct class and fields", {
   cfg <- sfr_monitor_config("M1", "v2", warehouse = "ML_WH", function_name = "score")
   expect_s3_class(cfg, "sfr_monitor_config")

@@ -96,11 +96,19 @@
 .monitor_source_to_py_list <- function(x) {
   out <- list(
     source = x$source,
-    timestamp_column = x$timestamp_column,
-    prediction_score_columns = as.list(x$prediction_score_columns)
+    timestamp_column = x$timestamp_column
   )
+  if (!is.null(x$prediction_score_columns)) {
+    out$prediction_score_columns <- as.list(x$prediction_score_columns)
+  }
+  if (!is.null(x$prediction_class_columns)) {
+    out$prediction_class_columns <- as.list(x$prediction_class_columns)
+  }
   if (!is.null(x$actual_score_columns)) {
     out$actual_score_columns <- as.list(x$actual_score_columns)
+  }
+  if (!is.null(x$actual_class_columns)) {
+    out$actual_class_columns <- as.list(x$actual_class_columns)
   }
   out$id_columns <- if (!is.null(x$id_columns)) {
     as.list(x$id_columns)
@@ -135,8 +143,20 @@
 #'
 #' @param source Character. Table or view name (optionally fully qualified).
 #' @param timestamp_column Character. Timestamp column in the source.
-#' @param prediction_score_columns Character vector of prediction score columns.
-#' @param actual_score_columns Optional character vector of actual score columns.
+#' @param prediction_score_columns Character vector of prediction score
+#'   columns. Use for regression tasks (continuous scores). Specify this or
+#'   `prediction_class_columns` (or both).
+#' @param prediction_class_columns Character vector of prediction class
+#'   columns. Use for classification tasks (discrete class labels) --
+#'   required instead of `prediction_score_columns` for a model logged with
+#'   `task = "TABULAR_BINARY_CLASSIFICATION"` or
+#'   `"TABULAR_MULTICLASS_CLASSIFICATION"`; passing score columns for a
+#'   classification model raises a SQL error from `sfr_add_monitor()`
+#'   ("Actual score column(s) were specified, but model was of task...").
+#' @param actual_score_columns Optional character vector of actual score
+#'   columns (regression).
+#' @param actual_class_columns Optional character vector of actual class
+#'   columns (classification).
 #' @param id_columns Optional character vector of ID columns (defaults to empty
 #'   when passed to the Python registry).
 #'
@@ -144,26 +164,57 @@
 #'
 #' @examples
 #' \dontrun{
+#' # Regression
 #' src <- sfr_monitor_source(
 #'   "MY_DB.MY_SCH.INFERENCE_LOG",
 #'   "EVENT_TIME",
 #'   prediction_score_columns = "PREDICTION"
+#' )
+#'
+#' # Classification
+#' src <- sfr_monitor_source(
+#'   "MY_DB.MY_SCH.INFERENCE_LOG",
+#'   "EVENT_TIME",
+#'   prediction_class_columns = "PREDICTION",
+#'   actual_class_columns = "ACTUAL"
 #' )
 #' }
 #'
 #' @export
 sfr_monitor_source <- function(source,
                                timestamp_column,
-                               prediction_score_columns,
+                               prediction_score_columns = NULL,
+                               prediction_class_columns = NULL,
                                actual_score_columns = NULL,
+                               actual_class_columns = NULL,
                                id_columns = NULL) {
+  if (is.null(prediction_score_columns) && is.null(prediction_class_columns)) {
+    cli::cli_abort(c(
+      "Specify {.arg prediction_score_columns} or {.arg prediction_class_columns}.",
+      "i" = "Score columns are for regression tasks; class columns are for classification tasks."
+    ))
+  }
   structure(
     list(
       source = as.character(source),
       timestamp_column = as.character(timestamp_column),
-      prediction_score_columns = unname(as.character(prediction_score_columns)),
+      prediction_score_columns = if (!is.null(prediction_score_columns)) {
+        unname(as.character(prediction_score_columns))
+      } else {
+        NULL
+      },
+      prediction_class_columns = if (!is.null(prediction_class_columns)) {
+        unname(as.character(prediction_class_columns))
+      } else {
+        NULL
+      },
       actual_score_columns = if (!is.null(actual_score_columns)) {
         unname(as.character(actual_score_columns))
+      } else {
+        NULL
+      },
+      actual_class_columns = if (!is.null(actual_class_columns)) {
+        unname(as.character(actual_class_columns))
       } else {
         NULL
       },
@@ -181,13 +232,17 @@ sfr_monitor_source <- function(source,
 #' @export
 print.sfr_monitor_source <- function(x, ...) {
   cli::cli_text("<{.cls sfr_monitor_source}>")
-  cli::cli_dl(list(
+  fields <- list(
     source = cli::format_inline("{.val {x$source}}"),
-    timestamp_column = cli::format_inline("{.val {x$timestamp_column}}"),
-    prediction_score_columns = cli::format_inline(
-      "{.val {x$prediction_score_columns}}"
-    )
-  ))
+    timestamp_column = cli::format_inline("{.val {x$timestamp_column}}")
+  )
+  if (!is.null(x$prediction_score_columns)) {
+    fields$prediction_score_columns <- cli::format_inline("{.val {x$prediction_score_columns}}")
+  }
+  if (!is.null(x$prediction_class_columns)) {
+    fields$prediction_class_columns <- cli::format_inline("{.val {x$prediction_class_columns}}")
+  }
+  cli::cli_dl(fields)
   invisible(x)
 }
 

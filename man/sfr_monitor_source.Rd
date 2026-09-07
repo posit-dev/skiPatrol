@@ -7,8 +7,10 @@
 sfr_monitor_source(
   source,
   timestamp_column,
-  prediction_score_columns,
+  prediction_score_columns = NULL,
+  prediction_class_columns = NULL,
   actual_score_columns = NULL,
+  actual_class_columns = NULL,
   id_columns = NULL
 )
 }
@@ -17,9 +19,23 @@ sfr_monitor_source(
 
 \item{timestamp_column}{Character. Timestamp column in the source.}
 
-\item{prediction_score_columns}{Character vector of prediction score columns.}
+\item{prediction_score_columns}{Character vector of prediction score
+columns. Use for regression tasks (continuous scores). Specify this or
+\code{prediction_class_columns} (or both).}
 
-\item{actual_score_columns}{Optional character vector of actual score columns.}
+\item{prediction_class_columns}{Character vector of prediction class
+columns. Use for classification tasks (discrete class labels) --
+required instead of \code{prediction_score_columns} for a model logged with
+\code{task = "TABULAR_BINARY_CLASSIFICATION"} or
+\code{"TABULAR_MULTICLASS_CLASSIFICATION"}; passing score columns for a
+classification model raises a SQL error from \code{sfr_add_monitor()}
+("Actual score column(s) were specified, but model was of task...").}
+
+\item{actual_score_columns}{Optional character vector of actual score
+columns (regression).}
+
+\item{actual_class_columns}{Optional character vector of actual class
+columns (classification).}
 
 \item{id_columns}{Optional character vector of ID columns (defaults to empty
 when passed to the Python registry).}
@@ -33,10 +49,19 @@ Pass the result to \code{sfr_add_monitor()} as \code{source_config}.
 }
 \examples{
 \dontrun{
+# Regression
 src <- sfr_monitor_source(
   "MY_DB.MY_SCH.INFERENCE_LOG",
   "EVENT_TIME",
   prediction_score_columns = "PREDICTION"
+)
+
+# Classification
+src <- sfr_monitor_source(
+  "MY_DB.MY_SCH.INFERENCE_LOG",
+  "EVENT_TIME",
+  prediction_class_columns = "PREDICTION",
+  actual_class_columns = "ACTUAL"
 )
 }
 
