@@ -115,7 +115,14 @@ def _get_feature_store(
     creation_mode: str = "FAIL_IF_NOT_EXIST",
 ):
     """
-    Get or create a FeatureStore instance, cached by (db, schema, warehouse, mode).
+    Get or create a FeatureStore instance, cached by
+    (session, db, schema, warehouse, mode).
+
+    session is part of the cache key -- Positron/Workbench can keep this
+    process alive across multiple sfr_connect() calls, and db/schema/
+    warehouse are commonly identical across a reconnect to the same
+    project, so without it a stale FeatureStore bound to a dead or
+    unrelated session would be returned silently.
 
     Args:
         session: Active Snowpark Session.
@@ -127,7 +134,7 @@ def _get_feature_store(
     Returns:
         FeatureStore instance.
     """
-    cache_key = (database, schema, default_warehouse, creation_mode)
+    cache_key = (session, database, schema, default_warehouse, creation_mode)
     if cache_key in _fs_cache:
         return _fs_cache[cache_key]
 
@@ -658,7 +665,9 @@ def generate_training_set(
 
 # Module-level cache for Dataset objects so sfr_log_model can retrieve
 # a Snowpark DataFrame for lineage without re-opening the Dataset.
-_DATASET_CACHE: Dict[str, Any] = {}
+# Keyed on session too -- see _get_feature_store's docstring for why a
+# name:version key alone isn't safe across a reconnect in this process.
+_DATASET_CACHE: Dict[tuple, Any] = {}
 
 
 def generate_dataset(
@@ -746,9 +755,9 @@ def generate_dataset(
         actual_version = str(ds.selected_version.name)
     else:
         actual_version = version or name
-    cache_key = f"{name}:{actual_version}"
+    cache_key = (session, name, actual_version)
     _DATASET_CACHE[cache_key] = ds
-    print(f"[skiPatrol] Dataset cached: {cache_key} "
+    print(f"[skiPatrol] Dataset cached: {name}:{actual_version} "
           f"(type={type(ds).__name__})")
 
     # Use Snowpark DataFrame path instead of ds.read.to_pandas() to
@@ -765,9 +774,9 @@ def generate_dataset(
     }
 
 
-def get_cached_dataset(name: str, version: str):
+def get_cached_dataset(session, name: str, version: str):
     """Retrieve a cached Dataset object for use as sample_input_data."""
-    cache_key = f"{name}:{version}"
+    cache_key = (session, name, version)
     return _DATASET_CACHE.get(cache_key)
 
 

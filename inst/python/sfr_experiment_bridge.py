@@ -4,8 +4,12 @@ Snowflake Experiment Tracking Bridge for R
 
 Python backend for skiPatrol::R/experiments.R.
 
-The ExperimentTracking class is a singleton -- only one active experiment/run
-context at a time. This module manages the global instance.
+snowflake-ml-python's ExperimentTracking is one-per-session, not a true
+process-wide singleton -- Positron/Workbench can keep this Python process
+alive across multiple sfr_connect() calls, each producing a distinct
+session. This module therefore caches one instance per session rather than
+one instance for the whole process, so a session switch can't silently
+keep logging against the previous one.
 """
 
 import importlib.metadata
@@ -29,16 +33,17 @@ def _requires(min_version, feature_name):
         )
 
 
-_EXP_INSTANCE = None
+_EXP_INSTANCES = {}
 
 
 def _get_or_create_exp(session, database_name=None, schema_name=None):
-    global _EXP_INSTANCE
     _requires((1, 19, 0), "Experiment Tracking")
     from snowflake.ml.experiment import ExperimentTracking
-    if _EXP_INSTANCE is None:
-        _EXP_INSTANCE = ExperimentTracking(session=session)
-    return _EXP_INSTANCE
+    exp = _EXP_INSTANCES.get(session)
+    if exp is None:
+        exp = ExperimentTracking(session=session)
+        _EXP_INSTANCES[session] = exp
+    return exp
 
 
 def set_experiment(session, name, database_name=None, schema_name=None):
@@ -125,6 +130,5 @@ def delete_experiment(session, name):
 
 
 def reset_instance():
-    """Reset the singleton for testing purposes."""
-    global _EXP_INSTANCE
-    _EXP_INSTANCE = None
+    """Clear the per-session cache, for testing purposes."""
+    _EXP_INSTANCES.clear()

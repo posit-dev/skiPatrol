@@ -552,8 +552,9 @@ def registry_log_model(
         print(f"[skiPatrol] Dataset ref: name={ds_name}, version={ds_version}")
         if ds_name and ds_version:
             from sfr_features_bridge import get_cached_dataset, _DATASET_CACHE
-            print(f"[skiPatrol] Dataset cache keys: {list(_DATASET_CACHE.keys())}")
-            ds = get_cached_dataset(ds_name, ds_version)
+            cached_names = [f"{k[1]}:{k[2]}" for k in _DATASET_CACHE.keys()]
+            print(f"[skiPatrol] Dataset cache keys: {cached_names}")
+            ds = get_cached_dataset(session, ds_name, ds_version)
             if ds is not None:
                 lineage_sample = ds.read.to_snowpark_dataframe()
                 if input_cols:
