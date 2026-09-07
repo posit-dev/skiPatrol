@@ -16,3 +16,6 @@
 ^renv$
 ^renv\.lock$
 ^\.Rprofile$
+^connections\.toml$
+^\.env$
+^\.env\..*$
