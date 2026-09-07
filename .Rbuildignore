@@ -8,6 +8,7 @@
 ^\.github$
 ^\.lintr$
 ^tests/integration$
+^vignettes/.*\.log$
 ^pyproject\.toml$
 ^uv\.lock$
 ^\.venv$

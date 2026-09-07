@@ -6,6 +6,7 @@ docs/
 *.o
 *.so
 *.dll
+*.log
 
 # Secrets and credentials
 *.pem
