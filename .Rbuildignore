@@ -20,3 +20,5 @@
 ^\.env$
 ^\.env\..*$
 ^tests/notebooks$
+^guide$
+^\.pytest_cache$
