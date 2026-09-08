@@ -1,0 +1,203 @@
+---
+title: "skiPatrol Quickstart"
+subtitle: "Connect, query, write tables, and bridge to DBI/dbplyr"
+format: html
+---
+
+A first tour of `skiPatrol`: connect to Snowflake, run queries, move a
+`data.frame` in and out of a table, and hand off to `skiLift` when you want
+DBI or `dbplyr`.
+
+**Runs unmodified in three environments** — a local R session (RStudio,
+Positron, VS Code, terminal), the Posit Native App, and Snowflake Workspace
+Notebooks — via `sfr_connect()`'s auto-detection. Configure it, if you need
+to at all, through `_config.R`.
+
+**What you'll do:**
+
+1. Connect
+2. Run queries and move data
+3. Aggregate in Snowflake rather than in R
+4. Bridge to DBI and `dbplyr` via `skiLift` *(optional)*
+5. Plot the results
+6. Clean up
+
+## Installation
+
+One time only, and not needed at all in a Workspace Notebook or the Posit
+Native App if `skiPatrol` is already installed there.
+
+```r
+# install.packages("pak")
+pak::pak("posit-dev/skiPatrol")
+
+# skiPatrol talks to the Snowflake ML platform through Python. This installs
+# the Python side; it is a no-op if the dependencies are already present.
+skiPatrol::sfr_install_python_deps()
+```
+
+## 1. Connect
+
+```{r}
+#| label: setup
+library(skiPatrol)
+source("_config.R")
+```
+
+`sfr_connect()` works out how to authenticate on its own — a local
+`connections.toml` profile, the Native App's OAuth profile, or the ambient
+Workspace Notebook session. You do not need to tell it which environment it
+is in.
+
+Database, schema and warehouse *are* passed explicitly, in every environment.
+That is deliberate rather than defensive: several skiPatrol calls (notably
+`sfr_write_table()`) issue unqualified SQL that depends on the session's
+*current* database, and auto-detection alone does not always set one.
+
+```{r}
+#| label: connect
+conn <- sfr_connect(
+  name      = SFR_CONNECTION_NAME,
+  warehouse = SFR_WAREHOUSE,
+  database  = SFR_DATABASE,
+  schema    = SFR_SCHEMA
+)
+conn
+```
+
+## 2. Queries and table operations
+
+`sfr_query()` returns a plain `data.frame`.
+
+```{r}
+#| label: query
+sfr_query(conn, "SELECT CURRENT_TIMESTAMP() AS now, CURRENT_USER() AS user_name")
+```
+
+Table names go through `sfr_fqn()`, which qualifies a bare name against the
+connection's current database and schema. Fully qualified names are used
+throughout these examples so that a document behaves the same way whether or
+not the session happens to have a database set.
+
+```{r}
+#| label: write-table
+sfr_write_table(conn, sfr_fqn(conn, "SFR_MTCARS"), mtcars, overwrite = TRUE)
+```
+
+```{r}
+#| label: list-tables
+head(sfr_list_tables(conn), 10)
+```
+
+```{r}
+#| label: read-table
+df <- sfr_read_table(conn, sfr_fqn(conn, "SFR_MTCARS"))
+head(df, 5)
+```
+
+```{r}
+#| label: describe
+sfr_list_fields(conn, sfr_fqn(conn, "SFR_MTCARS"))
+```
+
+```{r}
+#| label: exists
+sfr_table_exists(conn, sfr_fqn(conn, "SFR_MTCARS"))
+```
+
+## 3. Aggregate in Snowflake
+
+Push the work to the warehouse and bring back only the result. Note that
+column names come back uppercase — that is Snowflake's convention, not
+something skiPatrol imposes.
+
+```{r}
+#| label: aggregate
+sfr_query(conn, paste(
+  "SELECT CYL, COUNT(*) AS n, AVG(MPG) AS avg_mpg, AVG(HP) AS avg_hp",
+  "FROM", sfr_fqn(conn, "SFR_MTCARS"),
+  "GROUP BY CYL ORDER BY CYL"
+))
+```
+
+## 4. DBI and dbplyr via skiLift *(optional)*
+
+`skiPatrol` covers the ML platform; `skiLift` is the companion package that
+provides DBI-compliant database access, `dbplyr` translation, and the
+RStudio/Positron Connections Pane. `sfr_dbi_connection()` hands you a
+`skiLift` connection built from the `sfr_connection` you already have, so you
+do not authenticate twice.
+
+You can also create one directly with
+`DBI::dbConnect(skiLift::Snowflake(), ...)` if you have no `skiPatrol`
+connection to begin with.
+
+```{r}
+#| label: dbi
+#| eval: !expr requireNamespace("skiLift", quietly = TRUE)
+library(skiLift)
+library(DBI)
+
+dbi_con <- sfr_dbi_connection(conn)
+
+dbGetQuery(dbi_con, "SELECT 42 AS answer")
+```
+
+```{r}
+#| label: dbplyr
+#| eval: !expr requireNamespace("skiLift", quietly = TRUE) && requireNamespace("dbplyr", quietly = TRUE)
+library(dplyr)
+library(dbplyr)
+
+# A lazy reference -- no data moves until collect().
+cars_tbl <- tbl(dbi_con, I(sfr_fqn(conn, "SFR_MTCARS")))
+
+cars_tbl |>
+  group_by(CYL) |>
+  summarise(
+    n       = n(),
+    avg_mpg = mean(MPG, na.rm = TRUE),
+    avg_hp  = mean(HP, na.rm = TRUE)
+  ) |>
+  arrange(CYL) |>
+  collect()
+```
+
+## 5. Plot
+
+```{r}
+#| label: plot
+#| fig-width: 7.29
+#| fig-height: 4.69
+library(ggplot2)
+
+ggplot(df, aes(x = WT, y = MPG, color = factor(CYL))) +
+  geom_point(size = 3) +
+  labs(
+    title = "MPG vs weight by cylinder count",
+    x     = "Weight (1000 lbs)",
+    y     = "Miles per gallon",
+    color = "Cylinders"
+  ) +
+  theme_minimal()
+```
+
+## 6. Clean up
+
+Left commented so that running the whole document twice does not delete
+anything unexpectedly.
+
+```{r}
+#| label: cleanup
+# sfr_execute(conn, paste("DROP TABLE IF EXISTS", sfr_fqn(conn, "SFR_MTCARS")))
+# sfr_disconnect(conn)
+```
+
+## Where to go next
+
+| Document | Covers |
+|---|---|
+| `feature-store.qmd` | Entities, feature views, training data |
+| `model-registry.qmd` | Logging, versioning, and deploying R models |
+| `model-monitoring.qmd` | Drift and performance monitoring |
+| `forecasting.qmd` | An ARIMA worked example, end to end |
