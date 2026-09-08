@@ -4,7 +4,7 @@
 #' Execute a SQL query and return results
 #'
 #' Runs a SQL query against Snowflake and returns the result as an R
-#' data.frame. When an `skiLift` DBI connection is available on the
+#' data.frame. When a `skiLift` DBI connection is available on the
 #' `sfr_connection` (see [sfr_dbi_connection()]), the query is executed
 #' via the pure-R REST API path. Otherwise, it falls back to the Python
 #' Snowpark bridge.
@@ -143,7 +143,7 @@ sfr_result_scan <- function(conn,
 #' Execute a SQL statement for side effects
 #'
 #' Runs DDL, DML, or other SQL that doesn't return a result set.
-#' When an `skiLift` DBI connection is available, the statement
+#' When a `skiLift` DBI connection is available, the statement
 #' is executed via the pure-R REST API path. Otherwise falls back to
 #' the Python Snowpark bridge.
 #'

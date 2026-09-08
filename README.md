@@ -48,7 +48,7 @@ Vignettes: `vignette("rstudio-spcs")`, `vignette("spcs-custom-services", package
 
 ### DBI / dbplyr
 
-For full DBI compliance, `dbplyr` integration, and the RStudio Connections Pane, use the companion **skiLift** package. You can obtain an `skiLift` connection from an existing `sfr_connection`:
+For full DBI compliance, `dbplyr` integration, and the RStudio Connections Pane, use the companion **skiLift** package. You can obtain a `skiLift` connection from an existing `sfr_connection`:
 
 ```r
 dbi_con <- sfr_dbi_connection(conn)  # lazy, cached on first call

@@ -24,7 +24,7 @@ A data.frame with query results.
 }
 \description{
 Runs a SQL query against Snowflake and returns the result as an R
-data.frame. When an \code{skiLift} DBI connection is available on the
+data.frame. When a \code{skiLift} DBI connection is available on the
 \code{sfr_connection} (see \code{\link[=sfr_dbi_connection]{sfr_dbi_connection()}}), the query is executed
 via the pure-R REST API path. Otherwise, it falls back to the Python
 Snowpark bridge.

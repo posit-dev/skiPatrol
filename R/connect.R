@@ -697,9 +697,9 @@ sfr_has_connection <- function(...) {
 }
 
 
-#' Get an skiLift DBI connection from an sfr_connection
+#' Get a skiLift DBI connection from an sfr_connection
 #'
-#' Returns an `skiLift::SnowflakeConnection` that can be used with
+#' Returns a `skiLift::SnowflakeConnection` that can be used with
 #' standard DBI methods (`dbGetQuery`, `dbWriteTable`, etc.) and dbplyr.
 #' The connection is created lazily on first call and cached on the
 #' `sfr_connection` object.
@@ -707,7 +707,7 @@ sfr_has_connection <- function(...) {
 #' Requires the `skiLift` package to be installed.
 #'
 #' @param conn An `sfr_connection` object from [sfr_connect()].
-#' @returns An `skiLift::SnowflakeConnection` object.
+#' @returns A `skiLift::SnowflakeConnection` object.
 #'
 #' @examples
 #' \dontrun{

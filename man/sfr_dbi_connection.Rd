@@ -2,7 +2,7 @@
 % Please edit documentation in R/connect.R
 \name{sfr_dbi_connection}
 \alias{sfr_dbi_connection}
-\title{Get an skiLift DBI connection from an sfr_connection}
+\title{Get a skiLift DBI connection from an sfr_connection}
 \usage{
 sfr_dbi_connection(conn)
 }
@@ -10,10 +10,10 @@ sfr_dbi_connection(conn)
 \item{conn}{An \code{sfr_connection} object from \code{\link[=sfr_connect]{sfr_connect()}}.}
 }
 \value{
-An \code{skiLift::SnowflakeConnection} object.
+A \code{skiLift::SnowflakeConnection} object.
 }
 \description{
-Returns an \code{skiLift::SnowflakeConnection} that can be used with
+Returns a \code{skiLift::SnowflakeConnection} that can be used with
 standard DBI methods (\code{dbGetQuery}, \code{dbWriteTable}, etc.) and dbplyr.
 The connection is created lazily on first call and cached on the
 \code{sfr_connection} object.

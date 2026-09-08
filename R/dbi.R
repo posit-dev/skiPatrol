@@ -9,13 +9,13 @@
 #
 #   con <- DBI::dbConnect(skiLift::Snowflake(), name = "my_profile")
 #
-# Or obtain an skiLift connection from an existing sfr_connection:
+# Or obtain a skiLift connection from an existing sfr_connection:
 #
 #   dbi_con <- sfr_dbi_connection(sfr_conn)
 
 #' Disconnect a Snowflake connection
 #'
-#' Closes the underlying Snowpark session. If an skiLift DBI connection
+#' Closes the underlying Snowpark session. If a skiLift DBI connection
 #' is also attached, it is disconnected too.
 #'
 #' @param conn An `sfr_connection` object.

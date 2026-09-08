@@ -138,7 +138,7 @@ can bridge from an `sfr_connection` to a DBI connection with
 `sfr_dbi_connection()`:
 
 ```r
-# Obtain an skiLift DBI connection (requires skiLift to be installed)
+# Obtain a skiLift DBI connection (requires skiLift to be installed)
 dbi_con <- sfr_dbi_connection(conn)
 
 library(DBI)
