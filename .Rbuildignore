@@ -22,3 +22,4 @@
 ^tests/notebooks$
 ^guide$
 ^\.pytest_cache$
+^CODE_OF_CONDUCT\.md$
