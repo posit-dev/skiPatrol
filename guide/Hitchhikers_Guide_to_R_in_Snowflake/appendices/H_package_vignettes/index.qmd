@@ -19,7 +19,7 @@ Vignette **source** lives in each package repo (`skiPatrol/vignettes/`, `skiLift
 
 ## skiPatrol vignettes (on this site) {#sec-skipatrol}
 
-These open on the **same** Hitchhiker's Guide GitHub Pages host under `vignettes/skiPatrol/`:
+These open on the **same** GitHub Pages host as the rest of the guide, under `vignettes/skiPatrol/`:
 
 | Vignette | HTML | Guide chapter |
 |----------|------|---------------|

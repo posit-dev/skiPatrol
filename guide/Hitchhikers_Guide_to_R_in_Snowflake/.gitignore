@@ -1,2 +1,8 @@
 /.quarto/
 **/*.quarto_ipynb
+
+# quarto's book renderer writes a loose index.html next to each chapter's
+# index.qmd, in addition to the real output-dir (_site/) -- every one of
+# these is generated, never hand-authored (verified 9 Sep: zero were
+# tracked in git before this rule). Bit twice by this locally; guard it.
+**/index.html

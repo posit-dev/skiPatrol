@@ -1,5 +1,5 @@
 ---
-subtitle: "Don't Panic — A practical guide to R on Snowflake"
+subtitle: "A practical guide to R on Snowflake"
 ---
 
 ## Welcome {.unnumbered}
@@ -7,7 +7,7 @@ subtitle: "Don't Panic — A practical guide to R on Snowflake"
 This guide helps R users run statistical modeling, forecasting, and ML workflows **on Snowflake** — from **RStudio, Posit, VS Code**, or **Workspace Notebooks** — using three open-source packages.
 
 ::: {.callout-important}
-## Don't Panic
+## Where to Start
 
 If you are new to Snowflake, start with the [Platform Primer](01_snowflake_platform/index.qmd) and [Glossary](appendices/F_glossary/index.qmd). If you are new to R on Snowflake but know Snowflake already, jump to [Architecture](02_architecture/index.qmd) or [Local R Setup](03_local_r_setup/index.qmd).
 :::
