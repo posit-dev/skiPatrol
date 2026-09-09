@@ -233,8 +233,16 @@ sfr_reinstall <- function(path = Sys.getenv("SKIPATROL_PATH"),
 #' Supports multiple authentication methods:
 #'
 #' - **Auto-detect:** In Workspace Notebooks, wraps the active Snowpark session.
-#'   Locally, reads `connections.toml` / `config.toml` (via `snowflakeauth` if
-#'   installed, or directly via RcppTOML / Python toml as fallback).
+#'   In the Posit Team Native App (Native App) or Posit Workbench, both of
+#'   which write their own OAuth profile into `connections.toml` before your
+#'   code runs, `sfr_connect()` can be called with **no arguments at all** --
+#'   it finds that profile and authenticates as the Snowflake user who
+#'   launched the session, not a shared service account, in that user's
+#'   default role, warehouse, and database unless you override
+#'   `warehouse`/`database`/`schema`/`role` explicitly. Outside those two
+#'   environments, locally reads `connections.toml` / `config.toml` (via
+#'   `snowflakeauth` if installed, or directly via RcppTOML / Python toml as
+#'   fallback).
 #' - **Named connection:** Pass `name` to select a connection from
 #'   `connections.toml`.
 #' - **Explicit parameters:** Pass `account`, `user`, `authenticator`, etc.

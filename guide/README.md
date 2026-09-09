@@ -4,7 +4,7 @@ Quarto book source for the end-to-end implementation guide (Workspace, skiLift, 
 
 | | |
 |---|---|
-| **Published site** | [snowflake-labs.github.io/skiPatrol](https://snowflake-labs.github.io/skiPatrol/) |
+| **Published site** | [posit-dev.github.io/skiPatrol](https://posit-dev.github.io/skiPatrol/) |
 | **Edit on GitHub** | [guide/Hitchhikers_Guide_to_R_in_Snowflake](https://github.com/posit-dev/skiPatrol/tree/main/guide/Hitchhikers_Guide_to_R_in_Snowflake) |
 | **CI** | [publish-guide.yml](../.github/workflows/publish-guide.yml) |
 

@@ -353,7 +353,7 @@ Required for correct point-in-time joins — the store uses timestamps to pick f
 
 ### Rollup and tiled aggregates
 
-For **rollup Feature Views** over event streams (platform-managed tiles and lookback windows — e.g. sum of amount over 1 day), declare aggregates with `sfr_feature()` and set `feature_granularity` instead of writing every window in SQL. See [Authoring Feature Views — Rollup and tiled Feature Views](../17b_authoring_feature_views/index.qmd#sec-rollup-tiles) and the [`feature-store` vignette](https://snowflake-labs.github.io/skiPatrol/articles/feature-store.html).
+For **rollup Feature Views** over event streams (platform-managed tiles and lookback windows — e.g. sum of amount over 1 day), declare aggregates with `sfr_feature()` and set `feature_granularity` instead of writing every window in SQL. See [Authoring Feature Views — Rollup and tiled Feature Views](../17b_authoring_feature_views/index.qmd#sec-rollup-tiles) and the [`feature-store` vignette](https://posit-dev.github.io/skiPatrol/articles/feature-store.html).
 
 ---
 

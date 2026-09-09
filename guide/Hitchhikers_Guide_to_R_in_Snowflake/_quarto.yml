@@ -5,7 +5,7 @@ project:
     - scripts/copy_vignette_html_to_site.sh
 
 website:
-  site-url: https://snowflake-labs.github.io/skiPatrol/
+  site-url: https://posit-dev.github.io/skiPatrol/
 
 book:
   title: "The Hitchhiker's Guide to R in Snowflake"

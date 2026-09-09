@@ -7,7 +7,7 @@ subtitle: "Browser-readable API walkthroughs from skiPatrol and skiLift"
 
 The narrative chapters in this guide are the **learning path**. Package **vignettes** are the **API reference walkthroughs** — longer, example-heavy documents shipped with each R package (`vignettes/*.Rmd` → `inst/doc/*.html`).
 
-This appendix links vignettes on the **same** GitHub Pages host (`snowflake-labs.github.io/skiPatrol/vignettes/...`) so they render in the browser like normal HTML — not as raw source.
+This appendix links vignettes on the **same** GitHub Pages host (`posit-dev.github.io/skiPatrol/vignettes/...`) so they render in the browser like normal HTML — not as raw source.
 
 ::: {.callout-note}
 ## Source of truth

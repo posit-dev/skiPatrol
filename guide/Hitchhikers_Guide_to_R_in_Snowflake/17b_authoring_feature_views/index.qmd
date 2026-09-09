@@ -680,4 +680,4 @@ When several views join into one training set, enable **`auto_prefix = TRUE`** i
 - [Training Data in R](../17a_training_data_in_r/index.qmd) — read materialized training into R (ADBC, VECTOR, pipelines)  
 - [skiLift: Query](../13_skilift_query/index.qmd) — dbplyr push-down, windows, `compute()`  
 - [Model Registry](../18_model_registry/index.qmd) — lineage from `sfr_generate_dataset()`  
-- Vignette [`feature-store`](https://snowflake-labs.github.io/skiPatrol/articles/feature-store.html) — full API reference including advanced registration options
+- Vignette [`feature-store`](https://posit-dev.github.io/skiPatrol/articles/feature-store.html) — full API reference including advanced registration options

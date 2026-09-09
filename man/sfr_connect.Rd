@@ -63,8 +63,16 @@ Supports multiple authentication methods:
 \details{
 \itemize{
 \item \strong{Auto-detect:} In Workspace Notebooks, wraps the active Snowpark session.
-Locally, reads \code{connections.toml} / \code{config.toml} (via \code{snowflakeauth} if
-installed, or directly via RcppTOML / Python toml as fallback).
+In the Posit Team Native App (Native App) or Posit Workbench, both of
+which write their own OAuth profile into \code{connections.toml} before your
+code runs, \code{sfr_connect()} can be called with \strong{no arguments at all} --
+it finds that profile and authenticates as the Snowflake user who
+launched the session, not a shared service account, in that user's
+default role, warehouse, and database unless you override
+\code{warehouse}/\code{database}/\code{schema}/\code{role} explicitly. Outside those two
+environments, locally reads \code{connections.toml} / \code{config.toml} (via
+\code{snowflakeauth} if installed, or directly via RcppTOML / Python toml as
+fallback).
 \item \strong{Named connection:} Pass \code{name} to select a connection from
 \code{connections.toml}.
 \item \strong{Explicit parameters:} Pass \code{account}, \code{user}, \code{authenticator}, etc.

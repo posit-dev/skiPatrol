@@ -42,7 +42,7 @@ For a **native RStudio IDE** inside Snowflake (not `%%R` notebooks), use the dep
 system.file("rstudio-spcs", package = "skiPatrol")
 ```
 
-Walkthrough: [Hitchhiker's Guide — RStudio Server on SPCS](https://snowflake-labs.github.io/skiPatrol/04b_rstudio_spcs/index.html).  
+Walkthrough: [Hitchhiker's Guide — RStudio Server on SPCS](https://posit-dev.github.io/skiPatrol/04b_rstudio_spcs/index.html).  
 Vignettes: `vignette("rstudio-spcs")`, `vignette("spcs-custom-services", package = "skiLift")`.
 
 ### DBI / dbplyr
