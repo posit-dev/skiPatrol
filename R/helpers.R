@@ -364,3 +364,35 @@ sfr_check_environment <- function() {
 
   invisible(checks)
 }
+
+
+# ---------------------------------------------------------------------------
+# Environment detection
+# ---------------------------------------------------------------------------
+
+#' Detect whether we are running inside a Snowflake Workspace / SPCS container
+#'
+#' Determined from the environment itself, never from whether a Snowpark
+#' session happens to exist. `get_active_session()` returns *any* live session
+#' in the process -- including one this package created moments earlier -- so
+#' using it as an environment probe misreports a laptop as a Workspace on the
+#' second connection in a shared R session.
+#'
+#' `SNOWFLAKE_HOST` is required rather than merely sufficient: inside SPCS all
+#' traffic must go via the internal gateway, and the session token is only
+#' valid against it. A token with no host is not a usable Workspace.
+#'
+#' The token itself may arrive as a file or, in some runtimes, as an
+#' environment variable; either satisfies the second condition.
+#'
+#' Requiring `SNOWFLAKE_HOST` is also what keeps this disjoint from the Posit
+#' Team Native App, which does not set it (finding U3) and is authenticated via
+#' the profile-driven OAuth path in `sfr_connect()` Strategy 0 instead.
+#'
+#' @returns `TRUE` when running inside a Workspace Notebook or SPCS container.
+#' @noRd
+.sfr_is_workspace <- function() {
+  nzchar(Sys.getenv("SNOWFLAKE_HOST", "")) &&
+    (file.exists("/snowflake/session/token") ||
+       nzchar(Sys.getenv("SNOWFLAKE_TOKEN", "")))
+}

@@ -322,14 +322,37 @@ sfr_connect <- function(name = NULL,
     auth_method <- "external_session"
     cli::cli_inform("Connected via an externally supplied Snowpark session.")
   } else {
-    # Attempt Workspace Notebook auto-detect first
-    session <- tryCatch(
-      {
-        bridge <- get_bridge_module("sfr_connect_bridge")
-        bridge$get_active_session()
-      },
-      error = function(e) NULL
-    )
+    # Workspace Notebook auto-detect.
+    #
+    # The environment is determined from the environment, not from whether a
+    # Snowpark session exists. `get_active_session()` returns any live session
+    # in the process, including one a previous `sfr_connect()` call in this
+    # same R session created -- so a second connection on a laptop was
+    # misreported as a Workspace, `connections.toml` was never read, and
+    # `account`/`user` came back empty. That surfaced later as a misleading
+    # "Key-pair auth requires private_key_path" error from
+    # sfr_dbi_connection(). Reported by Chetan Deva (Posit).
+    #
+    # Jupyter concealed this by giving every notebook its own kernel, so the
+    # second connection never saw the first. Positron, Workbench and the
+    # Native App IDE share a single R session, where it reproduces
+    # immediately.
+    #
+    # Probing the environment first also means `get_active_session()` is only
+    # ever called somewhere it can legitimately succeed. Note this is a
+    # different concern from the explicit `session =` argument handled above:
+    # that supplies a session deliberately, this stops us adopting one by
+    # accident.
+    session <- NULL
+    if (.sfr_is_workspace()) {
+      session <- tryCatch(
+        {
+          bridge <- get_bridge_module("sfr_connect_bridge")
+          bridge$get_active_session()
+        },
+        error = function(e) NULL
+      )
+    }
 
     if (!is.null(session)) {
       # Workspace Notebook environment
