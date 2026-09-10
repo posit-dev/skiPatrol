@@ -11,3 +11,8 @@
 # it fresh in CI and uploads it as a Pages artifact, so it never needs to be
 # tracked. Same class of cruft as the index.html rule above.
 /_site/
+
+# Quarto's shared JS/CSS bundle. Written next to the project (not only into
+# output-dir) by `quarto preview` and by a plain render, entirely generated,
+# and regenerated on every build. Same class as _site/ and index.html above.
+/site_libs/
