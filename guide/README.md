@@ -1,19 +1,19 @@
-# The Hitchhiker's Guide to R in Snowflake
+# The Piste Guide to R and Snowflake
 
 Quarto book source for the end-to-end implementation guide (Workspace, skiLift, skiPatrol).
 
 | | |
 |---|---|
 | **Published site** | [posit-dev.github.io/skiPatrol](https://posit-dev.github.io/skiPatrol/) |
-| **Edit on GitHub** | [guide/Hitchhikers_Guide_to_R_in_Snowflake](https://github.com/posit-dev/skiPatrol/tree/main/guide/Hitchhikers_Guide_to_R_in_Snowflake) |
+| **Edit on GitHub** | [guide/Piste_Guide_to_R_and_Snowflake](https://github.com/posit-dev/skiPatrol/tree/main/guide/Piste_Guide_to_R_and_Snowflake) |
 | **CI** | [publish-guide.yml](../.github/workflows/publish-guide.yml) |
 
 ## Local render
 
-From the monorepo, source lives at `guide/Hitchhikers_Guide_to_R_in_Snowflake/` (synced here on public push).
+From the monorepo, source lives at `guide/Piste_Guide_to_R_and_Snowflake/` (synced here on public push).
 
 ```bash
-cd guide/Hitchhikers_Guide_to_R_in_Snowflake
+cd guide/Piste_Guide_to_R_and_Snowflake
 quarto render --to html --no-execute
 quarto preview
 ```

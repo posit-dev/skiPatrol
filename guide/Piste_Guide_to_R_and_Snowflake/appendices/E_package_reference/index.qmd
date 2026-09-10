@@ -84,6 +84,6 @@ After install: `browseVignettes("skiPatrol")`
 
 ## This guide {#sec-guide}
 
-**A Comprehensive Guide to R in Snowflake** — narrative documentation published from `guide/Hitchhikers_Guide_to_R_in_Snowflake/`.
+**The Piste Guide to R and Snowflake** — narrative documentation published from `guide/Piste_Guide_to_R_and_Snowflake/`.
 
 Feedback: open issues on the guide repository when published to Snowflake-Labs.

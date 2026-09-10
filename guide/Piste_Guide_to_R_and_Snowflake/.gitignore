@@ -6,3 +6,8 @@
 # these is generated, never hand-authored (verified 9 Sep: zero were
 # tracked in git before this rule). Bit twice by this locally; guard it.
 **/index.html
+
+# Rendered book output. output-dir in _quarto.yml; publish-guide.yml renders
+# it fresh in CI and uploads it as a Pages artifact, so it never needs to be
+# tracked. Same class of cruft as the index.html rule above.
+/_site/

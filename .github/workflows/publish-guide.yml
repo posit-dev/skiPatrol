@@ -1,5 +1,5 @@
-# Publish The Hitchhiker's Guide to R in Snowflake (Quarto book) to GitHub Pages.
-# Source: guide/Hitchhikers_Guide_to_R_in_Snowflake/ (synced from monorepo guide/).
+# Publish The Piste Guide to R and Snowflake (Quarto book) to GitHub Pages.
+# Source: guide/Piste_Guide_to_R_and_Snowflake/ (synced from monorepo guide/).
 #
 # One-time repo setup: Settings → Pages → Build and deployment → GitHub Actions.
 
@@ -10,7 +10,7 @@ on:
     branches:
       - main
     paths:
-      - 'guide/Hitchhikers_Guide_to_R_in_Snowflake/**'
+      - 'guide/Piste_Guide_to_R_and_Snowflake/**'
       - 'guide/requirements.txt'
       - '.github/workflows/publish-guide.yml'
   workflow_dispatch:
@@ -54,7 +54,7 @@ jobs:
 
       - name: Render Quarto book
         run: |
-          cd guide/Hitchhikers_Guide_to_R_in_Snowflake
+          cd guide/Piste_Guide_to_R_and_Snowflake
           quarto render --to html --no-execute
 
       - name: Setup Pages
@@ -65,7 +65,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: guide/Hitchhikers_Guide_to_R_in_Snowflake/_site
+          path: guide/Piste_Guide_to_R_and_Snowflake/_site
 
   deploy:
     if: github.repository == 'posit-dev/skiPatrol'

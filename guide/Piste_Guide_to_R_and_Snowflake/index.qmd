@@ -1,5 +1,5 @@
 ---
-subtitle: "A practical guide to R on Snowflake"
+subtitle: "Working with skiLift and skiPatrol"
 ---
 
 ## Welcome {.unnumbered}

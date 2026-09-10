@@ -8,15 +8,15 @@ website:
   site-url: https://posit-dev.github.io/skiPatrol/
 
 book:
-  title: "A Comprehensive Guide to R in Snowflake"
-  subtitle: "A practical guide to R on Snowflake"
+  title: "The Piste Guide to R and Snowflake"
+  subtitle: "Working with skiLift and skiPatrol"
   author:
     - name: "Simon Field"
       url: "https://www.linkedin.com/in/fieldy6961/"
   date: "2026-05-29"
   search: true
   repo-url: https://github.com/posit-dev/skiPatrol
-  repo-subdir: guide/Hitchhikers_Guide_to_R_in_Snowflake
+  repo-subdir: guide/Piste_Guide_to_R_and_Snowflake
   repo-actions: [edit, issue]
 
   sidebar:
@@ -91,9 +91,9 @@ format:
     number-sections: true
     highlight-style: github
     open-graph:
-      title: "A Comprehensive Guide to R in Snowflake"
+      title: "The Piste Guide to R and Snowflake"
       description: "Practical guide to R on Snowflake — platform primer, RStudio, Posit, VS Code, Workspace, skiLift, and skiPatrol."
-      site-name: "Snowflake-Labs"
+      site-name: "posit-dev"
     description: "End-to-end guide for R users — Snowflake platform basics, desktop IDEs, Workspace Notebooks, DBI connectivity, and the skiPatrol ML platform."
 
 execute:

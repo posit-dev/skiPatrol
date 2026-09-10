@@ -24,7 +24,7 @@ kit <- system.file("rstudio-spcs", package = "skiPatrol")
 list.files(kit)
 ```
 
-The Hitchhiker's Guide chapter **RStudio Server on SPCS** walks through the
+The Piste Guide chapter **RStudio Server on SPCS** walks through the
 same flow at a higher level.
 
 ## Architecture

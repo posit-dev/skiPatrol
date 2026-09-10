@@ -17,7 +17,7 @@ full native R IDE inside the Snowflake security perimeter.
 
 **Documentation**
 
-- Hitchhiker's Guide: [RStudio Server on SPCS](https://posit-dev.github.io/skiPatrol/04b_rstudio_spcs/index.html) (walkthrough)
+- Piste Guide: [RStudio Server on SPCS](https://posit-dev.github.io/skiPatrol/04b_rstudio_spcs/index.html) (walkthrough)
 - Vignettes: `vignette("rstudio-spcs", package = "skiPatrol")`, `vignette("spcs-custom-services", package = "skiLift")`
 
 ## Kit location

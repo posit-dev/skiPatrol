@@ -1,12 +1,12 @@
-# The Hitchhiker's Guide to R in Snowflake
+# The Piste Guide to R and Snowflake
 
-Quarto book source. Published at [posit-dev.github.io/skiPatrol](https://posit-dev.github.io/skiPatrol/) via [posit-dev/skiPatrol](https://github.com/posit-dev/skiPatrol) (`guide/` on `main`). Develop in the monorepo under `guide/Hitchhikers_Guide_to_R_in_Snowflake/`.
+Quarto book source. Published at [posit-dev.github.io/skiPatrol](https://posit-dev.github.io/skiPatrol/) via [posit-dev/skiPatrol](https://github.com/posit-dev/skiPatrol) (`guide/` on `main`). Develop in the monorepo under `guide/Piste_Guide_to_R_and_Snowflake/`.
 
 ## Local build
 
 ```bash
 # Install Quarto: https://quarto.org/docs/get-started/
-cd guide/Hitchhikers_Guide_to_R_in_Snowflake
+cd guide/Piste_Guide_to_R_and_Snowflake
 quarto render --to html --no-execute   # fast — uses _freeze/ when present
 quarto preview                          # live reload
 ```
