@@ -1,3 +1,103 @@
+# skiPatrol (development version)
+
+## Package rename
+
+- **This package was `snowflakeR`; it is now `skiPatrol`.** Snowflake's legal
+  position required "snow" out of the *package name*; references to Snowflake
+  in code and documentation are unaffected. Replace `library(snowflakeR)`
+  with `library(skiPatrol)`.
+
+- **The `sfr_*` function prefix and `doSnowflake` are unchanged**, as are
+  `Snowflake()` and the DBI class names in the companion `skiLift` package
+  (formerly `RSnowflake`), which `skiPatrol` uses for DBI connectivity.
+
+## New features
+
+- **Model monitoring now supports classification models.**
+  `sfr_monitor_source()` gains `prediction_class_columns` and
+  `actual_class_columns`. Previously it exposed only the regression-shaped
+  `prediction_score_columns`/`actual_score_columns`, so `sfr_add_monitor()`
+  failed outright for a classification model ("Actual score column(s) were
+  specified, but model was of task: 'tabular_binary_classification'") and
+  there was no way to monitor one at all. `COUNT`,
+  `CLASSIFICATION_ACCURACY`, `F1_SCORE`, `PRECISION` and `RECALL` all compute
+  once a monitor is attached.
+
+  Two related constraints to be aware of: the model must have been logged
+  with `task=` set, and drift metrics require a baseline that
+  `sfr_monitor_source()` does not yet expose. `sfr_show_model_monitors()`
+  returns an unparsed single-column representation -- use
+  `sfr_get_monitor()` instead.
+
+## Bug fixes
+
+- **`sfr_connect()` no longer misidentifies a local session as a Workspace
+  Notebook.** Detection asked whether a Snowpark session existed, but that
+  returns *any* session live in the process -- including one an earlier
+  `sfr_connect()` call had just created. A second connection in the same R
+  session therefore reported "Connected via active Workspace Notebook
+  session" on a laptop, skipped `connections.toml` entirely, and returned an
+  empty `account` and `user`, which surfaced later as a misleading "Key-pair
+  auth requires private_key_path" error from `sfr_dbi_connection()`.
+  Detection now reads the environment directly. This only reproduced where
+  several files share one R session -- Positron, Posit Workbench, and the
+  Native App IDE; Jupyter gives each notebook its own kernel, which
+  concealed it.
+
+- **`sfr_deploy_model()` works from outside Workspace Notebooks.** Conda
+  package versions were pinned to whatever R was running locally, which is
+  only safe where R itself came from conda; elsewhere it produced an
+  unsatisfiable environment (`r-base==4.6.0` against an `r-ranger` needing
+  `<4.6.0a0`). `r-base` is now pinned exactly only when the running R is
+  itself a conda build, and the solver is left to satisfy the bounds
+  otherwise. User-supplied `r-base` pins are still never overridden.
+
+- **Connections now succeed from Posit Workbench and the Posit Team Native
+  App.** Three separate faults, each of which blocked the first connection:
+  the OAuth token in a `connections.toml` profile was not read (the profile
+  name is now handed to the Python connector, so the token never crosses
+  into R); `reticulate` had no declared Python requirements and auto-selected
+  Python 3.12 with no Snowflake SDK present, which would have hit every
+  user's first session; and a session carrying no warehouse, database or
+  schema crashed connection construction with "missing value where TRUE/FALSE
+  needed", because the cleanup guards handled `NULL`, `""` and `"None"` but
+  not a bare `NA`.
+
+- **A new argument, `sfr_connect(session = )`,** supplies an existing Snowpark
+  session deliberately. Previously the only way to do this was to rely on
+  auto-detection finding any live session in the process -- the defect above.
+
+- **Python bridge caches are scoped to the session rather than the process.**
+  `_EXP_INSTANCE` was a single global that silently ignored its session
+  argument after the first call; the feature-store and dataset caches were
+  keyed on fields likely to be identical across a reconnect to the same
+  project. All three now include the session in the cache key, so a second
+  connection no longer inherits the first one's objects.
+
+- A LaTeX build log containing local filesystem paths was being tracked and
+  shipped; it has been removed and `*.log` is now excluded from the build.
+
+## Documentation and packaging
+
+- **The guide is now *The Piste Guide to R and Snowflake -- Working with
+  skiLift and skiPatrol*.** A first published set of chapters covers platform
+  basics, working from your own IDE, and core use of both packages; the
+  remaining chapters are being restructured and will follow shortly.
+
+- Added a Quarto example set, starting with a quickstart document.
+
+- `connections.toml` and `.env` are now excluded from the source tarball, so
+  credentials cannot be packaged by accident.
+
+- The guide and `.pytest_cache/` are excluded from the source tarball, and a
+  duplicate notebook and a development test harness are no longer installed
+  as example content. Together with smaller logo assets this reduces the
+  built package substantially.
+
+- Added a top-level `NOTICE` recording Snowflake Labs as the origin of the
+  work, Posit Software, PBC as copyright holder and funder, and Hex Field Ltd
+  as maintainer, per Apache-2.0 section 4(b).
+
 # skiPatrol 0.2.0
 
 ## New modules
