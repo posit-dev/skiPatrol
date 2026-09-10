@@ -13,18 +13,11 @@ If you are new to Snowflake, start with the [Platform Primer](01_snowflake_platf
 :::
 
 ::: {.content-visible when-profile="publish"}
-::: {.callout-note}
-## About this edition
-
-This is a **first published set of chapters**, covering Snowflake platform
-basics, working from your own IDE, and core use of **skiLift** and
-**skiPatrol** — enough to install both packages, connect, query, and take a
-model from features through training to the registry.
-
-The remaining chapters — Workspace Notebooks, the other languages, and the
-experiments, monitoring, many-model, parallel and end-to-end material — are
-being restructured and will follow shortly. Cross-references to them are marked
-with a dagger (^†^) and are not links yet.
+::: {.callout-note appearance="simple"}
+Some chapters are still to come while the guide is reworked following the
+packages' rename; links to them are marked with a dagger (^†^) and are not
+active yet. See [Introduction](00_introduction/index.qmd) for what is covered
+so far.
 :::
 :::
 

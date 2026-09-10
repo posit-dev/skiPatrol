@@ -15,6 +15,25 @@ It covers three open-source packages, platform concepts for newcomers to Snowfla
 
 **New to Snowflake?** Start with [Snowflake Platform Primer](../01_snowflake_platform/index.qmd) and the [Glossary](../appendices/F_glossary/index.qmd).
 
+::: {.content-visible when-profile="publish"}
+::: {.callout-note}
+## Chapters still to come
+
+The two R packages this guide covers were recently renamed — **skiLift**
+(formerly `RSnowflake`) and **skiPatrol** (formerly `snowflakeR`) — and the
+guide is being reworked to match.
+
+What is published here covers the Snowflake platform basics, working from your
+own IDE, and core use of both packages: installing them, connecting, querying,
+and taking a model from features through training to the registry.
+
+The remaining chapters — Workspace Notebooks, the other languages, and the
+experiments, monitoring, many-model, parallel and end-to-end material — are
+being restructured and will follow shortly. Cross-references to them appear
+throughout the text marked with a dagger (^†^); those are not links yet.
+:::
+:::
+
 ## How this guide is organized {#sec-guide-structure}
 
 ::: {.callout-note}
