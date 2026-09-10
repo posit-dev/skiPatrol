@@ -14,9 +14,13 @@ From the monorepo, source lives at `guide/Piste_Guide_to_R_and_Snowflake/` (sync
 
 ```bash
 cd guide/Piste_Guide_to_R_and_Snowflake
-quarto render --to html --no-execute
+quarto render --to html --no-execute              # full book (27 chapters)
+quarto render --to html --no-execute --profile publish   # what CI publishes (15)
 quarto preview
 ```
+
+CI publishes the **curated subset**, not the whole book. See
+[the guide's own README](Piste_Guide_to_R_and_Snowflake/README.md#profiles-full-book-vs-published-subset).
 
 ## Monorepo development
 

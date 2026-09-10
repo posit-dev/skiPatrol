@@ -4,6 +4,11 @@ project:
   post-render:
     - scripts/copy_vignette_html_to_site.sh
 
+# Chapter lists live in the profiles, not in this file -- see _quarto-full.yml
+# for why. This default keeps a bare `quarto render` building the complete book.
+profile:
+  default: full
+
 website:
   site-url: https://posit-dev.github.io/skiPatrol/
 
@@ -23,57 +28,6 @@ book:
     style: docked
     search: true
 
-  chapters:
-    - index.qmd
-    - part: "Getting Started"
-      chapters:
-        - 00_introduction/index.qmd
-        - 01_snowflake_platform/index.qmd
-        - 02_architecture/index.qmd
-    - part: "R from Your IDE"
-      chapters:
-        - 03_local_r_setup/index.qmd
-        - 04_rstudio_posit_vscode/index.qmd
-        - 04b_rstudio_spcs/index.qmd
-    - part: "Workspace Notebooks with R"
-      chapters:
-        - 05_workspaces_overview/index.qmd
-        - 06_workspace_bootstrap/index.qmd
-        - 07_network_and_eai/index.qmd
-        - 08_r_cells_and_interop/index.qmd
-        - 09_custom_runtime_and_ml_jobs/index.qmd
-    - part: "Beyond R"
-      chapters:
-        - 10_multilang_beyond_r/index.qmd
-    - part: "skiLift"
-      chapters:
-        - 11_skilift_sql_api/index.qmd
-        - 12_skilift_connect/index.qmd
-        - 13_skilift_query/index.qmd
-        - 14_skilift_workspace/index.qmd
-    - part: "skiPatrol"
-      chapters:
-        - 15_mlops_on_snowflake/index.qmd
-        - 16_skipatrol_connect/index.qmd
-        - 17_feature_store/index.qmd
-        - 17b_authoring_feature_views/index.qmd
-        - 17a_training_data_in_r/index.qmd
-        - 18_model_registry/index.qmd
-        - 19_experiments/index.qmd
-        - 22_parallel_dosnowflake/index.qmd
-        - 21_many_model/index.qmd
-        - 20_model_monitoring/index.qmd
-        - 23_end_to_end/index.qmd
-
-  appendices:
-    - appendices/A_setup/index.qmd
-    - appendices/B_config_reference/index.qmd
-    - appendices/C_troubleshooting/index.qmd
-    - appendices/D_production_checklist/index.qmd
-    - appendices/E_package_reference/index.qmd
-    - appendices/F_glossary/index.qmd
-    - appendices/G_workspace_container_internals/index.qmd
-    - appendices/H_package_vignettes/index.qmd
 
 format:
   html:

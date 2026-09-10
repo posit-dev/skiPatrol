@@ -1,7 +1,17 @@
 # Publish The Piste Guide to R and Snowflake (Quarto book) to GitHub Pages.
 # Source: guide/Piste_Guide_to_R_and_Snowflake/ (synced from monorepo guide/).
 #
-# One-time repo setup: Settings → Pages → Build and deployment → GitHub Actions.
+# Publishes the CURATED SUBSET, not the whole book: --profile publish selects
+# the chapters in _quarto-publish.yml (setup and core skiLift/skiPatrol usage)
+# and project.render there keeps the held-back chapters out of _site entirely,
+# so they are not reachable by direct URL either. A plain `quarto render`
+# locally still builds the full book -- see _quarto-full.yml.
+#
+# Repo setup: the Setup Pages step below passes enablement: true and this
+# workflow already holds `pages: write`, so it should turn Pages on by itself
+# on first run. Untested -- nothing has ever been pushed to posit-dev/skiPatrol
+# (P1-01 hold). If it fails, fall back to Settings -> Pages -> Build and
+# deployment -> GitHub Actions.
 
 name: Publish Guide to GitHub Pages
 
@@ -52,10 +62,10 @@ jobs:
           rm quarto.deb
           quarto --version
 
-      - name: Render Quarto book
+      - name: Render Quarto book (curated subset)
         run: |
           cd guide/Piste_Guide_to_R_and_Snowflake
-          quarto render --to html --no-execute
+          quarto render --to html --no-execute --profile publish
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -1,0 +1,93 @@
+# Curated conference subset -- `quarto render --profile publish`.
+#
+# Simon's decision, 10 Sep: publish setup and core usage only for the 15 Sep
+# conference, holding back the Workspace-Notebook-heavy chapters pending review,
+# with a note in the introduction that the rest follows shortly after.
+#
+# This profile *replaces* book.chapters and book.appendices from _quarto.yml.
+# _quarto.yml itself is untouched, so a plain `quarto render` still builds the
+# full 36-chapter book locally -- which stays the working default. Only
+# publish-guide.yml passes --profile publish.
+#
+# Chapter selection is Simon's indicative range read as sequential book
+# positions (1-3, 4-6, 13-15, 17-22), which lands exactly on part boundaries for
+# the first two parts. Appendix G is held with the Workspace chapters it belongs
+# to; the other seven appendices are all setup/core-usage material.
+
+# Restricting book.chapters alone is not enough: Quarto otherwise renders every
+# .qmd in the project directory, so each held-back chapter would still publish
+# as an orphan page reachable by direct URL -- exactly the leak this subset
+# exists to prevent. project.render is what actually keeps them out of _site.
+project:
+  render:
+    - "**/*.qmd"
+    - "!05_workspaces_overview/**"
+    - "!06_workspace_bootstrap/**"
+    - "!07_network_and_eai/**"
+    - "!08_r_cells_and_interop/**"
+    - "!09_custom_runtime_and_ml_jobs/**"
+    - "!10_multilang_beyond_r/**"
+    - "!14_skilift_workspace/**"
+    - "!19_experiments/**"
+    - "!20_model_monitoring/**"
+    - "!21_many_model/**"
+    - "!22_parallel_dosnowflake/**"
+    - "!23_end_to_end/**"
+    - "!appendices/G_workspace_container_internals/**"
+
+book:
+  chapters:
+    - index.qmd
+    - part: "Getting Started"
+      chapters:
+        - 00_introduction/index.qmd
+        - 01_snowflake_platform/index.qmd
+        - 02_architecture/index.qmd
+    - part: "R from Your IDE"
+      chapters:
+        - 03_local_r_setup/index.qmd
+        - 04_rstudio_posit_vscode/index.qmd
+        - 04b_rstudio_spcs/index.qmd
+    - part: "skiLift"
+      chapters:
+        - 11_skilift_sql_api/index.qmd
+        - 12_skilift_connect/index.qmd
+        - 13_skilift_query/index.qmd
+    - part: "skiPatrol"
+      chapters:
+        - 15_mlops_on_snowflake/index.qmd
+        - 16_skipatrol_connect/index.qmd
+        - 17_feature_store/index.qmd
+        - 17b_authoring_feature_views/index.qmd
+        - 17a_training_data_in_r/index.qmd
+        - 18_model_registry/index.qmd
+
+  appendices:
+    - appendices/A_setup/index.qmd
+    - appendices/B_config_reference/index.qmd
+    - appendices/C_troubleshooting/index.qmd
+    - appendices/D_production_checklist/index.qmd
+    - appendices/E_package_reference/index.qmd
+    - appendices/F_glossary/index.qmd
+    - appendices/H_package_vignettes/index.qmd
+
+# Read by scripts/unlink_held_chapters.lua, which strips links pointing at these
+# paths (keeping the link text, adding a dagger) so the subset has no 404s.
+# Single source of truth for what is held back -- keep in step with the lists above.
+held-chapters:
+  - 05_workspaces_overview
+  - 06_workspace_bootstrap
+  - 07_network_and_eai
+  - 08_r_cells_and_interop
+  - 09_custom_runtime_and_ml_jobs
+  - 10_multilang_beyond_r
+  - 14_skilift_workspace
+  - 19_experiments
+  - 20_model_monitoring
+  - 21_many_model
+  - 22_parallel_dosnowflake
+  - 23_end_to_end
+  - G_workspace_container_internals
+
+filters:
+  - scripts/unlink_held_chapters.lua
