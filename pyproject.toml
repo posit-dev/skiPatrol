@@ -18,7 +18,10 @@ requires-python = ">=3.9,<3.12"
 dependencies = [
     # Declared in DESCRIPTION as SystemRequirements: snowflake-ml-python >= 1.5.0.
     # Pulls snowpark and the connector transitively; both are pinned in uv.lock.
-    "snowflake-ml-python>=1.5.0",
+    # Ceiling matches R/zzz.R's py_require(): a model is served from a conda
+    # environment built off Snowflake's channel, which Anaconda maintain
+    # asynchronously from PyPI and which lags it. See backlog DB-20.
+    "snowflake-ml-python>=1.5.0,<1.52",
     "snowflake-snowpark-python>=1.20",
     # Data interchange across the reticulate boundary.
     "pandas>=2.0",

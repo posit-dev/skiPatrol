@@ -32,7 +32,20 @@
       exists("py_require", envir = asNamespace("reticulate"), mode = "function")) {
     reticulate::py_require(
       packages = c(
-        "snowflake-ml-python>=1.5.0",
+        # Upper bound is deliberate and load-bearing, not caution. uv resolves
+        # the newest match, but a model logged here is *served* from a conda
+        # environment built off Snowflake's own channel -- and the SDK pins its
+        # own installed version into that environment. Anaconda maintain that
+        # channel asynchronously from PyPI, so PyPI is routinely ahead. On
+        # 11 Sep the channel's newest linux-64 build was 1.51.0 while PyPI had
+        # 2.0.0 (released 10 Sep) and 1.54.0 (1 Sep) -- so an unbounded spec
+        # resolved to 2.0.0 and model deployment died in the container build
+        # with "snowflake-ml-python ==2.0.0 does not exist". Note <2 is *not*
+        # sufficient: it resolves to 1.54.0, which the channel also lacks.
+        # Raise this ceiling only after checking the channel; see backlog
+        # DB-20 for the systematic fix.
+        #   https://repo.anaconda.com/pkgs/snowflake/linux-64/repodata.json
+        "snowflake-ml-python>=1.5.0,<1.52",
         "snowflake-snowpark-python>=1.20",
         "snowflake-connector-python[pandas]",
         "pandas>=2.0",
