@@ -34,18 +34,25 @@
       packages = c(
         # Upper bound is deliberate and load-bearing, not caution. uv resolves
         # the newest match, but a model logged here is *served* from a conda
-        # environment built off Snowflake's own channel -- and the SDK pins its
-        # own installed version into that environment. Anaconda maintain that
-        # channel asynchronously from PyPI, so PyPI is routinely ahead. On
-        # 11 Sep the channel's newest linux-64 build was 1.51.0 while PyPI had
-        # 2.0.0 (released 10 Sep) and 1.54.0 (1 Sep) -- so an unbounded spec
-        # resolved to 2.0.0 and model deployment died in the container build
-        # with "snowflake-ml-python ==2.0.0 does not exist". Note <2 is *not*
-        # sufficient: it resolves to 1.54.0, which the channel also lacks.
-        # Raise this ceiling only after checking the channel; see backlog
-        # DB-20 for the systematic fix.
-        #   https://repo.anaconda.com/pkgs/snowflake/linux-64/repodata.json
-        "snowflake-ml-python>=1.5.0,<1.52",
+        # environment built off Snowflake's channel, and the SDK pins its own
+        # installed version into that environment. Snowflake's channel lags
+        # PyPI, so a release that is days old can be unresolvable server-side:
+        # on 11 Sep an unbounded spec resolved to 2.0.0 (published 10 Sep) and
+        # deployment died in the container build with
+        # "snowflake-ml-python ==2.0.0 does not exist".
+        #
+        # <2 is the right ceiling, and the 1.x line is proven rather than
+        # assumed: every model version logged in this account on 7 Sep records
+        # client "snowflake-ml-python 1.54.0" and deployed to SPCS
+        # successfully. Do NOT tighten this on the basis of
+        # repo.anaconda.com/pkgs/snowflake/linux-64 -- that public mirror
+        # listed nothing above 1.51.0 on 11 Sep and so does not reflect what
+        # SPCS image builds actually resolve. Checking it led to exactly that
+        # wrong conclusion once already.
+        #
+        # Moving to 2.x needs the server side to have caught up; see backlog
+        # DB-20 for the systematic version/channel pre-flight.
+        "snowflake-ml-python>=1.5.0,<2",
         "snowflake-snowpark-python>=1.20",
         "snowflake-connector-python[pandas]",
         "pandas>=2.0",

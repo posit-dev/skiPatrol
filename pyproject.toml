@@ -19,9 +19,10 @@ dependencies = [
     # Declared in DESCRIPTION as SystemRequirements: snowflake-ml-python >= 1.5.0.
     # Pulls snowpark and the connector transitively; both are pinned in uv.lock.
     # Ceiling matches R/zzz.R's py_require(): a model is served from a conda
-    # environment built off Snowflake's channel, which Anaconda maintain
-    # asynchronously from PyPI and which lags it. See backlog DB-20.
-    "snowflake-ml-python>=1.5.0,<1.52",
+    # environment built off Snowflake's channel, which lags PyPI. 1.x is
+    # proven in SPCS (1.54.0, 7 Sep); 2.0.0 was not resolvable a day after
+    # release. See backlog DB-20.
+    "snowflake-ml-python>=1.5.0,<2",
     "snowflake-snowpark-python>=1.20",
     # Data interchange across the reticulate boundary.
     "pandas>=2.0",

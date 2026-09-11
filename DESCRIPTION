@@ -80,4 +80,4 @@ Suggests:
     yaml
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-SystemRequirements: Python (>= 3.9), snowflake-ml-python (>= 1.5.0, < 1.52)
+SystemRequirements: Python (>= 3.9), snowflake-ml-python (>= 1.5.0, < 2)
