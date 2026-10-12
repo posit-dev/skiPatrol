@@ -448,7 +448,7 @@ sfr_experiment_log_best <- function(exp,
   rlang::check_installed(c("tune", "workflows", "parsnip"))
 
   best <- tune::select_best(tune_results, metric = metric)
-  finalized <- workflows::finalize_workflow(workflow, best)
+  finalized <- tune::finalize_workflow(workflow, best)
 
   fit_wf <- utils::getS3method("fit", "workflow", envir = asNamespace("workflows"))(
     finalized,
