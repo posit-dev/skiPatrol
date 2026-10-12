@@ -2295,7 +2295,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=14" },
     { name = "scikit-learn", specifier = ">=1.3" },
     { name = "shap", specifier = ">=0.44" },
-    { name = "snowflake-ml-python", specifier = ">=1.5.0" },
+    { name = "snowflake-ml-python", specifier = ">=1.5.0,<2" },
     { name = "snowflake-snowpark-python", specifier = ">=1.20" },
 ]
 
