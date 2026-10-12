@@ -268,3 +268,7 @@ sfr_crew_launch_workers <- function(conn,
   pkg_python <- system.file("python", package = "skiPatrol")
   reticulate::import_from_path("sfr_crew_bridge", path = pkg_python)
 }
+
+# `super` is the R6 self-reference available inside methods of the launcher
+# class built in .onLoad_crew(); R CMD check cannot see where it comes from.
+utils::globalVariables("super")

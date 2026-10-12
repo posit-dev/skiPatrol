@@ -863,9 +863,12 @@ sfr_predict_local <- function(model,
     uid <- paste0(sample(c(0:9, letters[1:6]), 8, replace = TRUE), collapse = "")
     model_name <- paste0("r_model_", uid)
 
-    # Set up environment
-    assign(model_name, model, envir = .GlobalEnv)
-    assign(paste0("input_", uid), new_data, envir = .GlobalEnv)
+    # Run the template in a private child of the global environment: it can
+    # still see attached packages and user functions, but nothing it assigns
+    # leaks into the user's workspace.
+    env <- new.env(parent = globalenv())
+    assign(model_name, model, envir = env)
+    assign(paste0("input_", uid), new_data, envir = env)
 
     code <- predict_body
     code <- gsub("\\{\\{MODEL\\}\\}", model_name, code)
@@ -873,19 +876,8 @@ sfr_predict_local <- function(model,
     code <- gsub("\\{\\{UID\\}\\}", uid, code)
     code <- gsub("\\{\\{N\\}\\}", as.character(nrow(new_data)), code)
 
-    tryCatch(
-      {
-        eval(parse(text = code), envir = .GlobalEnv)
-        result <- get(paste0("result_", uid), envir = .GlobalEnv)
-      },
-      finally = {
-        rm_pattern <- paste0("_", uid, "$")
-        to_rm <- grep(rm_pattern, ls(envir = .GlobalEnv), value = TRUE)
-        to_rm <- unique(c(to_rm, model_name))
-        to_rm <- intersect(to_rm, ls(envir = .GlobalEnv))
-        if (length(to_rm) > 0L) rm(list = to_rm, envir = .GlobalEnv)
-      }
-    )
+    eval(parse(text = code), envir = env)
+    result <- get(paste0("result_", uid), envir = env)
     return(as.data.frame(result))
   }
 

@@ -53,13 +53,14 @@ RoxygenNote: 7.3.3
 Depends:
     R (>= 4.1.0)
 Imports:
-    methods,
     reticulate (>= 1.34),
     cli,
     rlang,
     jsonlite
 Suggests:
     skiLift,
+    R6,
+    crew,
     DBI,
     snowflakeauth,
     RcppTOML,

@@ -117,11 +117,11 @@ sfr_reinstall <- function(path = Sys.getenv("SKIPATROL_PATH"),
 
   if (nzchar(skilift_path)) {
     utils::install.packages(skilift_path, repos = NULL, type = "source", quiet = TRUE)
-    library(skiLift)
+    attachNamespace("skiLift")
   }
 
   utils::install.packages(path, repos = NULL, type = "source", quiet = TRUE)
-  library(skiPatrol)
+  attachNamespace("skiPatrol")
 
   sfr_reload_bridges()
   cli::cli_inform(c("v" = "skiPatrol reinstalled and reloaded."))

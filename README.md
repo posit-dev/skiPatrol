@@ -208,7 +208,7 @@ context automatically. No separate config copy step is needed -- edit the
 Optional:
 
 - [`skiLift`](https://github.com/posit-dev/skiLift) -- DBI-compliant database access, `dbplyr`, RStudio Connections Pane
-- [`snowflakeauth`](https://github.com/Snowflake-Labs/snowflakeauth) -- `connections.toml` credential management
+- [`snowflakeauth`](https://github.com/posit-dev/snowflakeauth) -- `connections.toml` credential management
 
 ## Getting help
 
