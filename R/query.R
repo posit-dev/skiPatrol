@@ -47,7 +47,7 @@ sfr_query <- function(conn, sql,
   bridge <- get_bridge_module("sfr_connect_bridge")
   result <- bridge$query_to_dict(conn$session, sql)
 
-  .bridge_dict_to_df(result, lowercase = !.keep_case)
+  .bridge_dict_to_df(result, lowercase = !.keep_case, conn = conn)
 }
 
 

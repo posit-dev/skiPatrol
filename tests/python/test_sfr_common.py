@@ -146,3 +146,88 @@ def test_cursor_results_use_snowflakes_own_types():
 def test_a_statement_with_no_result_set_returns_no_columns():
     out = c.query_to_typed_dict(_Session(_Conn(_Cursor(None, []))), "create table t (a int)")
     assert out == {"columns": [], "kinds": [], "data": {}, "nrows": 0}
+
+
+# --- Snowflake's own types for Snowpark DataFrames (DESCRIBE RESULT) -----------
+
+def test_describe_types_are_parsed_with_precision_and_scale():
+    k = c._kind_from_describe_type
+    assert k("NUMBER(38,0)") == {"type": "fixed", "scale": 0, "precision": 38}
+    assert k("NUMBER(10,2)") == {"type": "fixed", "scale": 2, "precision": 10}
+    assert k("NUMBER(9,0)") == {"type": "fixed", "scale": 0, "precision": 9}
+    assert k("VARCHAR(16777216)")["type"] == "text"
+    assert k("FLOAT")["type"] == "real"
+    assert k("TIMESTAMP_LTZ(9)") == {"type": "timestamp_ltz", "scale": 9, "precision": 0}
+    assert k("TIME(9)") == {"type": "time", "scale": 9, "precision": 0}
+    assert k("DATE")["type"] == "date"
+    assert k("BINARY(8388608)")["type"] == "binary"
+    assert k("VARIANT")["type"] == "text"
+    assert k("SOMETHING_NEW(3)") is None
+
+
+class _Row(dict):
+    pass
+
+
+class _History:
+    def __init__(self, ids):
+        self.queries = [type("Q", (), {"query_id": i}) for i in ids]
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+class _SnowparkSession:
+    def __init__(self, describe_rows=None, fail=False, ids=("q1",)):
+        self._rows, self._fail, self._ids = describe_rows, fail, ids
+        self.sql_seen = []
+
+    def query_history(self):
+        return _History(self._ids)
+
+    def sql(self, text):
+        self.sql_seen.append(text)
+        if self._fail:
+            raise RuntimeError("no describe")
+        rows = self._rows
+        return type("R", (), {"collect": lambda self_: rows})()
+
+
+class _SnowparkDF:
+    def __init__(self, session, pdf):
+        self.session, self._pdf = session, pdf
+
+    def to_pandas(self):
+        return self._pdf.copy()
+
+
+def test_snowpark_dataframe_gets_snowflakes_precision():
+    # pandas: an integer column with a NULL is float64, and says nothing about precision
+    pdf = pd.DataFrame({"SMALL": [7.0, None], "BIG": [7, 2147483648]})
+    sess = _SnowparkSession([_Row(type="NUMBER(9,0)"), _Row(type="NUMBER(38,0)")], ids=("a", "q42"))
+    out = c.snowpark_to_typed_dict(_SnowparkDF(sess, pdf))
+    assert out["kinds"][0] == {"type": "fixed", "scale": 0, "precision": 9}
+    assert out["kinds"][1] == {"type": "fixed", "scale": 0, "precision": 38}
+    assert out["data"]["SMALL"] == ["7", c.NA]            # not "7.0"
+    assert sess.sql_seen == ["DESCRIBE RESULT 'q42'"]       # the last query that ran
+
+
+def test_unknown_or_unavailable_describe_falls_back_to_the_pandas_types():
+    pdf = pd.DataFrame({"A": ["01234"], "N": [1]})
+    for sess in (_SnowparkSession(fail=True),
+                 _SnowparkSession([_Row(type="TEXT")]),               # wrong number of columns
+                 _SnowparkSession([_Row(type="WEIRD(1)"), _Row(type="WEIRD(2)")])):
+        out = c.snowpark_to_typed_dict(_SnowparkDF(sess, pdf))
+        assert [k["type"] for k in out["kinds"]] == ["text", "fixed"]
+        assert out["data"]["A"] == ["01234"]
+
+
+def test_a_dataframe_without_query_history_still_converts():
+    class _NoHistory:
+        def sql(self, t):
+            raise AssertionError("should not describe")
+    df = _SnowparkDF(_NoHistory(), pd.DataFrame({"A": ["x"]}))
+    assert c.snowpark_to_typed_dict(df)["data"]["A"] == ["x"]

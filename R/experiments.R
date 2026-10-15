@@ -256,7 +256,7 @@ sfr_exp_log_model <- function(exp, model, model_name, ...) {
   signatures <- dots$signatures %||% NULL
   sample_input_data <- dots$sample_input_data %||% NULL
   py_sample <- if (!is.null(sample_input_data)) {
-    reticulate::r_to_py(sample_input_data)
+    .r_df_to_py(sample_input_data)
   } else {
     NULL
   }

@@ -23,14 +23,15 @@
 # @returns A data.frame.
 # @noRd
 .bridge_dict_to_df <- function(result,
-                               lowercase = getOption("skiPatrol.lowercase_columns", FALSE)) {
+                               lowercase = getOption("skiPatrol.lowercase_columns", FALSE),
+                               conn = NULL) {
   cols <- result$columns
 
   # Results from bridge functions that send Snowflake's column types are
   # converted by type; see R/bridge_types.R. The guessing below is only for
   # results that do not (older callers, and metadata listings).
   if (!is.null(result$kinds)) {
-    return(.bridge_typed_to_df(result, lowercase = lowercase))
+    return(.bridge_typed_to_df(result, lowercase = lowercase, conn = conn))
   }
 
   if (result$nrows == 0L) {

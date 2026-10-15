@@ -83,7 +83,7 @@ sfr_list_datasets <- function(conn) {
 
   bridge <- get_bridge_module("sfr_datasets_bridge")
   result <- bridge$list_datasets(session = conn$session)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }
 
 
@@ -197,7 +197,7 @@ sfr_list_dataset_versions <- function(conn, name, detailed = FALSE) {
   )
 
   if (detailed) {
-    .bridge_dict_to_df(result)
+    .bridge_dict_to_df(result, conn = conn)
   } else {
     as.character(unlist(result))
   }
@@ -254,5 +254,5 @@ sfr_read_dataset <- function(conn, name, version) {
     version = version
   )
 
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }

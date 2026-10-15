@@ -36,3 +36,32 @@
   )
   invisible()
 }
+
+# R data frames to pandas, safely
+# =============================================================================
+# Two more things go wrong when reticulate converts an R data frame:
+#
+# * An R integer is 32-bit, so a model signature inferred from it says INT32.
+#   Snowflake's whole numbers are NUMBER(38,0), which Snowpark and the
+#   `input_cols = "integer"` mapping call INT64.
+# * An R integer NA is stored as -2147483648, and reticulate sends that number
+#   to Python as a real value: the missing value becomes -2147483648, and a
+#   table written from such a column contains it.
+#
+# Integer columns are therefore sent as doubles (which carry NA as NaN) and
+# turned into int64, or pandas' nullable Int64 when there are NAs, which maps
+# to a Snowflake NUMBER with NULLs.
+
+#' Convert an R data frame to a pandas DataFrame
+#' @noRd
+.r_df_to_py <- function(df) {
+  int_cols <- names(df)[vapply(df, is.integer, logical(1))]
+  for (col in int_cols) {
+    df[[col]] <- as.numeric(df[[col]])
+  }
+  py <- reticulate::r_to_py(df)
+  for (col in int_cols) {
+    py[[col]] <- py[[col]]$astype(if (anyNA(df[[col]])) "Int64" else "int64")
+  }
+  py
+}

@@ -13,6 +13,17 @@
 
 ## New features
 
+- **`sfr_connect()` takes `bigint` and `timezone_out`.** They control how
+  query results and the tables returned by the feature store, datasets and
+  model registry functions represent whole numbers too large for an R integer
+  (`"numeric"` by default, or `"integer64"`, `"integer"`, `"character"`) and
+  which time zone `TIMESTAMP_LTZ` / `TIMESTAMP_TZ` values are shown in
+  (the Snowflake session's by default, `"local"`, or a name such as `"UTC"`).
+  They are the same settings as in skiLift's `dbConnect()`, are passed on to
+  the skiLift connection if one is created, and can also be set for every
+  connection with `options(skiLift.bigint = )` and
+  `options(skiLift.timezone_out = )`.
+
 - **Model monitoring now supports classification models.**
   `sfr_monitor_source()` gains `prediction_class_columns` and
   `actual_class_columns`. Previously it exposed only the regression-shaped
@@ -30,6 +41,38 @@
   `sfr_get_monitor()` instead.
 
 ## Bug fixes
+
+- **Integer columns with missing values were written to Snowflake, and sent
+  to Python, as -2147483648. If you have used `sfr_write_table()` with an
+  integer column that contained `NA`, check the table.** R stores a missing
+  integer as that number, and the conversion to Python passed it on as a real
+  value. Missing integers are now sent as missing (a `NULL` in the table).
+  Doubles, text and logical columns were not affected.
+
+- **Query results keep Snowflake's column types.** Results from `sfr_query()`
+  (when the query goes through the Snowpark session) and from the feature
+  store, dataset and model registry functions used to be flattened to plain
+  lists and their types guessed from the values. Text that looks like a
+  number lost its leading zeros (`'01234'` came back as `1234`), `DATE` and
+  timestamp columns came back as text, and a number column with a `NULL`
+  could change type. Columns now come back as `Date`, `POSIXct`, text, numbers
+  and so on according to their Snowflake type, using the same rules as
+  skiLift: whole numbers of up to 9 digits are `integer`, larger ones follow
+  `bigint`, and zero-row results have proper column types. **This changes what
+  some existing queries return.**
+
+- **`integer64` columns (from the `bit64` package) are converted correctly
+  when sent to Python.** Before, `reticulate` read their bytes as doubles, so
+  7 arrived as `3.5e-323` with no warning.
+
+- **Model signatures inferred from an R integer column say `INT64`, not
+  `INT32`,** matching Snowflake's `NUMBER(38,0)` and the `"integer"` type in
+  `input_cols`. This applies to `sample_input` in `sfr_log_model()` and
+  `sample_input_data` in `sfr_exp_log_model()`.
+
+- **`sfr_experiment_log_best()` called `workflows::finalize_workflow()`, which
+  does not exist** (it is in `tune`), so it failed for every user. It now
+  calls `tune::finalize_workflow()`.
 
 - **`sfr_connect()` no longer misidentifies a local session as a Workspace
   Notebook.** Detection asked whether a Snowpark session existed, but that

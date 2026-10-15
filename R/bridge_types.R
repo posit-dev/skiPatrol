@@ -20,29 +20,69 @@
 
 .bt_bigint_choices <- c("numeric", "integer64", "integer", "character")
 
-#' The bigint / time zone settings for a bridge result
+#' A setting stored on a connection, or on an object that holds one
+#'
+#' `x` is a connection, or a feature store or model registry, which carry
+#' theirs in `$conn`. `NULL` if there is none.
 #' @noRd
-.bt_settings <- function(result) {
-  bigint <- getOption("skiLift.bigint", "numeric")
-  if (!is.character(bigint) || length(bigint) != 1L || !bigint %in% .bt_bigint_choices) {
+.conn_setting <- function(x, name) {
+  if (is.null(x)) return(NULL)
+  .subset2(x, name) %||% .subset2(.subset2(x, "conn") %||% list(), name)
+}
+
+#' Check a `bigint` value; the same choices as skiLift's `dbConnect()`
+#' @noRd
+.check_bigint <- function(x, what = "bigint") {
+  if (!is.character(x) || length(x) != 1L || is.na(x) || !x %in% .bt_bigint_choices) {
     cli::cli_abort(c(
-      "{.code options(skiLift.bigint)} must be one of {.val {(.bt_bigint_choices)}}.",
+      "{.arg {what}} must be one of {.val {(.bt_bigint_choices)}}.",
       "i" = "It is the same setting as {.arg bigint} in skiLift's {.fn dbConnect}."
     ))
   }
-  setting <- getOption("skiLift.timezone_out", "database")
+  x
+}
+
+#' Check a `timezone_out` value; the same choices as skiLift's `dbConnect()`
+#' @noRd
+.check_timezone_out <- function(x, what = "timezone_out") {
+  ok <- is.character(x) && length(x) == 1L && !is.na(x) &&
+    (x %in% c("database", "local") || x %in% OlsonNames())
+  if (!ok) {
+    cli::cli_abort(c(
+      "{.arg {what}} must be {.val database}, {.val local}, or a time zone name.",
+      "i" = "It is the same setting as {.arg timezone_out} in skiLift's {.fn dbConnect}."
+    ))
+  }
+  x
+}
+
+#' The bigint / time zone settings for a bridge result
+#'
+#' In order: the connection's `bigint` / `timezone_out` (from `sfr_connect()`),
+#' then `options(skiLift.bigint)` / `options(skiLift.timezone_out)`, then the
+#' defaults ("numeric", and the Snowflake session's zone).
+#' @noRd
+.bt_settings <- function(result, conn = NULL) {
+  bigint <- .conn_setting(conn, "bigint")
+  bigint <- if (is.null(bigint)) {
+    .check_bigint(getOption("skiLift.bigint", "numeric"), "options(skiLift.bigint)")
+  } else {
+    .check_bigint(bigint)
+  }
+
+  setting <- .conn_setting(conn, "timezone_out")
+  setting <- if (is.null(setting)) {
+    .check_timezone_out(getOption("skiLift.timezone_out", "database"), "options(skiLift.timezone_out)")
+  } else {
+    .check_timezone_out(setting)
+  }
   tz_out <- if (identical(setting, "database")) {
     result$session_timezone %||% "UTC"
   } else if (identical(setting, "local")) {
     z <- Sys.timezone()
     if (is.na(z) || !nzchar(z)) "UTC" else z
-  } else if (is.character(setting) && length(setting) == 1L && setting %in% OlsonNames()) {
-    setting
   } else {
-    cli::cli_abort(c(
-      "{.code options(skiLift.timezone_out)} must be {.val database}, {.val local}, or a time zone name.",
-      "i" = "It is the same setting as {.arg timezone_out} in skiLift's {.fn dbConnect}."
-    ))
+    setting
   }
   list(bigint = bigint, tz_out = tz_out)
 }
@@ -116,10 +156,10 @@
 #' in order: `type`, `scale`, `precision`) and, when there is an LTZ/TZ
 #' column, `session_timezone`.
 #' @noRd
-.bridge_typed_to_df <- function(result, lowercase = FALSE) {
+.bridge_typed_to_df <- function(result, lowercase = FALSE, conn = NULL) {
   cols <- as.character(unlist(result$columns))
   n <- result$nrows
-  s <- .bt_settings(result)
+  s <- .bt_settings(result, conn)
 
   # A result that went through a JSON file comes back with `kinds` simplified
   # to a data frame; make it a list of lists again.

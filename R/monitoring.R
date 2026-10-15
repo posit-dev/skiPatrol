@@ -413,7 +413,7 @@ sfr_show_model_monitors <- function(reg) {
     database_name = ctx$database_name,
     schema_name = ctx$schema_name
   )
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = reg)
 }
 
 

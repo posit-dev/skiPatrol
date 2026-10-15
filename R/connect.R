@@ -268,6 +268,23 @@ sfr_reinstall <- function(path = Sys.getenv("SKIPATROL_PATH"),
 #'   auto-detection and every other strategy below. For sharing one
 #'   session between Python and R explicitly rather than relying on
 #'   whichever Snowpark session happens to be active in the process.
+#' @param bigint How query results return whole-number columns too large for
+#'   an R integer (more than 9 digits, which includes every plain `INTEGER`
+#'   column): `"numeric"`, `"integer64"` (needs the `bit64` package),
+#'   `"integer"` or `"character"`. `NULL` (the default) uses
+#'   `getOption("skiLift.bigint", "numeric")`. Snowflake stores `INTEGER`,
+#'   `BIGINT` and `NUMBER(38,0)` identically, so the choice is made from the
+#'   column's precision, never from the values. It applies to [sfr_query()]
+#'   and the functions that return tables (feature store, datasets, model
+#'   registry) and is passed on to the skiLift connection if one is created.
+#'   `"integer64"` is exact for any 64-bit value but many R functions do not
+#'   understand it; some, such as `lm()`, give wrong answers without a
+#'   warning.
+#' @param timezone_out The time zone `TIMESTAMP_LTZ` and `TIMESTAMP_TZ`
+#'   values are shown in: `"database"` (the Snowflake session's `TIMEZONE`),
+#'   `"local"` (your R session's zone) or a name from [OlsonNames()]. `NULL`
+#'   (the default) uses `getOption("skiLift.timezone_out", "database")`. It
+#'   only changes how a time is labelled, never which moment it is.
 #' @param ... Additional connection parameters passed to Snowpark session
 #'   builder or `snowflakeauth::snowflake_connection()`.
 #' @param .use_snowflakeauth Logical. Whether to use `snowflakeauth` for
@@ -312,8 +329,13 @@ sfr_connect <- function(name = NULL,
                         authenticator = NULL,
                         private_key_file = NULL,
                         session = NULL,
+                        bigint = NULL,
+                        timezone_out = NULL,
                         ...,
                         .use_snowflakeauth = TRUE) {
+  if (!is.null(bigint)) bigint <- .check_bigint(bigint)
+  if (!is.null(timezone_out)) timezone_out <- .check_timezone_out(timezone_out)
+
   if (!is.null(session)) {
     # Explicit session -- skip auto-detect and every other strategy below.
     # Previously the only way to hand sfr_connect() an existing Snowpark
@@ -489,6 +511,8 @@ sfr_connect <- function(name = NULL,
       role = role,
       auth_method = auth_method,
       environment = env_type,
+      bigint = bigint,
+      timezone_out = timezone_out,
       created_at = Sys.time()
     ),
     class = c("sfr_connection", "list")
@@ -585,6 +609,8 @@ print.sfr_connection <- function(x, ...) {
   if (!is.null(.subset2(x, "dbi_con"))) {
     fields$dbi_connection <- "attached"
   }
+  fields$bigint <- .subset2(x, "bigint")
+  fields$timezone_out <- .subset2(x, "timezone_out")
   fields <- Filter(Negate(is.null), fields)
   labels <- lapply(names(fields), function(n) cli::format_inline("{.field {n}}"))
   items <- lapply(fields, function(v) cli::format_inline("{.val {v}}"))
@@ -762,10 +788,15 @@ sfr_dbi_connection <- function(conn) {
   rlang::check_installed("DBI",
     reason = "for DBI database connectivity")
 
+  # Only passed when set, so older skiLift releases (which ignore unknown
+  # arguments) and the skiLift defaults and options behave as before.
+  types <- list(bigint = .subset2(conn, "bigint"), timezone_out = .subset2(conn, "timezone_out"))
+  types <- types[!vapply(types, is.null, logical(1))]
+
   if (identical(conn$environment, "workspace")) {
-    dbi_con <- DBI::dbConnect(skiLift::Snowflake())
+    dbi_con <- do.call(DBI::dbConnect, c(list(skiLift::Snowflake()), types))
   } else {
-    dbi_con <- DBI::dbConnect(
+    dbi_con <- do.call(DBI::dbConnect, c(list(
       skiLift::Snowflake(),
       name      = .subset2(conn, ".connect_name"),
       account   = conn$account,
@@ -774,7 +805,7 @@ sfr_dbi_connection <- function(conn) {
       schema    = conn$schema,
       warehouse = conn$warehouse,
       role      = conn$role
-    )
+    ), types))
   }
 
   conn[["dbi_con"]] <- dbi_con

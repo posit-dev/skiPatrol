@@ -203,7 +203,7 @@ sfr_write_table <- function(conn, table_name, value, overwrite = FALSE,
   if (.uppercase_cols) names(value) <- toupper(names(value))
   rownames(value) <- NULL
 
-  py_df <- reticulate::r_to_py(value)
+  py_df <- .r_df_to_py(value)
   sp_df <- conn$session$create_dataframe(py_df)
 
   mode <- if (overwrite) "overwrite" else "append"

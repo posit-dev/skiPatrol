@@ -57,7 +57,7 @@ sfr_list_eais <- function(conn) {
   validate_connection(conn)
   bridge <- get_bridge_module("sfr_admin_bridge")
   result <- bridge$list_eais(session = conn$session)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }
 
 
@@ -75,7 +75,7 @@ sfr_describe_eai <- function(conn, name) {
 
   bridge <- get_bridge_module("sfr_admin_bridge")
   result <- bridge$describe_eai(session = conn$session, name = name)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }
 
 
@@ -158,7 +158,7 @@ sfr_list_compute_pools <- function(conn) {
   validate_connection(conn)
   bridge <- get_bridge_module("sfr_admin_bridge")
   result <- bridge$list_compute_pools(session = conn$session)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }
 
 
@@ -176,7 +176,7 @@ sfr_describe_compute_pool <- function(conn, name) {
 
   bridge <- get_bridge_module("sfr_admin_bridge")
   result <- bridge$describe_compute_pool(session = conn$session, name = name)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }
 
 
@@ -277,7 +277,7 @@ sfr_list_image_repos <- function(conn) {
   validate_connection(conn)
   bridge <- get_bridge_module("sfr_admin_bridge")
   result <- bridge$list_image_repos(session = conn$session)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }
 
 
@@ -295,7 +295,7 @@ sfr_describe_image_repo <- function(conn, name) {
 
   bridge <- get_bridge_module("sfr_admin_bridge")
   result <- bridge$describe_image_repo(session = conn$session, name = name)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = conn)
 }
 
 

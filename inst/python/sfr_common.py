@@ -59,6 +59,9 @@ def _date_text(v):
 def _fixed_text(v):
     if isinstance(v, _Decimal):
         return format(v, "f")
+    if isinstance(v, float) and v.is_integer():
+        # pandas turns an integer column that has NULLs into float64
+        return str(int(v))
     return str(int(v)) if isinstance(v, int) else str(v)
 
 
@@ -146,13 +149,22 @@ def _is_missing(v):
         return False
 
 
-def pandas_to_typed_dict(pdf):
-    """Column-oriented dict for R from a pandas DataFrame; see module docs."""
+def pandas_to_typed_dict(pdf, kinds=None):
+    """Column-oriented dict for R from a pandas DataFrame; see module docs.
+
+    `kinds` is an optional list, one entry per column, of Snowflake types
+    (from DESCRIBE RESULT); an entry that is None, or a missing list, means
+    the type is inferred from the pandas dtype and values instead.
+    """
     cols = [str(c).strip('"') for c in pdf.columns]
     pdf.columns = cols
     nrows = len(pdf)
 
-    kinds = [_kind_from_series(pdf[c]) for c in cols]
+    inferred = [_kind_from_series(pdf[c]) for c in cols]
+    if kinds is None or len(kinds) != len(cols):
+        kinds = inferred
+    else:
+        kinds = [k if k is not None else i for k, i in zip(kinds, inferred)]
     session_tz = None
     for c, k in zip(cols, kinds):
         if k["type"] == "timestamp_ltz" and session_tz is None:
@@ -212,3 +224,77 @@ def query_to_typed_dict(session, sql):
     if any(k["type"] in ("timestamp_ltz", "timestamp_tz") for k in kinds):
         tz = _session_timezone(connection)
     return _result(names, kinds, data, len(rows), tz)
+
+
+# ---------------------------------------------------------------------------
+# From a Snowpark DataFrame (Snowflake's types via DESCRIBE RESULT)
+# ---------------------------------------------------------------------------
+
+_DESCRIBE_TYPES = {
+    "number": "fixed", "decimal": "fixed", "numeric": "fixed", "int": "fixed",
+    "integer": "fixed", "bigint": "fixed", "smallint": "fixed", "tinyint": "fixed",
+    "byteint": "fixed",
+    "float": "real", "double": "real", "real": "real",
+    "varchar": "text", "string": "text", "text": "text", "char": "text",
+    "character": "text",
+    "boolean": "boolean", "date": "date", "time": "time",
+    "timestamp_ntz": "timestamp_ntz", "timestamp_ltz": "timestamp_ltz",
+    "timestamp_tz": "timestamp_tz", "timestamp": "timestamp_ntz",
+    "binary": "binary", "variant": "text", "object": "text", "array": "text",
+    "geography": "text", "geometry": "text", "vector": "text",
+}
+
+
+def _kind_from_describe_type(type_text):
+    """Parse a DESCRIBE RESULT type such as NUMBER(38,0) or TIMESTAMP_LTZ(9).
+
+    Returns None for a type it does not know, so the caller infers it instead.
+    """
+    import re
+    m = re.match(r"^\s*([A-Za-z_]+)\s*(?:\(\s*(\d+)\s*(?:,\s*(\d+)\s*)?\))?", str(type_text))
+    if not m:
+        return None
+    base = _DESCRIBE_TYPES.get(m.group(1).lower())
+    if base is None:
+        return None
+    first = int(m.group(2)) if m.group(2) else 0
+    second = int(m.group(3)) if m.group(3) else 0
+    if base == "fixed":
+        return _kind("fixed", second, first)        # NUMBER(precision, scale)
+    if base in ("time",) or base.startswith("timestamp"):
+        return _kind(base, first or 9, 0)           # TIME(9): the digit is the scale
+    return _kind(base)
+
+
+def _describe_kinds(session, query_id, ncols):
+    """Snowflake's own column types for a query already run, or None."""
+    try:
+        rows = session.sql("DESCRIBE RESULT '%s'" % query_id).collect()
+        if len(rows) != ncols:
+            return None
+        return [_kind_from_describe_type(r["type"]) for r in rows]
+    except Exception:
+        return None
+
+
+def snowpark_to_typed_dict(df):
+    """Typed dict for R from a Snowpark DataFrame.
+
+    pandas hides Snowflake's precision: every whole-number column is int64
+    (or float64 if it has NULLs), and Snowpark's own schema reports LongType
+    for every scale-0 NUMBER. So the query that produces the DataFrame is
+    recorded, and DESCRIBE RESULT is asked for the real types. If that is
+    not possible for any reason, the types are inferred from the pandas
+    result, as before.
+    """
+    session = df.session
+    kinds = None
+    try:
+        with session.query_history() as history:
+            pdf = df.to_pandas()
+        if history.queries:
+            kinds = _describe_kinds(session, history.queries[-1].query_id, len(pdf.columns))
+    except AttributeError:
+        # No query history on this Snowpark version: just fetch.
+        pdf = df.to_pandas()
+    return pandas_to_typed_dict(pdf, kinds=kinds)

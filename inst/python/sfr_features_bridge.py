@@ -35,6 +35,7 @@ _here = _os.path.dirname(_os.path.abspath(__file__))
 if _here not in _sys.path:
     _sys.path.insert(0, _here)
 from sfr_common import pandas_to_typed_dict as _pandas_to_typed_dict  # noqa: E402
+from sfr_common import snowpark_to_typed_dict as _snowpark_to_r_dict  # noqa: E402
 
 
 def _requires(min_version, feature_name):
@@ -54,7 +55,9 @@ def _requires(min_version, feature_name):
 
 
 def _to_json_tempfile(pdf):
-    """Write a pandas DataFrame to a temp JSON file and return the path.
+    """Write a result to a temp JSON file and return the path.
+
+    `pdf` is a pandas DataFrame or an already-typed dict (see sfr_common.py).
 
     Avoids the ``basic_string::substr`` C++ crash in reticulate/rpy2 that
     occurs when large dicts cross the Python <-> R bridge in Workspace
@@ -63,7 +66,7 @@ def _to_json_tempfile(pdf):
     import json
     import tempfile
 
-    d = _pandas_to_r_dict(pdf)
+    d = pdf if isinstance(pdf, dict) else _pandas_to_r_dict(pdf)
     tmp = tempfile.NamedTemporaryFile(
         mode="w", suffix=".json", delete=False, prefix="sfr_features_"
     )
@@ -547,7 +550,7 @@ def read_feature_view(
         from snowflake.ml.feature_store.feature_view import StoreType
         kwargs["store_type"] = StoreType.OFFLINE
 
-    return _pandas_to_r_dict(fs.read_feature_view(name, version, **kwargs).to_pandas())
+    return _snowpark_to_r_dict(fs.read_feature_view(name, version, **kwargs))
 
 
 def suspend_feature_view(
@@ -637,7 +640,7 @@ def generate_training_set(
         **kwargs,
     )
 
-    return _to_json_tempfile(result_df.to_pandas())
+    return _to_json_tempfile(_snowpark_to_r_dict(result_df))
 
 
 # Module-level cache for Dataset objects so sfr_log_model can retrieve
@@ -741,8 +744,8 @@ def generate_dataset(
     # avoid Ray trying to install rpy2 on worker nodes without R.
     # TODO: Add optional Parquet path via ds.read.files() + fsspec
     # for large datasets. See internal/devops/TODO.md.
-    pdf = ds.read.to_snowpark_dataframe().to_pandas()
-    json_path = _to_json_tempfile(pdf)
+    typed = _snowpark_to_r_dict(ds.read.to_snowpark_dataframe())
+    json_path = _to_json_tempfile(typed)
 
     return {
         "json_path": json_path,
@@ -817,7 +820,7 @@ def retrieve_features(
         **kwargs,
     )
 
-    return _to_json_tempfile(result_df.to_pandas())
+    return _to_json_tempfile(_snowpark_to_r_dict(result_df))
 
 
 # =============================================================================
@@ -1042,7 +1045,7 @@ def fv_to_df(
     sc = schema or session.get_current_schema().replace('"', '')
     wh = warehouse or session.get_current_warehouse().replace('"', '')
     fs = _get_feature_store(session, db, sc, wh, creation_mode)
-    return _pandas_to_r_dict(fs.read_feature_view(name, version).to_pandas())
+    return _snowpark_to_r_dict(fs.read_feature_view(name, version))
 
 
 def fv_query(

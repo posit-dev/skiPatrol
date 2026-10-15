@@ -216,7 +216,7 @@ sfr_list_entities <- function(fs) {
     creation_mode = args$creation_mode
   )
 
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 
@@ -573,7 +573,7 @@ sfr_list_feature_views <- function(fs,
     creation_mode = args$creation_mode
   )
 
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 
@@ -720,7 +720,7 @@ sfr_read_feature_view <- function(fs, name, version,
   }
 
   result <- do.call(bridge$read_feature_view, bridge_args)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 
@@ -860,7 +860,7 @@ sfr_get_refresh_history <- function(fs, name, version,
     store_type = store_type
   )
 
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 
@@ -993,7 +993,7 @@ sfr_generate_training_data <- function(fs,
 
   on.exit(unlink(json_path), add = TRUE)
   result <- jsonlite::fromJSON(json_path)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 
@@ -1114,7 +1114,7 @@ sfr_generate_dataset <- function(fs,
 
   json_path <- result$json_path
   on.exit(unlink(json_path), add = TRUE)
-  df <- .bridge_dict_to_df(jsonlite::fromJSON(json_path))
+  df <- .bridge_dict_to_df(jsonlite::fromJSON(json_path), conn = fs)
 
   attr(df, "dataset_name") <- result$dataset_name
   attr(df, "dataset_version") <- result$dataset_version
@@ -1192,7 +1192,7 @@ sfr_retrieve_features <- function(fs, spine, features,
 
   on.exit(unlink(json_path), add = TRUE)
   result <- jsonlite::fromJSON(json_path)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 
@@ -1326,7 +1326,7 @@ sfr_fv_lineage <- function(fs, name, version,
     warehouse = args$warehouse, creation_mode = args$creation_mode
   )
   if (is.list(result) && !is.null(result$nrows)) {
-    .bridge_dict_to_df(result)
+    .bridge_dict_to_df(result, conn = fs)
   } else {
     result
   }
@@ -1350,7 +1350,7 @@ sfr_list_fv_columns <- function(fs, name, version) {
     database = args$database, schema = args$schema,
     warehouse = args$warehouse, creation_mode = args$creation_mode
   )
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 
@@ -1371,7 +1371,7 @@ sfr_fv_to_df <- function(fs, name, version) {
     database = args$database, schema = args$schema,
     warehouse = args$warehouse, creation_mode = args$creation_mode
   )
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = fs)
 }
 
 

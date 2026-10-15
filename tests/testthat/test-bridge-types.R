@@ -115,3 +115,46 @@ test_that("a typed result that went through a JSON file still converts", {
   expect_equal(df$ZIP, c("01234", NA))
   expect_type(df$N, "integer")
 })
+
+# Settings from sfr_connect() ------------------------------------------------------
+
+test_that("a connection's bigint and timezone_out override the options", {
+  res <- .typed(c("B", "L"), list(.kind("fixed", 0L, 38L), .kind("timestamp_ltz", 9L)),
+                list(B = "9007199254740993", L = "1792006496.000000000"),
+                session_timezone = "America/Los_Angeles")
+  withr::local_options(skiLift.bigint = "numeric", skiLift.timezone_out = "database")
+  conn <- list(bigint = "character", timezone_out = "Asia/Tokyo")
+  df <- .bridge_dict_to_df(res, conn = conn)
+  expect_identical(df$B, "9007199254740993")
+  expect_equal(attr(df$L, "tzone"), "Asia/Tokyo")
+  # the options still apply when the connection sets nothing
+  df <- .bridge_dict_to_df(res, conn = list(bigint = NULL))
+  expect_type(df$B, "double")
+  expect_equal(attr(df$L, "tzone"), "America/Los_Angeles")
+})
+
+test_that("settings are also found on a feature store or registry that holds a connection", {
+  res <- .typed("B", list(.kind("fixed", 0L, 38L)), list(B = "7"))
+  fs <- list(conn = list(bigint = "character"))
+  expect_identical(.bridge_dict_to_df(res, conn = fs)$B, "7")
+})
+
+test_that("sfr_connect() rejects bad bigint / timezone_out before doing anything", {
+  expect_error(sfr_connect(session = list(), bigint = "nope"), "bigint")
+  expect_error(sfr_connect(session = list(), timezone_out = "Mars/Olympus"), "timezone_out")
+})
+
+test_that("every bridge call site passes its connection", {
+  r_dir <- testthat::test_path("..", "..", "R")
+  skip_if_not(dir.exists(r_dir), "R/ source files are not available (installed package)")
+  files <- list.files(r_dir, pattern = "\\.R$", full.names = TRUE)
+  files <- files[basename(files) != "helpers.R"]
+  calls <- unlist(lapply(files, function(f) {
+    l <- readLines(f)
+    l <- l[grepl("\\.bridge_dict_to_df\\(", l) & !grepl("^\\s*#", l)]
+    l
+  }))
+  expect_gt(length(calls), 20L)
+  expect_true(all(grepl("conn = (conn|fs|reg)\\)|conn = (conn|fs|reg),", calls)),
+              info = paste(calls[!grepl("conn = ", calls)], collapse = "\n"))
+})

@@ -15,6 +15,8 @@ sfr_connect(
   authenticator = NULL,
   private_key_file = NULL,
   session = NULL,
+  bigint = NULL,
+  timezone_out = NULL,
   ...,
   .use_snowflakeauth = TRUE
 )
@@ -46,6 +48,25 @@ key-pair authentication. Also read from \code{connections.toml} field
 auto-detection and every other strategy below. For sharing one
 session between Python and R explicitly rather than relying on
 whichever Snowpark session happens to be active in the process.}
+
+\item{bigint}{How query results return whole-number columns too large for
+an R integer (more than 9 digits, which includes every plain \code{INTEGER}
+column): \code{"numeric"}, \code{"integer64"} (needs the \code{bit64} package),
+\code{"integer"} or \code{"character"}. \code{NULL} (the default) uses
+\code{getOption("skiLift.bigint", "numeric")}. Snowflake stores \code{INTEGER},
+\code{BIGINT} and \code{NUMBER(38,0)} identically, so the choice is made from the
+column's precision, never from the values. It applies to \code{\link[=sfr_query]{sfr_query()}}
+and the functions that return tables (feature store, datasets, model
+registry) and is passed on to the skiLift connection if one is created.
+\code{"integer64"} is exact for any 64-bit value but many R functions do not
+understand it; some, such as \code{lm()}, give wrong answers without a
+warning.}
+
+\item{timezone_out}{The time zone \code{TIMESTAMP_LTZ} and \code{TIMESTAMP_TZ}
+values are shown in: \code{"database"} (the Snowflake session's \code{TIMEZONE}),
+\code{"local"} (your R session's zone) or a name from \code{\link[=OlsonNames]{OlsonNames()}}. \code{NULL}
+(the default) uses \code{getOption("skiLift.timezone_out", "database")}. It
+only changes how a time is labelled, never which moment it is.}
 
 \item{...}{Additional connection parameters passed to Snowpark session
 builder or \code{snowflakeauth::snowflake_connection()}.}

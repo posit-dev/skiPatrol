@@ -647,7 +647,7 @@ sfr_log_model <- function(reg,
   py_target <- as.list(target_platforms)
   py_metrics <- if (!is.null(metrics)) as.list(metrics) else NULL
   py_sample <- if (!is.null(sample_input)) {
-    reticulate::r_to_py(sample_input)
+    .r_df_to_py(sample_input)
   } else {
     NULL
   }
@@ -958,7 +958,7 @@ sfr_predict <- function(reg,
 
   on.exit(unlink(json_path), add = TRUE)
   result <- jsonlite::fromJSON(json_path)
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = reg)
 }
 
 
@@ -981,7 +981,7 @@ sfr_show_models <- function(reg) {
     database_name = ctx$database_name,
     schema_name = ctx$schema_name
   )
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = reg)
 }
 
 
@@ -1049,7 +1049,7 @@ sfr_show_model_versions <- function(reg, model_name) {
     database_name = ctx$database_name,
     schema_name = ctx$schema_name
   )
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = reg)
 }
 
 
@@ -1959,7 +1959,7 @@ sfr_show_model_functions <- function(reg, model_name, version_name) {
     database_name = ctx$database_name,
     schema_name = ctx$schema_name
   )
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = reg)
 }
 
 
@@ -1988,7 +1988,7 @@ sfr_model_lineage <- function(reg, model_name, version_name,
     schema_name = ctx$schema_name
   )
   if (is.list(result) && !is.null(result$nrows)) {
-    .bridge_dict_to_df(result)
+    .bridge_dict_to_df(result, conn = reg)
   } else {
     result
   }
@@ -2062,7 +2062,7 @@ sfr_list_services <- function(reg, model_name, version_name) {
     database_name = ctx$database_name,
     schema_name = ctx$schema_name
   )
-  .bridge_dict_to_df(result)
+  .bridge_dict_to_df(result, conn = reg)
 }
 
 
@@ -2096,7 +2096,7 @@ sfr_run_batch <- function(reg, model_name, version_name, new_data,
   )
   if (is.character(result) && file.exists(result)) {
     on.exit(unlink(result), add = TRUE)
-    .bridge_dict_to_df(jsonlite::fromJSON(result))
+    .bridge_dict_to_df(jsonlite::fromJSON(result), conn = reg)
   } else {
     result
   }

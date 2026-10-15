@@ -14,6 +14,7 @@ _here = _os.path.dirname(_os.path.abspath(__file__))
 if _here not in _sys.path:
     _sys.path.insert(0, _here)
 from sfr_common import pandas_to_typed_dict as _pandas_to_typed_dict  # noqa: E402
+from sfr_common import snowpark_to_typed_dict as _snowpark_to_r_dict  # noqa: E402
 
 
 def _pandas_to_r_dict(pdf):
@@ -153,4 +154,4 @@ def read_dataset(
 
     ds = Dataset.load(session=session, name=name)
     ds = ds.select_version(version)
-    return _pandas_to_r_dict(ds.read.to_pandas())
+    return _snowpark_to_r_dict(ds.read.to_snowpark_dataframe())
