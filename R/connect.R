@@ -38,8 +38,10 @@ get_bridge_module <- function(module_name) {
   tryCatch(
     {
       py_sys <- reticulate::import("sys", convert = FALSE)
-      if (!is.null(py_sys$modules$get(module_name))) {
-        py_sys$modules$pop(module_name)
+      # sfr_common.py is imported by the bridges; evict it too so a reinstall
+      # is picked up along with them.
+      for (m in c(module_name, "sfr_common")) {
+        if (!is.null(py_sys$modules$get(m))) py_sys$modules$pop(m)
       }
     },
     error = function(e) NULL

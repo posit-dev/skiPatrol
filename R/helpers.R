@@ -26,6 +26,13 @@
                                lowercase = getOption("skiPatrol.lowercase_columns", FALSE)) {
   cols <- result$columns
 
+  # Results from bridge functions that send Snowflake's column types are
+  # converted by type; see R/bridge_types.R. The guessing below is only for
+  # results that do not (older callers, and metadata listings).
+  if (!is.null(result$kinds)) {
+    return(.bridge_typed_to_df(result, lowercase = lowercase))
+  }
+
   if (result$nrows == 0L) {
     df <- data.frame(matrix(ncol = length(cols), nrow = 0))
     names(df) <- if (lowercase) tolower(cols) else cols

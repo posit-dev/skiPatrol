@@ -13,6 +13,15 @@ import os
 from typing import Optional
 
 
+import os as _os
+import sys as _sys
+
+_here = _os.path.dirname(_os.path.abspath(__file__))
+if _here not in _sys.path:
+    _sys.path.insert(0, _here)
+from sfr_common import pandas_to_typed_dict, query_to_typed_dict  # noqa: E402
+
+
 def get_active_session():
     """
     Get the active Snowpark session (works in Workspace Notebooks).
@@ -267,13 +276,17 @@ def query_to_dict(session, sql):
     Execute a SQL query and return the result as a column-oriented dict
     with native Python types only (safe for reticulate conversion to R).
 
-    This keeps the entire pandas/numpy interaction on the Python side,
-    avoiding reticulate's NumPy version checks which can fail with
-    NumPy 1.x/2.x ABI mismatches.
+    The result carries each column's Snowflake type, scale and precision
+    ("kinds") and its values as text in the SQL API's formats, so R rebuilds
+    the right types instead of guessing them from the values; see
+    sfr_common.py. The query runs on the Snowpark session's own connection,
+    so session state (current schema, temporary tables, query tag) applies.
+    Keeps the entire pandas/numpy interaction on the Python side, avoiding
+    reticulate's NumPy version checks which can fail with NumPy 1.x/2.x ABI
+    mismatches.
 
-    None values are converted to the string "NA_SENTINEL_" so that
-    R's as.data.frame() sees consistent column lengths.  The R side
-    replaces these sentinels with proper NA values.
+    NULL is the string "NA_SENTINEL_" so R's as.data.frame() sees consistent
+    column lengths; the R side turns it into NA.
 
     Args:
         session: Snowpark Session object.
@@ -282,40 +295,15 @@ def query_to_dict(session, sql):
     Returns:
         dict with keys:
             - "columns": list of column names
-            - "data": dict[str, list] of column name → values
+            - "kinds": list, one per column, of {type, scale, precision}
+            - "data": dict[str, list[str]] of column name -> values as text
             - "nrows": int
+            - "session_timezone": str, only if a column is TIMESTAMP_LTZ/TZ
     """
-    _NA = "NA_SENTINEL_"
-
-    pdf = session.sql(sql).to_pandas()
-    # Strip surrounding quotes from column names (SHOW/DESCRIBE commands
-    # return quoted identifiers like '"name"' which R's make.names mangles)
-    clean_cols = [c.strip('"') for c in pdf.columns]
-    pdf.columns = clean_cols
-    cols = list(clean_cols)
-    nrows = len(pdf)
-
-    if nrows == 0:
-        return {"columns": cols, "data": {c: [] for c in cols}, "nrows": 0}
-
-    import datetime
-
-    # Use .tolist() to convert numpy scalars to native Python types
-    # (int, float, str).  This avoids the NumPy ABI mismatch because
-    # reticulate never sees numpy array objects.
-    # pd.isna() detects all flavours of missing (None, NaN, NaT, pd.NA).
-    data = {}
-    for col in cols:
-        na_mask = pdf[col].isna()
-        vals = pdf[col].tolist()
-
-        # Convert datetime objects to ISO strings for clean R output
-        if vals and isinstance(vals[0], (datetime.datetime, datetime.date)):
-            vals = [v.isoformat() if isinstance(v, (datetime.datetime, datetime.date)) else v for v in vals]
-
-        if na_mask.any():
-            data[col] = [_NA if is_na else v for v, is_na in zip(vals, na_mask)]
-        else:
-            data[col] = vals
-
-    return {"columns": cols, "data": data, "nrows": nrows}
+    try:
+        session.connection
+    except AttributeError:
+        # A session object without a connection (very old Snowpark): fall
+        # back to pandas, which infers types from the values.
+        return pandas_to_typed_dict(session.sql(sql).to_pandas())
+    return query_to_typed_dict(session, sql)

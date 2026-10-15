@@ -25,6 +25,7 @@ Collate:
     'skiPatrol-package.R'
     'python_deps.R'
     'reticulate_integer64.R'
+    'bridge_types.R'
     'connect.R'
     'helpers.R'
     'version.R'
@@ -61,6 +62,7 @@ Imports:
 Suggests:
     skiLift,
     bit64,
+    hms,
     R6,
     crew,
     DBI,

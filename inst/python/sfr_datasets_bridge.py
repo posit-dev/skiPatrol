@@ -7,41 +7,22 @@ Called from R via reticulate. Wraps snowflake.ml.dataset.Dataset.
 from typing import Any, Dict, List, Optional
 
 
+import os as _os
+import sys as _sys
+
+_here = _os.path.dirname(_os.path.abspath(__file__))
+if _here not in _sys.path:
+    _sys.path.insert(0, _here)
+from sfr_common import pandas_to_typed_dict as _pandas_to_typed_dict  # noqa: E402
+
+
 def _pandas_to_r_dict(pdf):
-    """Convert a pandas DataFrame to a column-oriented dict with native Python
-    types via Series.tolist().  This avoids NumPy ABI issues with reticulate
-    and is more efficient than the previous JSON round-trip approach.
+    """Typed, column-oriented dict for R (see sfr_common.py).
 
-    Datetime columns are converted to ISO-format strings to avoid ugly
-    POSIX timestamp objects in R output.
+    Keeps each column's Snowflake type so R does not have to guess it from the
+    values; native Python types only, so NumPy never reaches reticulate.
     """
-    import datetime
-
-    _NA = "NA_SENTINEL_"
-    clean_cols = [c.strip('"') for c in pdf.columns]
-    pdf.columns = clean_cols
-    cols = list(clean_cols)
-    nrows = len(pdf)
-
-    if nrows == 0:
-        return {"columns": cols, "data": {c: [] for c in cols}, "nrows": 0}
-
-    data = {}
-    for col in cols:
-        na_mask = pdf[col].isna()
-        vals = pdf[col].tolist()
-
-        # Convert datetime objects to ISO strings
-        if vals and isinstance(vals[0], (datetime.datetime, datetime.date)):
-            vals = [v.isoformat() if isinstance(v, (datetime.datetime, datetime.date)) else v for v in vals]
-
-        if na_mask.any():
-            data[col] = [_NA if is_na else (_NA if v is None else v)
-                         for v, is_na in zip(vals, na_mask)]
-        else:
-            data[col] = [_NA if v is None else v for v in vals]
-
-    return {"columns": cols, "data": data, "nrows": nrows}
+    return _pandas_to_typed_dict(pdf)
 
 # ---------------------------------------------------------------------------
 # Dataset CRUD
