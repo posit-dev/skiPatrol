@@ -17,6 +17,10 @@
   toset <- !(names(op_sfr) %in% names(op))
   if (any(toset)) options(op_sfr[toset])
 
+  # Make reticulate convert bit64::integer64 correctly instead of silently
+  # reading its bytes as doubles. See R/reticulate_integer64.R.
+  .register_reticulate_integer64()
+
   # Declarative only -- py_require() records requirements for reticulate's
   # ephemeral-environment auto-provisioning; it does not touch Python, so
   # it doesn't violate "no Python init on load" above. Without this,

@@ -24,6 +24,7 @@ Encoding: UTF-8
 Collate:
     'skiPatrol-package.R'
     'python_deps.R'
+    'reticulate_integer64.R'
     'connect.R'
     'helpers.R'
     'version.R'
@@ -59,6 +60,7 @@ Imports:
     jsonlite
 Suggests:
     skiLift,
+    bit64,
     R6,
     crew,
     DBI,
