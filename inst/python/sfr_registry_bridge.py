@@ -1219,9 +1219,25 @@ def registry_model_lineage(session, model_name, version_name,
 def registry_export_model(session, model_name, version_name,
                           target_path, export_mode="model",
                           database_name=None, schema_name=None):
-    """Export model files to a local path."""
+    """Export model files to a local path.
+
+    The SDK wants an ``ExportMode`` enum, not the string R sends, and it
+    raises FileNotFoundError if the target directory does not exist yet (it
+    only creates the directory *after* checking it is empty). Convert the
+    string and create the directory first.
+    """
+    from snowflake.ml.model import ExportMode
+
+    try:
+        mode = ExportMode(str(export_mode).lower())
+    except ValueError:
+        valid = ", ".join(repr(m.value) for m in ExportMode)
+        raise ValueError(
+            f"export_mode must be one of {valid}; got {export_mode!r}."
+        ) from None
     _, _, mv = _get_model_version(session, model_name, version_name, database_name, schema_name)
-    mv.export(target_path, export_mode=export_mode)
+    _os.makedirs(target_path, exist_ok=True)
+    mv.export(target_path, export_mode=mode)
     return target_path
 
 

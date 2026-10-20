@@ -42,6 +42,13 @@
 
 ## Bug fixes
 
+- **`sfr_export_model()` now works.** It always failed with
+  `'str' object has no attribute 'value'`: the Snowflake library needs its own
+  `ExportMode` value, and R sent a plain string. It also failed if the target
+  directory did not exist yet. `export_mode` is now converted (`"model"` or
+  `"full"`, any case; anything else gives an error that lists the valid
+  values), and the directory is created.
+
 - **Integer columns with missing values were written to Snowflake, and sent
   to Python, as -2147483648. If you have used `sfr_write_table()` with an
   integer column that contained `NA`, check the table.** R stores a missing
